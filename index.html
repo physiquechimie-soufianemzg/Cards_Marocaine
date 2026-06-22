@@ -398,6 +398,76 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 .hazz2-mode .dinfo{padding:1px 0}
 .hazz2-mode .garea{gap:3px;padding:4px 8px}
 .hazz2-mode .phand{padding:5px 4px;min-height:90px;gap:4px}
+
+/* ===== MULTIPLAYER / ONLINE ROOM ===== */
+.mp-section{margin-top:14px;padding:14px;border:1px solid rgba(212,175,55,0.35);border-radius:14px;background:rgba(0,0,0,0.25)}
+.mp-section-title{font-size:.95rem;font-weight:700;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.mp-tabs{display:flex;gap:6px;margin-bottom:10px}
+.mp-tab{flex:1;padding:8px 12px;border:1px solid rgba(212,175,55,0.3);background:transparent;color:var(--text-d);border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;font-family:'Cairo',sans-serif;transition:all .2s}
+.mp-tab.on{background:var(--gold);color:var(--bg1);border-color:var(--gold)}
+.mp-tab:hover:not(.on){background:rgba(212,175,55,0.1)}
+.mp-field{width:100%;padding:9px 12px;border:1px solid rgba(212,175,55,0.4);background:rgba(10,22,40,0.8);color:var(--text);border-radius:10px;font-size:.95rem;font-family:'Cairo',sans-serif;margin-bottom:8px}
+.mp-field:focus{outline:none;border-color:var(--gold)}
+.mp-field::placeholder{color:#7a8a9a}
+.mp-row{display:flex;gap:6px;align-items:center}
+.mp-row .mp-field{flex:1;margin-bottom:0}
+.mp-code-display{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold);text-align:center;letter-spacing:6px;padding:10px;background:rgba(212,175,55,0.08);border:1px dashed rgba(212,175,55,0.4);border-radius:10px;margin:8px 0;user-select:all}
+.mp-status{font-size:.8rem;text-align:center;color:var(--text-d);padding:6px;margin-top:6px}
+.mp-status.waiting{color:#fbbf24}
+.mp-status.ready{color:var(--green)}
+.mp-btn{padding:11px 20px;background:linear-gradient(135deg,var(--gold-d),var(--gold) 50%,var(--gold-l));color:var(--bg1);border:none;border-radius:12px;font-size:1rem;font-weight:900;cursor:pointer;font-family:'Cairo',sans-serif;width:100%;transition:all .2s;box-shadow:0 4px 12px rgba(212,175,55,0.3)}
+.mp-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(212,175,55,0.5)}
+.mp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.mp-conn{display:flex;align-items:center;gap:6px;font-size:.78rem;padding:5px 10px;border-radius:8px;background:rgba(0,0,0,0.3);color:var(--text-d)}
+.mp-conn-dot{width:8px;height:8px;border-radius:50%;background:#ef4444}
+.mp-conn.on .mp-conn-dot{background:var(--green);box-shadow:0 0 8px var(--green)}
+.mp-conn.on{color:var(--green)}
+
+/* Opponent info badge in score bar (multiplayer) */
+.opp-badge{font-size:.7rem;padding:2px 8px;background:rgba(124,58,237,0.18);border:1px solid rgba(167,139,250,0.55);color:#c4b5fd;border-radius:8px;display:inline-block;margin-top:2px}
+
+/* ===== CHAT PANEL ===== */
+#chatToggle{position:fixed;top:8px;left:8px;z-index:120;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4c566a,#5e81ac);border:2px solid rgba(212,175,55,0.5);color:#fff;font-size:1.2rem;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.4);transition:all .2s}
+#chatToggle:hover{transform:scale(1.08)}
+#chatToggle .chat-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:900;padding:0 4px;border:2px solid var(--bg1)}
+#chatToggle .chat-badge:empty{display:none}
+[dir="rtl"] #chatToggle{left:auto;right:8px}
+
+#chatPanel{position:fixed;top:0;bottom:0;width:340px;max-width:85vw;background:linear-gradient(180deg,var(--bg3),var(--bg1));border-left:2px solid rgba(212,175,55,0.4);z-index:200;display:none;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,0.6);transition:transform .3s}
+[dir="rtl"] #chatPanel{border-left:none;border-right:2px solid rgba(212,175,55,0.4)}
+#chatPanel.open{display:flex}
+[dir="ltr"] #chatPanel{right:0;left:auto}
+[dir="rtl"] #chatPanel{left:0;right:auto}
+.chat-header{padding:10px 14px;background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(212,175,55,0.25);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-title{font-size:.95rem;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:8px}
+.chat-close{background:transparent;border:none;color:var(--text-d);font-size:1.4rem;cursor:pointer;padding:0 4px;line-height:1}
+.chat-close:hover{color:var(--text)}
+.chat-body{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:6px;scrollbar-width:thin}
+.chat-body::-webkit-scrollbar{width:6px}
+.chat-body::-webkit-scrollbar-thumb{background:rgba(212,175,55,0.3);border-radius:3px}
+.chat-msg{padding:6px 10px;border-radius:10px;max-width:85%;word-wrap:break-word;word-break:break-word;font-size:.85rem;line-height:1.4}
+.chat-msg.system{align-self:center;background:rgba(0,0,0,0.3);color:var(--text-d);font-size:.75rem;font-style:italic;text-align:center;border-radius:8px;padding:4px 10px;max-width:95%}
+.chat-msg.me{align-self:flex-end;background:linear-gradient(135deg,#5e81ac,#4c566a);color:#fff;border-bottom-right-radius:2px}
+[dir="rtl"] .chat-msg.me{align-self:flex-start;border-bottom-right-radius:10px;border-bottom-left-radius:2px}
+.chat-msg.opp{align-self:flex-start;background:rgba(212,175,55,0.15);color:var(--text);border:1px solid rgba(212,175,55,0.25);border-bottom-left-radius:2px}
+[dir="rtl"] .chat-msg.opp{align-self:flex-end;border-bottom-left-radius:10px;border-bottom-right-radius:2px}
+.chat-msg-name{font-size:.7rem;font-weight:700;opacity:.85;margin-bottom:2px}
+.chat-msg-time{font-size:.62rem;opacity:.6;margin-top:2px;text-align:right}
+.chat-typing{font-size:.72rem;color:var(--text-d);font-style:italic;padding:2px 8px;min-height:18px}
+.chat-emoji-bar{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;background:rgba(0,0,0,0.2);border-top:1px solid rgba(212,175,55,0.15);max-height:90px;overflow-y:auto}
+.chat-emoji{font-size:1.2rem;padding:4px 6px;background:transparent;border:none;border-radius:6px;cursor:pointer;transition:all .15s}
+.chat-emoji:hover{background:rgba(212,175,55,0.2);transform:scale(1.2)}
+.chat-input-row{display:flex;gap:6px;padding:8px;border-top:1px solid rgba(212,175,55,0.25);background:rgba(0,0,0,0.3);flex-shrink:0;align-items:center}
+.chat-input{flex:1;padding:8px 12px;border:1px solid rgba(212,175,55,0.3);background:rgba(10,22,40,0.8);color:var(--text);border-radius:18px;font-size:.9rem;font-family:'Cairo',sans-serif;outline:none}
+.chat-input:focus{border-color:var(--gold)}
+.chat-send{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--bg1);border:none;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chat-send:hover{transform:scale(1.08)}
+.chat-emoji-toggle{width:34px;height:34px;border-radius:50%;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);color:var(--gold);font-size:1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.chat-emoji-toggle:hover{background:rgba(212,175,55,0.25)}
+.chat-emoji-bar.hidden{display:none}
+
+/* ===== MULTIPLAYER INDICATOR IN HEADER ===== */
+.mp-mode-badge{display:inline-block;padding:2px 8px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-size:.65rem;font-weight:900;margin-right:6px;letter-spacing:.5px}
 </style>
 </head>
 <body>
@@ -437,8 +507,66 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
       <button class="sbtn-opt" onclick="setScoring('ultra')" data-t="scoringUltra">Ultra<span class="sbtn-opt-sub" data-t="scoringUltraSub">نقاط مضاعفة مبتكرة</span></button>
     </div>
   </div>
+
+  <!-- MULTIPLAYER SECTION -->
+  <div class="mp-section" id="mpSection">
+    <div class="mp-section-title">🌐 <span data-t="onlinePlay">لعب أون لاين مع صديق</span></div>
+    <div class="mp-tabs">
+      <button class="mp-tab on" onclick="setMpTab('create')" data-t="createRoom">إنشاء غرفة</button>
+      <button class="mp-tab" onclick="setMpTab('join')" data-t="joinRoom">انضمام برمز</button>
+    </div>
+    <input class="mp-field" id="mpName" placeholder="اسمك" maxlength="24" value="">
+    <div id="mpCreateBox">
+      <button class="mp-btn" onclick="mpCreateRoom()" data-t="createRoomBtn">🎮 إنشاء غرفة جديدة</button>
+      <div class="mp-status" id="mpCreateStatus"></div>
+    </div>
+    <div id="mpJoinBox" style="display:none">
+      <div class="mp-row">
+        <input class="mp-field" id="mpCode" placeholder="رمز الغرفة (6 أحرف)" maxlength="6" style="text-transform:uppercase;letter-spacing:2px">
+      </div>
+      <button class="mp-btn" onclick="mpJoinRoom()" data-t="joinRoomBtn">🚪 انضمام للغرفة</button>
+      <div class="mp-status" id="mpJoinStatus"></div>
+    </div>
+  </div>
+
   <button class="sbtn" onclick="startGame()" data-t="startGame">ابدأ اللعبة</button>
   <div class="vslbl" data-t="vsComputer">ضد الحاسوب (صعب)</div>
+</div>
+
+<!-- MULTIPLAYER LOBBY -->
+<div id="mpLobby" class="mover hidden" onclick="if(event.target===this)mpLeaveLobby()">
+  <div class="modal" style="max-width:480px">
+    <h2 style="margin-bottom:12px">🌐 <span data-t="onlineRoom">غرفة اللعب أون لاين</span></h2>
+    <div style="text-align:center;margin:14px 0">
+      <div style="color:var(--text-d);font-size:.85rem;margin-bottom:6px" data-t="roomCode">رمز الغرفة — شاركه مع صديقك</div>
+      <div class="mp-code-display" id="mpLobbyCode">------</div>
+      <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;margin-top:6px" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
+    </div>
+    <div class="mp-status" id="mpLobbyStatus">⏳ <span data-t="waitingOpponent">بانتظار انضمام اللاعب الثاني...</span></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="mp-btn" id="mpStartBtn" onclick="mpStartGame()" disabled style="background:linear-gradient(135deg,#4ade80,#22c55e)">▶ <span data-t="startMatch">ابدأ المباراة</span></button>
+      <button class="mp-btn" style="background:linear-gradient(135deg,#ef4444,#dc2626);width:auto;padding:11px 18px" onclick="mpLeaveLobby()"><span data-t="leave">مغادرة</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT TOGGLE BUTTON (visible during multiplayer) -->
+<button id="chatToggle" onclick="toggleChat()">💬<span class="chat-badge" id="chatBadge"></span></button>
+
+<!-- CHAT PANEL -->
+<div id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-title">💬 <span data-t="chat">دردشة</span> <span style="font-size:.75rem;color:var(--text-d)" id="chatOppName"></span></div>
+    <button class="chat-close" onclick="toggleChat()">×</button>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-typing" id="chatTyping"></div>
+  <div class="chat-emoji-bar hidden" id="chatEmojiBar"></div>
+  <div class="chat-input-row">
+    <button class="chat-emoji-toggle" onclick="toggleEmojiBar()">😊</button>
+    <input class="chat-input" id="chatInput" placeholder="اكتب رسالة..." maxlength="500" onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
 </div>
 
 <!-- GAME -->
@@ -512,12 +640,807 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 <script>
 // ============ I18N ============
 const TR={
-  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left'},
-  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante'},
-  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة'}
+  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (6 chars)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting to server...',mpDisconnected:'⚠️ Disconnected from server. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 6-character code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
+  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (6 caractères)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion au serveur...',mpDisconnected:'⚠️ Déconnecté. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (6 caractères)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
+  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (6 أحرف)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال بالخادم...',mpDisconnected:'⚠️ انقطع الاتصال. إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'من فضلك أدخل رمز صحيح من 6 أحرف',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
 };
 let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
+
+// ============================================================
+// MULTIPLAYER MODULE — Socket.IO client
+// Works across different networks via the public preview URL.
+// Server is hosted alongside the Next.js app on port 3003, and
+// Caddy forwards the connection based on ?XTransformPort=3003.
+// ============================================================
+const MP = (() => {
+  let socket = null;
+  let connected = false;
+  let myPlayer = null;     // 'p1' | 'p2'
+  let myName = '';
+  let roomCode = null;
+  let roomState = null;    // last received server state (client view)
+  let pendingAck = {};
+  let chatCallbacks = [];
+  let stateCallbacks = [];
+  let connCallbacks = [];
+  let chatHistory = [];
+  let unreadChat = 0;
+
+  // Load socket.io client lib dynamically if not present
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) return resolve();
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function ensureSocket() {
+    if (socket && connected) return socket;
+    if (socket) return socket;
+    // Try local socket.io first (served by Next.js page itself via <script src="/socket.io/socket.io.js">)
+    // We bundle a minimal socket.io client loader from CDN as fallback.
+    if (typeof io === 'undefined') {
+      // Try several CDNs in order — works across different networks
+      const cdns = [
+        'https://cdn.socket.io/4.7.5/socket.io.min.js',
+        'https://cdn.jsdelivr.net/npm/socket.io@4.7.5/client-dist/socket.io.min.js',
+        'https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js'
+      ];
+      let loaded = false;
+      for (const src of cdns) {
+        try { await loadScript(src); if (typeof io !== 'undefined') { loaded = true; break; } } catch (e) {}
+      }
+      if (!loaded) throw new Error('Could not load Socket.IO client library. Check your internet connection.');
+    }
+    // Connect via the same origin (Caddy will route to port 3003 via XTransformPort)
+    // This works across different networks because the user accesses the page via the
+    // public preview URL, and the WebSocket also goes through that same public URL.
+    const transports = ['websocket', 'polling'];
+    socket = io('/?XTransformPort=3003', {
+      transports,
+      reconnection: true,
+      reconnectionAttempts: 999,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 15000,
+      forceNew: true
+    });
+
+    socket.on('connect', () => {
+      connected = true;
+      connCallbacks.forEach(cb => cb({ connected: true }));
+    });
+    socket.on('disconnect', () => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false }));
+    });
+    socket.on('connect_error', () => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false, error: true }));
+    });
+    socket.on('reconnect', () => {
+      connCallbacks.forEach(cb => cb({ connected: true, reconnected: true }));
+      // Try to rejoin if we have a room code
+      if (roomCode && myName) {
+        socket.emit('room:reconnect', { code: roomCode, name: myName });
+      }
+    });
+    socket.on('room:state', (data) => {
+      roomState = data;
+      myPlayer = data.myPlayer;
+      roomCode = data.code;
+      // Update chat history (server sends last 50)
+      chatHistory = data.chat || [];
+      stateCallbacks.forEach(cb => cb(data));
+    });
+    socket.on('chat:message', (msg) => {
+      chatHistory.push(msg);
+      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+      chatCallbacks.forEach(cb => cb(msg));
+      // Increment unread if chat panel is closed
+      const panel = document.getElementById('chatPanel');
+      if (panel && !panel.classList.contains('open') && msg.from !== myPlayer) {
+        unreadChat++;
+        updateChatBadge();
+      }
+    });
+    socket.on('chat:typing', (data) => {
+      const el = document.getElementById('chatTyping');
+      if (el) {
+        el.textContent = t('mpTyping', { name: data.name });
+        clearTimeout(window._mpTypingTimer);
+        window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
+      }
+    });
+
+    return socket;
+  }
+
+  function updateChatBadge() {
+    const badge = document.getElementById('chatBadge');
+    if (badge) badge.textContent = unreadChat > 0 ? (unreadChat > 9 ? '9+' : String(unreadChat)) : '';
+  }
+
+  // ============ Public API ============
+  return {
+    onConnection(cb) { connCallbacks.push(cb); },
+    onState(cb) { stateCallbacks.push(cb); },
+    onChat(cb) { chatCallbacks.push(cb); },
+    isConnected() { return connected; },
+    getMyPlayer() { return myPlayer; },
+    getMyName() { return myName; },
+    getRoomCode() { return roomCode; },
+    getRoomState() { return roomState; },
+    getChatHistory() { return chatHistory; },
+    resetUnread() { unreadChat = 0; updateChatBadge(); },
+
+    async createRoom(name, mode, scoring, totalRounds) {
+      myName = (name || 'Player').slice(0, 24);
+      await ensureSocket();
+      return new Promise((resolve, reject) => {
+        socket.emit('room:create', { name: myName, mode, scoring, totalRounds }, (r) => {
+          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
+          else reject(new Error(r && r.error ? r.error : 'Failed to create room'));
+        });
+        // Timeout fallback
+        setTimeout(() => reject(new Error('Server did not respond')), 12000);
+      });
+    },
+
+    async joinRoom(name, code) {
+      myName = (name || 'Player').slice(0, 24);
+      await ensureSocket();
+      return new Promise((resolve, reject) => {
+        socket.emit('room:join', { code, name: myName }, (r) => {
+          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
+          else reject(new Error(r && r.error ? r.error : 'Failed to join room'));
+        });
+        setTimeout(() => reject(new Error('Server did not respond')), 12000);
+      });
+    },
+
+    startGame() {
+      if (!socket) return;
+      socket.emit('game:start', {}, () => {});
+    },
+
+    playCard(ci, chosenCap, newSuit) {
+      if (!socket) return;
+      socket.emit('game:play', { ci, chosenCap, newSuit }, () => {});
+    },
+
+    requestCaptureOptions(ci) {
+      return new Promise((resolve, reject) => {
+        if (!socket) return reject(new Error('Not connected'));
+        socket.emit('game:capture-options', { ci }, (r) => {
+          if (r && r.ok) resolve(r.options || []);
+          else reject(new Error(r && r.error ? r.error : 'Failed'));
+        });
+        setTimeout(() => reject(new Error('No response')), 8000);
+      });
+    },
+
+    applyPenalty() {
+      if (!socket) return;
+      socket.emit('game:penalty', {}, () => {});
+    },
+
+    drawCard() {
+      if (!socket) return;
+      socket.emit('game:draw', {}, () => {});
+    },
+
+    nextRound() {
+      if (!socket) return;
+      socket.emit('game:next-round', {}, () => {});
+    },
+
+    restart() {
+      if (!socket) return;
+      socket.emit('game:restart', {}, () => {});
+    },
+
+    sendChat(text) {
+      if (!socket || !text.trim()) return;
+      socket.emit('chat:send', { text: text.slice(0, 500) }, () => {});
+    },
+
+    sendTyping() {
+      if (!socket) return;
+      socket.emit('chat:typing', {});
+    },
+
+    leaveRoom() {
+      if (!socket) return;
+      socket.emit('room:leave', {}, () => {});
+      roomCode = null; myPlayer = null; roomState = null; chatHistory = [];
+    }
+  };
+})();
+
+// ============================================================
+// MULTIPLAYER UI HANDLERS
+// ============================================================
+let mpActiveTab = 'create';
+
+function setMpTab(tab) {
+  mpActiveTab = tab;
+  document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('on'));
+  event && event.currentTarget && event.currentTarget.classList.add('on');
+  // Just toggle by data-t since event may not be available
+  document.querySelectorAll('.mp-tab').forEach(b => {
+    const k = b.getAttribute('data-t');
+    const on = (tab === 'create' && k === 'createRoom') || (tab === 'join' && k === 'joinRoom');
+    b.classList.toggle('on', on);
+  });
+  document.getElementById('mpCreateBox').style.display = tab === 'create' ? 'block' : 'none';
+  document.getElementById('mpJoinBox').style.display = tab === 'join' ? 'block' : 'none';
+}
+
+async function mpCreateRoom() {
+  const name = document.getElementById('mpName').value.trim();
+  const statusEl = document.getElementById('mpCreateStatus');
+  if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
+  statusEl.textContent = t('mpConnecting');
+  statusEl.className = 'mp-status waiting';
+  try {
+    const r = await MP.createRoom(name, gameMode, scoringMode, totalRounds);
+    statusEl.textContent = '';
+    showMpLobby(r.code);
+  } catch (e) {
+    statusEl.textContent = t('mpCreateFailed') + ' (' + e.message + ')';
+    statusEl.className = 'mp-status waiting';
+  }
+}
+
+async function mpJoinRoom() {
+  const name = document.getElementById('mpName').value.trim();
+  const code = document.getElementById('mpCode').value.trim().toUpperCase();
+  const statusEl = document.getElementById('mpJoinStatus');
+  if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
+  if (code.length !== 6) { statusEl.textContent = t('mpInvalidCode'); statusEl.className = 'mp-status waiting'; return; }
+  statusEl.textContent = t('mpConnecting');
+  statusEl.className = 'mp-status waiting';
+  try {
+    const r = await MP.joinRoom(name, code);
+    statusEl.textContent = '';
+    // Joining player goes straight into game (host starts). Show lobby view.
+    showMpLobby(r.code, /*isGuest=*/true);
+  } catch (e) {
+    let msg = e.message;
+    if (msg.indexOf('Room not found') >= 0) msg = t('mpRoomNotFound');
+    else if (msg.indexOf('Room is full') >= 0) msg = t('mpRoomFull');
+    else msg = t('mpJoinFailed') + ': ' + msg;
+    statusEl.textContent = msg;
+    statusEl.className = 'mp-status waiting';
+  }
+}
+
+function showMpLobby(code, isGuest) {
+  document.getElementById('mpLobbyCode').textContent = code;
+  document.getElementById('mpLobby').classList.remove('hidden');
+  document.getElementById('welcome').classList.add('hidden');
+  const startBtn = document.getElementById('mpStartBtn');
+  startBtn.disabled = !!isGuest;
+  const statusEl = document.getElementById('mpLobbyStatus');
+  if (isGuest) {
+    statusEl.textContent = t('mpHostWaiting');
+  } else {
+    statusEl.textContent = t('mpWaitingP2');
+  }
+  // Set up connection listener if not already
+  if (!window._mpConnListener) {
+    window._mpConnListener = true;
+    MP.onConnection(({ connected, reconnected, error }) => {
+      const el = document.getElementById('mpLobbyStatus');
+      if (!el) return;
+      if (!connected) {
+        el.textContent = t('mpDisconnected');
+        el.className = 'mp-status waiting';
+      } else if (reconnected) {
+        el.textContent = t('mpReconnected');
+      }
+    });
+    MP.onState((state) => {
+      mpHandleRoomState(state);
+    });
+    MP.onChat((msg) => {
+      mpAppendChatMsg(msg);
+    });
+  }
+}
+
+function mpHandleRoomState(state) {
+  // Update lobby UI if still in lobby
+  const lobby = document.getElementById('mpLobby');
+  if (lobby && !lobby.classList.contains('hidden')) {
+    const p2Connected = state.players.p2.connected;
+    const startBtn = document.getElementById('mpStartBtn');
+    const statusEl = document.getElementById('mpLobbyStatus');
+    if (MP.getMyPlayer() === 'p1') {
+      // Host view
+      if (p2Connected) {
+        statusEl.textContent = t('mpP2Joined');
+        statusEl.className = 'mp-status ready';
+        startBtn.disabled = false;
+      } else {
+        statusEl.textContent = t('mpWaitingP2');
+        statusEl.className = 'mp-status waiting';
+        startBtn.disabled = true;
+      }
+    } else {
+      // Guest view — wait for host
+      if (state.gameStarted) {
+        // Game has started — hide lobby, enter game
+        lobby.classList.add('hidden');
+        enterMultiplayerGame(state);
+      } else {
+        statusEl.textContent = t('mpHostWaiting');
+      }
+    }
+    return;
+  }
+  // If we're in game, update game UI
+  if (state.gameStarted && state.gameState) {
+    if (!window._mpInGame) {
+      enterMultiplayerGame(state);
+    } else {
+      mpRenderGameState(state);
+    }
+  }
+  // Re-render chat history on initial state
+  if (state.chat && state.chat.length && document.getElementById('chatBody').children.length === 0) {
+    state.chat.forEach(m => mpAppendChatMsg(m, /*skipScroll=*/true));
+    mpScrollChatToBottom();
+  }
+}
+
+function mpStartGame() {
+  MP.startGame();
+  // Hide lobby and enter game immediately for host
+  const state = MP.getRoomState();
+  if (state && state.gameStarted) {
+    document.getElementById('mpLobby').classList.add('hidden');
+    enterMultiplayerGame(state);
+  }
+}
+
+function mpLeaveLobby() {
+  MP.leaveRoom();
+  document.getElementById('mpLobby').classList.add('hidden');
+  document.getElementById('welcome').classList.remove('hidden');
+  // Reset chat UI
+  document.getElementById('chatBody').innerHTML = '';
+  document.getElementById('chatToggle').style.display = 'none';
+  window._mpInGame = false;
+  // Reset local game state
+  G = null; busy = false; rHist = [];
+  document.getElementById('app').style.display = 'none';
+  document.body.classList.remove('hazz2-mode');
+}
+
+function mpCopyCode() {
+  const code = document.getElementById('mpLobbyCode').textContent;
+  navigator.clipboard && navigator.clipboard.writeText(code);
+  // Visual feedback
+  const btn = event && event.currentTarget;
+  if (btn) {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ ' + t('copyCode');
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
+  }
+}
+
+// ============================================================
+// MULTIPLAYER GAME INTEGRATION
+// ============================================================
+let mpGameState = null;
+let mpWaitingForSuitChoice = false;
+let mpPendingPlayCi = -1;
+
+function enterMultiplayerGame(state) {
+  window._mpInGame = true;
+  mpGameState = state.gameState;
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('mpLobby').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  document.body.classList.toggle('hazz2-mode', state.mode === 'hazz2');
+  // Show chat toggle
+  document.getElementById('chatToggle').style.display = 'flex';
+  // Update opponent name in chat header
+  const oppName = MP.getMyPlayer() === 'p1' ? state.players.p2.name : state.players.p1.name;
+  document.getElementById('chatOppName').textContent = oppName ? ('• ' + oppName) : '';
+  // Set game mode + scoring from server (in case host changed it after join)
+  gameMode = state.mode;
+  scoringMode = state.scoring;
+  totalRounds = state.totalRounds;
+  updateHeader();
+  mpRenderGameState(state);
+}
+
+function mpRenderGameState(state) {
+  mpGameState = state.gameState;
+  if (!mpGameState) return;
+  const gs = mpGameState;
+  const myP = MP.getMyPlayer();
+  const isMyTurn = gs.isMyTurn && gs.phase === 'play';
+
+  // Hide Hazz 2 draw button if not hazz2
+  document.getElementById('drawBtnWrap').style.display = 'none';
+
+  // Score bar
+  document.getElementById('pscore').textContent = gs.myTotal + (gs.phase === 'play' ? gs.myRoundScore : 0);
+  document.getElementById('cscore').textContent = gs.oppTotal + (gs.phase === 'play' ? gs.oppRoundScore : 0);
+  // Capture info / cards left
+  if (state.mode === 'hazz2') {
+    document.getElementById('pcapI').textContent = t('mpCardsLeft', { n: gs.myHand.length });
+    document.getElementById('ccapI').textContent = t('mpCardsLeft', { n: gs.oppHandCount });
+    document.getElementById('rbadge').textContent = t('mpTopCard');
+  } else {
+    document.getElementById('pcapI').textContent = gs.myCaptures.length ? ('(' + gs.myCaptures.length + ' ' + t('cards') + ')') : '';
+    document.getElementById('ccapI').textContent = gs.oppCaptures.length ? ('(' + gs.oppCaptures.length + ' ' + t('cards') + ')') : '';
+    document.getElementById('rbadge').textContent = gs.round + '/' + gs.totalRounds;
+  }
+  document.getElementById('deckC').textContent = t('deck') + ': ' + gs.deckCount;
+
+  // Computer hand (face down — opponent)
+  const ch = document.getElementById('chand'); ch.innerHTML = '';
+  const oppCardCount = state.mode === 'hazz2' ? gs.oppHandCount : gs.oppHandCount;
+  for (let i = 0; i < oppCardCount; i++) {
+    const d = document.createElement('div'); d.className = 'cd';
+    d.innerHTML = '<img src="cards/back.png" alt="" draggable="false">';
+    ch.appendChild(d);
+  }
+
+  // Table area
+  const ta = document.getElementById('tarea');
+  const ti = document.getElementById('turnInd');
+  ta.innerHTML = '';
+  ta.appendChild(ti);
+  if (gs.table.length === 0) {
+    const e = document.createElement('div'); e.className = 'tempty'; e.textContent = t('tableEmpty'); ta.appendChild(e);
+  } else if (state.mode === 'hazz2') {
+    // Hazz 2: show only top card prominently
+    const top = gs.table[gs.table.length - 1];
+    const d = document.createElement('div');
+    d.className = 'cd deal-table' + (top.suit !== gs.currentSuit ? ' suit-changed' : '');
+    d.innerHTML = '<img src="' + top.img + '" alt="" draggable="false">';
+    ta.appendChild(d);
+    // Suit indicator
+    const indicator = document.createElement('div');
+    indicator.className = 'hazz-suit-badge';
+    indicator.style.color = HAZZ_SUIT_COLORS[gs.currentSuit];
+    let badgeHTML = '<span class="suit-dot" style="background:' + HAZZ_SUIT_COLORS[gs.currentSuit] + '"></span><span>' + t('mpCurrentSuit') + ': ' + t(HAZZ_SUIT_LABELS[gs.currentSuit]) + '</span>';
+    if (gs.skipCounter > 0) badgeHTML += '<span class="badge-skip">⊘ ' + t('hazz2SkipPill', { n: gs.skipCounter }) + '</span>';
+    if (gs.drawCounter > 0) badgeHTML += '<span class="badge-draw">✎ ' + t('hazz2DrawPill', { n: 2 * gs.drawCounter }) + '</span>';
+    indicator.innerHTML = badgeHTML;
+    ta.appendChild(indicator);
+  } else {
+    // Kanza/Ronda: show all table cards
+    for (const c of gs.table) {
+      const d = document.createElement('div'); d.className = 'cd deal-table';
+      d.innerHTML = '<img src="' + c.img + '" alt="" draggable="false">';
+      ta.appendChild(d);
+    }
+  }
+
+  // Player hand
+  const ph = document.getElementById('phand'); ph.innerHTML = '';
+  const drawBtnWrap = document.getElementById('drawBtnWrap');
+
+  if (state.mode === 'hazz2') {
+    if (isMyTurn) {
+      const counterActive = gs.skipCounter > 0 || gs.drawCounter > 0;
+      // For hazz2 we need to determine which cards are playable client-side
+      const playableIdx = [];
+      for (let i = 0; i < gs.myHand.length; i++) {
+        if (mpHazz2CanPlay(gs.myHand[i], gs)) playableIdx.push(i);
+      }
+      if (counterActive) {
+        if (playableIdx.length === 0) {
+          drawBtnWrap.style.display = 'none';
+          // Auto-apply penalty
+          if (!window._mpPenaltyPending) {
+            window._mpPenaltyPending = true;
+            setTimeout(() => { MP.applyPenalty(); window._mpPenaltyPending = false; }, 600);
+          }
+        } else {
+          drawBtnWrap.style.display = 'none';
+        }
+      } else {
+        drawBtnWrap.style.display = 'block';
+        const btn = document.getElementById('drawBtn');
+        btn.textContent = t('hazz2DrawBtn');
+      }
+      for (let i = 0; i < gs.myHand.length; i++) {
+        const c = gs.myHand[i], d = document.createElement('div');
+        const canPlay = mpHazz2CanPlay(c, gs);
+        d.className = 'cd' + (canPlay ? ' playable' : '');
+        d.innerHTML = '<img src="' + c.img + '" alt="" draggable="false">';
+        if (canPlay) (function (idx) { d.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); onMpHazz2PlayCard(idx); }); })(i);
+        ph.appendChild(d);
+      }
+    } else {
+      drawBtnWrap.style.display = 'none';
+      for (let i = 0; i < gs.myHand.length; i++) {
+        const c = gs.myHand[i], d = document.createElement('div');
+        d.className = 'cd';
+        d.innerHTML = '<img src="' + c.img + '" alt="" draggable="false">';
+        ph.appendChild(d);
+      }
+    }
+  } else {
+    // Kanza/Ronda — all cards playable on your turn
+    drawBtnWrap.style.display = 'none';
+    for (let i = 0; i < gs.myHand.length; i++) {
+      const c = gs.myHand[i], d = document.createElement('div');
+      d.className = 'cd' + (isMyTurn ? ' playable' : '');
+      d.innerHTML = '<img src="' + c.img + '" alt="" draggable="false">';
+      if (isMyTurn) (function (idx) { d.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); onMpPlayCard(idx); }); })(i);
+      ph.appendChild(d);
+    }
+  }
+
+  // Message
+  if (gs.phase === 'end') {
+    const won = gs.winner === myP;
+    setMsg(won ? t('mpYouWin') : t('mpYouLose'), won ? 'cap' : 'nocap');
+    mpShowEndModal(gs, state);
+  } else if (gs.phase === 'match') {
+    setMsg(t('matchEnd'), 'turn');
+    mpShowEndModal(gs, state);
+  } else if (gs.phase === 'roundEnd') {
+    setMsg(t('roundEnd'), 'turn');
+    mpShowEndModal(gs, state);
+  } else if (isMyTurn) {
+    setMsg(state.mode === 'hazz2' ? t('hazz2YourTurn') : t('yourTurn'), 'turn');
+  } else {
+    setMsg(state.mode === 'hazz2' ? t('hazz2ComputerTurn').replace('الحاسوب', state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') : (state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') + '...', 'think');
+  }
+
+  // Run safety check
+  if (typeof ensurePlayerHandVisible === 'function') ensurePlayerHandVisible();
+}
+
+// Hazz 2 client-side playability check (mirror of server logic)
+function mpHazz2CanPlay(card, gs) {
+  if (gs.drawCounter > 0) return card.value === 2;
+  if (gs.skipCounter > 0) return card.value === 1;
+  const top = gs.table[gs.table.length - 1];
+  return card.suit === gs.currentSuit || card.value === top.value;
+}
+
+async function onMpPlayCard(ci) {
+  const gs = mpGameState;
+  if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
+  const card = gs.myHand[ci];
+  if (!card) return;
+  sCard();
+  // Check if there are multiple capture options (Kanza 15)
+  try {
+    const options = await MP.requestCaptureOptions(ci);
+    if (options.length > 1) {
+      mpShowCaptureChoice(ci, options);
+      return;
+    }
+    MP.playCard(ci, options.length === 1 ? options[0] : null);
+  } catch (e) {
+    // Fallback: just play without chosen cap
+    MP.playCard(ci, null);
+  }
+}
+
+function mpShowCaptureChoice(ci, options) {
+  const m = document.getElementById('capM'), o = document.getElementById('capOpts');
+  o.innerHTML = '';
+  options.forEach(cap => {
+    const opt = document.createElement('div'); opt.className = 'copt';
+    let h = '<span style="color:#D4AF37;font-weight:bold">' + t('mpCaptureWith') + ':</span> ';
+    for (const c of cap) h += '<div class="mcd"><img src="' + c.img + '" alt=""></div>';
+    opt.innerHTML = h;
+    opt.addEventListener('click', function () {
+      m.classList.add('hidden');
+      MP.playCard(ci, cap);
+    });
+    o.appendChild(opt);
+  });
+  m.classList.remove('hidden');
+}
+
+async function onMpHazz2PlayCard(ci) {
+  const gs = mpGameState;
+  if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
+  const card = gs.myHand[ci];
+  if (!card || !mpHazz2CanPlay(card, gs)) return;
+  sCard();
+  if (card.value === 7) {
+    // Prompt for suit choice
+    hazz2Choice = { ci };
+    showSuitChooserMp();
+    return;
+  }
+  MP.playCard(ci, null);
+}
+
+function showSuitChooserMp() {
+  const m = document.getElementById('suitM');
+  const o = document.getElementById('suitOpts');
+  o.innerHTML = '';
+  HAZZ_SUITS.forEach(suit => {
+    const opt = document.createElement('div');
+    opt.className = 'suit-opt';
+    opt.innerHTML = '<div class="suit-circle" style="background:' + HAZZ_SUIT_COLORS[suit] + ';color:' + HAZZ_SUIT_COLORS[suit] + '"></div><div class="suit-nm">' + t(HAZZ_SUIT_LABELS[suit]) + '</div>';
+    opt.addEventListener('click', function () {
+      m.classList.add('hidden');
+      const ci = hazz2Choice.ci;
+      hazz2Choice = null;
+      MP.playCard(ci, null, suit);
+    });
+    o.appendChild(opt);
+  });
+  m.classList.remove('hidden');
+}
+
+// Override onDrawCard for multiplayer
+function onMpDrawCard() {
+  if (!mpGameState || !mpGameState.isMyTurn) return;
+  if (gameMode !== 'hazz2') return;
+  if (mpGameState.skipCounter > 0 || mpGameState.drawCounter > 0) return;
+  sCard();
+  MP.drawCard();
+}
+
+function mpShowEndModal(gs, state) {
+  const myP = MP.getMyPlayer();
+  const endC = document.getElementById('endC');
+  const endM = document.getElementById('endM');
+  let h = '';
+  if (gs.phase === 'end') {
+    // Hazz 2 — winner is set
+    const won = gs.winner === myP;
+    if (won) { sWin(); confetti(); } else sLose();
+    h = '<h2>' + (won ? t('mpYouWin') : t('mpYouLose')) + '</h2><div class="rsec">';
+    h += '<div class="wtxt ' + (won ? 'pw' : 'cw') + '">' + (won ? t('hazz2Win') : t('hazz2Lose')) + '</div>';
+    h += '<h3>' + t('mpFinalScore') + '</h3><div class="rscores">';
+    h += '<div class="rpl' + (won ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + (myP === 'p1' ? gs.myHand.length : gs.oppHandCount) + '</div></div>';
+    h += '<div class="rpl' + (!won ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + (myP === 'p1' ? gs.oppHandCount : gs.myHand.length) + '</div></div></div>';
+    h += '</div><button class="mbtn" onclick="MP.restart()">' + t('mpPlayAgain') + '</button>';
+  } else if (gs.phase === 'match') {
+    const myTotal = gs.myTotal;
+    const oppTotal = gs.oppTotal;
+    const won = myTotal > oppTotal;
+    const draw = myTotal === oppTotal;
+    if (won) { sWin(); confetti(); } else sLose();
+    h = '<h2>' + t('matchEnd') + '</h2><div class="rsec">';
+    if (won) h += '<div class="wtxt pw">' + t('mpYouWin') + '</div>';
+    else if (draw) h += '<div class="wtxt dw">' + t('mpDraw') + '</div>';
+    else h += '<div class="wtxt cw">' + t('mpYouLose') + '</div>';
+    h += '<h3>' + t('mpFinalScore') + '</h3><div class="rscores">';
+    h += '<div class="rpl' + (won ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + myTotal + '</div></div>';
+    h += '<div class="rpl' + (!won && !draw ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + oppTotal + '</div></div></div>';
+    h += '</div><button class="mbtn" onclick="MP.restart()">' + t('mpPlayAgain') + '</button>';
+  } else if (gs.phase === 'roundEnd') {
+    h = '<h2>' + t('mpRoundResult', { n: gs.round }) + '</h2><div class="rsec"><div class="rscores">';
+    h += '<div class="rpl' + (gs.myRoundScore > gs.oppRoundScore ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + gs.myRoundScore + '</div></div>';
+    h += '<div class="rpl' + (gs.oppRoundScore > gs.myRoundScore ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + gs.oppRoundScore + '</div></div></div>';
+    h += '</div>';
+    if (MP.getMyPlayer() === 'p1') {
+      h += '<button class="mbtn" onclick="MP.nextRound()">' + t('mpNextRound') + '</button>';
+    } else {
+      h += '<p style="text-align:center;color:var(--text-d);font-size:.85rem;margin-top:10px">' + t('mpHostWaiting') + '</p>';
+    }
+  }
+  endC.innerHTML = h;
+  endM.classList.remove('hidden');
+}
+
+// ============================================================
+// CHAT UI HANDLERS
+// ============================================================
+function toggleChat() {
+  const panel = document.getElementById('chatPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    MP.resetUnread();
+    mpScrollChatToBottom();
+    setTimeout(() => document.getElementById('chatInput').focus(), 100);
+  }
+}
+
+function toggleEmojiBar() {
+  const bar = document.getElementById('chatEmojiBar');
+  if (bar.classList.contains('hidden')) {
+    // Populate emojis on first open
+    if (bar.children.length === 0) {
+      const emojis = ['😀','😂','😍','🤣','😊','😉','😎','🤔','😅','😁','🙂','😉','😇','🥰','😘','😜','🤩','🥳','😢','😭','😡','🤯','😱','🥺','😤','🙄','😴','🤐','👍','👎','👏','🙌','🙏','💪','🤝','✌️','👌','👋','🤙','💪','❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','❣️','💕','💞','💓','💗','💖','💘','💝','🏆','🥇','🥈','🥉','🏅','🎖️','🎉','🎊','🎈','🎁','✨','⭐','🌟','💫','🔥','💯','♠️','♥️','♦️','♣️','🃏','🎴','🀄','🎲','🤞','✋','👊','💪','🎯','💎','💰','🪙','⚡','💥','💫',];
+      emojis.forEach(em => {
+        const btn = document.createElement('button');
+        btn.className = 'chat-emoji';
+        btn.textContent = em;
+        btn.addEventListener('click', () => {
+          const input = document.getElementById('chatInput');
+          input.value += em;
+          input.focus();
+        });
+        bar.appendChild(btn);
+      });
+    }
+    bar.classList.remove('hidden');
+  } else {
+    bar.classList.add('hidden');
+  }
+}
+
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  MP.sendChat(text);
+  // Show my own message immediately
+  input.value = '';
+}
+
+function mpAppendChatMsg(msg, skipScroll) {
+  const body = document.getElementById('chatBody');
+  if (!body) return;
+  // Deduplicate by id
+  if (body.querySelector('[data-msg-id="' + msg.id + '"]')) return;
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + (msg.name === 'System' ? 'system' : (msg.from === MP.getMyPlayer() ? 'me' : 'opp'));
+  div.setAttribute('data-msg-id', msg.id);
+  if (msg.name !== 'System') {
+    div.innerHTML = '<div class="chat-msg-name">' + escapeHtml(msg.name) + '</div>' +
+      '<div>' + escapeHtml(msg.text) + '</div>' +
+      '<div class="chat-msg-time">' + new Date(msg.ts).toLocaleTimeString() + '</div>';
+  } else {
+    div.textContent = msg.text;
+  }
+  body.appendChild(div);
+  if (!skipScroll) mpScrollChatToBottom();
+}
+
+function mpScrollChatToBottom() {
+  const body = document.getElementById('chatBody');
+  if (body) body.scrollTop = body.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Typing indicator
+let _mpTypingTimer = null;
+function mpOnChatInput() {
+  if (_mpTypingTimer) return;
+  _mpTypingTimer = setTimeout(() => { _mpTypingTimer = null; }, 1500);
+  MP.sendTyping();
+}
+
+// Hook into onDrawCard — override the global function when in multiplayer mode
+const _origOnDrawCard = onDrawCard;
+onDrawCard = function () {
+  if (window._mpInGame) return onMpDrawCard();
+  return _origOnDrawCard.apply(this, arguments);
+};
+
+// Hook into leaveGame — disconnect from multiplayer if active
+const _origLeaveGame = leaveGame;
+leaveGame = function () {
+  if (window._mpInGame || MP.getRoomCode()) {
+    MP.leaveRoom();
+    window._mpInGame = false;
+    document.getElementById('chatToggle').style.display = 'none';
+    document.getElementById('chatPanel').classList.remove('open');
+    document.getElementById('chatBody').innerHTML = '';
+  }
+  return _origLeaveGame.apply(this, arguments);
+};
+
 function setLang(l){
   lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.lang=l;
   document.querySelectorAll('.lbtn').forEach(b=>{b.classList.toggle('on',(l==='ar'&&b.textContent==='العربية')||(l==='fr'&&b.textContent==='Français')||(l==='en'&&b.textContent==='English'))});
