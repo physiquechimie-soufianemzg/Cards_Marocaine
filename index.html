@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Kanza 15 - Moroccan Card Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Cinzel:wght@500;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#D4AF37;--gold-l:#F5E6A3;--gold-d:#b8942e;
+  --bg1:#0a1628;--bg2:#1a2a4a;--bg3:#0d1f3c;
+  --felt1:#0d3818;--felt2:#1a5028;--felt-d:#062810;
+  --text:#f5e6c8;--text-d:#c4a86a;
+  --red:#c8102e;--red-l:#e74c3c;--green:#4ade80;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Cairo','Amiri',Tahoma,Arial,sans-serif;-webkit-tap-highlight-color:transparent;user-select:none}
+body{
+  background:radial-gradient(ellipse at center,var(--bg2) 0%,var(--bg1) 60%,var(--bg3) 100%);
+  color:var(--text);
+}
+body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(212,175,55,0.05)' stroke-width='0.8'%3E%3Cpath d='M40 5L45 20L60 20L48 30L52 45L40 36L28 45L32 30L20 20L35 20Z'/%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:0}
+#app{width:100%;height:100%;display:flex;flex-direction:column;position:relative;z-index:1}
+
+/* ===== WELCOME ===== */
+.welcome{position:fixed;inset:0;background:radial-gradient(ellipse at center,var(--bg2),var(--bg1) 60%,var(--bg3));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:18px;padding:20px;overflow-y:auto}
+.welcome.hidden{display:none}
+.wtitle{
+  font-family:'Cinzel',serif;font-size:3.5rem;font-weight:900;
+  background:linear-gradient(135deg,var(--gold-d) 0%,var(--gold) 30%,var(--gold-l) 50%,var(--gold) 70%,var(--gold-d) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 2px 20px rgba(212,175,55,0.4);
+  letter-spacing:2px;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+.wsub{font-size:1.4rem;color:var(--text-d);font-weight:600;font-family:'Cairo',sans-serif}
+.wcards{display:flex;gap:10px;margin:12px 0;perspective:600px}
+.wcards img{width:70px;height:105px;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,0.5),0 0 15px rgba(212,175,55,0.2);animation:wf 3s ease-in-out infinite;border:2px solid rgba(212,175,55,0.3)}
+.wcards img:nth-child(2){animation-delay:.3s}.wcards img:nth-child(3){animation-delay:.6s}.wcards img:nth-child(4){animation-delay:.9s}
+@keyframes wf{0%,100%{transform:translateY(0) rotateY(0)}50%{transform:translateY(-12px) rotateY(8deg)}}
+.lbtns{display:flex;gap:10px;margin:12px 0}
+.lbtn{padding:9px 22px;border:2px solid var(--gold);background:transparent;color:var(--gold);border-radius:25px;cursor:pointer;font-size:.95rem;font-weight:600;transition:all .3s;font-family:'Cairo',sans-serif}
+.lbtn:hover,.lbtn.on{background:var(--gold);color:var(--bg1);box-shadow:0 4px 15px rgba(212,175,55,0.4)}
+.round-choice{display:flex;flex-direction:column;align-items:center;gap:8px;margin:5px 0}
+.round-choice-label{color:var(--text-d);font-size:.95rem;font-weight:600}
+.round-btns{display:flex;gap:10px}
+.rbtn{padding:10px 22px;border:2px solid rgba(212,175,55,0.5);background:rgba(212,175,55,0.05);color:var(--text);border-radius:15px;cursor:pointer;font-size:1rem;font-weight:700;transition:all .3s;font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:90px}
+.rbtn:hover{border-color:var(--gold);background:rgba(212,175,55,0.1)}
+.rbtn.on{background:var(--gold);color:var(--bg1);border-color:var(--gold);box-shadow:0 4px 15px rgba(212,175,55,0.5)}
+.rbtn-sub{font-size:.65rem;opacity:.8;font-weight:400}
+.mode-choice{display:flex;flex-direction:column;align-items:center;gap:8px;margin:5px 0}
+.mode-choice-label{color:var(--text-d);font-size:.95rem;font-weight:600}
+.mode-btns{display:flex;gap:10px}
+.mbtn-opt{padding:12px 22px;border:2px solid rgba(212,175,55,0.5);background:rgba(212,175,55,0.05);color:var(--text);border-radius:15px;cursor:pointer;font-size:1rem;font-weight:700;transition:all .3s;font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:120px}
+.mbtn-opt:hover{border-color:var(--gold);background:rgba(212,175,55,0.1);transform:translateY(-2px)}
+.mbtn-opt.on{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--bg1);border-color:var(--gold);box-shadow:0 4px 18px rgba(212,175,55,0.5)}
+.mbtn-opt-sub{font-size:.65rem;opacity:.85;font-weight:400}
+.mode-badge{display:inline-block;padding:2px 10px;border-radius:10px;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.4);color:var(--gold);font-size:.7rem;font-weight:700;margin-right:8px;font-family:'Cairo',sans-serif}
+.ultra-badge{display:inline-block;padding:2px 10px;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-size:.65rem;font-weight:900;margin-right:6px;font-family:'Cairo',sans-serif;box-shadow:0 0 12px rgba(124,58,237,0.6);text-transform:uppercase;letter-spacing:.5px}
+.scoring-choice{display:flex;flex-direction:column;align-items:center;gap:8px;margin:5px 0}
+.scoring-choice-label{color:var(--text-d);font-size:.95rem;font-weight:600}
+.scoring-btns{display:flex;gap:10px}
+.sbtn-opt{padding:10px 22px;border:2px solid rgba(212,175,55,0.5);background:rgba(212,175,55,0.05);color:var(--text);border-radius:15px;cursor:pointer;font-size:.95rem;font-weight:700;transition:all .3s;font-family:'Cairo',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:120px}
+.sbtn-opt:hover{border-color:var(--gold);background:rgba(212,175,55,0.1);transform:translateY(-2px)}
+.sbtn-opt.on{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--bg1);border-color:var(--gold);box-shadow:0 4px 18px rgba(212,175,55,0.5)}
+.sbtn-opt.ultra-on{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border-color:#a855f7;box-shadow:0 4px 18px rgba(124,58,237,0.6)}
+.sbtn-opt-sub{font-size:.65rem;opacity:.85;font-weight:400}
+.ultra-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.78rem;font-family:'Cairo',sans-serif}
+.ultra-table th,.ultra-table td{padding:4px 6px;text-align:center;border:1px solid rgba(212,175,55,0.2)}
+.ultra-table th{background:rgba(212,175,55,0.15);color:var(--gold);font-weight:700}
+.ultra-table td{color:var(--text-d)}
+.ultra-table .v{color:var(--text);font-weight:700}
+.ultra-table .pts{color:var(--gold);font-weight:700;font-family:'Cinzel',serif}
+.sbtn{padding:16px 55px;background:linear-gradient(135deg,var(--gold-d),var(--gold) 50%,var(--gold-l));color:var(--bg1);border:none;border-radius:35px;font-size:1.4rem;font-weight:900;cursor:pointer;transition:all .3s;box-shadow:0 6px 25px rgba(212,175,55,0.4),inset 0 1px 2px rgba(255,255,255,0.3);font-family:'Cairo',sans-serif;letter-spacing:1px}
+.sbtn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 10px 30px rgba(212,175,55,0.6),inset 0 1px 2px rgba(255,255,255,0.4)}
+.sbtn:active{transform:translateY(0) scale(.98)}
+.vslbl{color:#8899aa;font-size:.85rem}
+
+/* ===== HEADER ===== */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 15px;background:linear-gradient(180deg,rgba(0,0,0,0.4),rgba(0,0,0,0.2));border-bottom:1px solid rgba(212,175,55,0.25);flex-shrink:0;min-height:48px;backdrop-filter:blur(6px)}
+.htitle{font-family:'Cinzel',serif;font-size:clamp(1rem,3vw,1.4rem);font-weight:700;color:var(--gold);text-shadow:0 2px 8px rgba(212,175,55,0.3);letter-spacing:1px}
+.hbtns{display:flex;gap:6px;align-items:center}
+.hbtn{padding:5px 12px;border:1px solid rgba(212,175,55,0.4);background:rgba(0,0,0,0.2);color:var(--gold);border-radius:18px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .2s;font-family:'Cairo',sans-serif}
+.hbtn:hover{background:rgba(212,175,55,0.15);transform:translateY(-1px)}
+.hbtn.leave{border-color:rgba(232,93,93,0.55);color:#f87171}
+.hbtn.leave:hover{background:rgba(248,113,113,0.15);color:#ff8585}
+.lsel{padding:4px 8px;border:1px solid rgba(212,175,55,0.4);background:rgba(10,22,40,0.8);color:var(--gold);border-radius:18px;cursor:pointer;font-size:.78rem;font-family:'Cairo',sans-serif}
+
+/* ===== HAZZ 2 INDICATORS ===== */
+.hazz-status{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:5px 10px;margin:2px 0;flex-shrink:0;font-size:.82rem;font-weight:700;font-family:'Cairo',sans-serif}
+.hazz-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.3)}
+.hazz-pill.skip{background:rgba(124,58,237,0.18);border-color:rgba(167,139,250,0.55);color:#c4b5fd;box-shadow:0 0 12px rgba(124,58,237,0.3)}
+.hazz-pill.draw{background:rgba(220,38,38,0.18);border-color:rgba(248,113,113,0.55);color:#fca5a5;box-shadow:0 0 12px rgba(220,38,38,0.3)}
+.hazz-pill.suit{background:rgba(212,175,55,0.18);border-color:rgba(212,175,55,0.55);color:var(--gold-l)}
+.hazz-pill .pill-ico{font-size:1rem;line-height:1}
+.suit-dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;border:1px solid rgba(255,255,255,0.4);box-shadow:0 0 6px currentColor}
+
+/* ===== SUIT CHOOSER ===== */
+.suit-opts{display:flex;justify-content:center;gap:14px;margin:18px 0;flex-wrap:wrap}
+.suit-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 18px;border:2px solid rgba(212,175,55,0.3);border-radius:14px;cursor:pointer;transition:all .2s;background:rgba(0,0,0,0.25);min-width:80px}
+.suit-opt:hover{border-color:var(--gold);background:rgba(212,175,55,0.12);transform:translateY(-3px)}
+.suit-opt .suit-circle{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 12px currentColor}
+.suit-opt .suit-nm{font-size:.85rem;font-weight:700;color:var(--text);font-family:'Cairo',sans-serif}
+
+/* ===== DRAW BUTTON (HAZZ 2 — prominent call-to-action) ===== */
+#drawBtnWrap{padding:2px 0;flex-shrink:0;text-align:center}
+.draw-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  margin:0 auto;padding:7px 22px;
+  background:linear-gradient(135deg,#4c566a,#5e81ac);
+  color:#fff;border:2px solid rgba(212,175,55,0.5);
+  border-radius:24px;font-size:clamp(.82rem,2vw,.98rem);font-weight:700;
+  cursor:pointer;transition:all .25s;
+  font-family:'Cairo',sans-serif;
+  box-shadow:0 3px 10px rgba(0,0,0,0.3);
+}
+.draw-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(94,129,172,0.5);background:linear-gradient(135deg,#5e81ac,#4c566a)}
+.draw-btn:active{transform:translateY(0)}
+
+/* ===== TURN ARROW (HAZZ 2) ===== */
+.turn-arrow{display:inline-block;font-size:.95rem;margin:0 6px;opacity:.7}
+
+/* ===== GAME AREA ===== */
+.garea{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:5px 8px;gap:4px}
+/* Safety fallback: if content doesn't fit, allow scrolling inside game area */
+.garea.scrollable{overflow-y:auto;overflow-x:hidden}
+
+/* COMPUTER HAND */
+.chand{display:flex;justify-content:center;gap:4px;padding:3px;min-height:50px;flex-shrink:0;flex-wrap:wrap}
+.chand .cd{width:44px;height:66px}
+
+/* SCORE BAR */
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.15));border:1px solid rgba(212,175,55,0.2);border-radius:12px;margin:2px 0;flex-shrink:0;font-size:.85rem;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.sitem{display:flex;align-items:center;gap:6px;flex-direction:column;gap:2px}
+.sitem-top{display:flex;align-items:center;gap:6px}
+.slbl{color:#8899aa;font-size:.75rem;font-weight:600}
+.sval{font-weight:900;color:var(--gold);font-size:1.1rem;font-family:'Cinzel',serif}
+.rbadge{background:linear-gradient(135deg,rgba(212,175,55,0.2),rgba(212,175,55,0.1));padding:4px 12px;border-radius:12px;color:var(--gold);font-weight:700;font-size:.85rem;border:1px solid rgba(212,175,55,0.3);font-family:'Cairo',sans-serif}
+.capinfo{font-size:.7rem;color:#6b7a8a;font-weight:600}
+
+/* TABLE - FELT */
+.tarea{
+  flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:8px;padding:12px;min-height:110px;position:relative;
+  border-radius:18px;
+  background:radial-gradient(ellipse at center,var(--felt2) 0%,var(--felt1) 50%,var(--felt-d) 100%);
+  border:3px solid rgba(212,175,55,0.35);
+  box-shadow:inset 0 4px 20px rgba(0,0,0,0.5),0 4px 20px rgba(0,0,0,0.4),0 0 30px rgba(212,175,55,0.1);
+  margin:3px 0;overflow-y:auto;
+}
+.tarea::before{content:'';position:absolute;inset:0;border-radius:15px;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 2L23 10L31 10L25 15L27 23L20 18L13 23L15 15L9 10L17 10Z' fill='none' stroke='rgba(212,175,55,0.08)' stroke-width='0.4'/%3E%3C/svg%3E");pointer-events:none}
+.tempty{color:rgba(212,175,55,0.4);font-size:1rem;text-align:center;width:100%;font-style:italic;font-weight:600}
+
+/* MESSAGE */
+.msg{text-align:center;padding:6px 10px;font-size:clamp(.8rem,2vw,1rem);color:var(--text-d);min-height:30px;flex-shrink:0;transition:all .3s;font-weight:600;font-family:'Cairo',sans-serif}
+.msg.cap{color:var(--green);font-weight:700;text-shadow:0 0 10px rgba(74,222,128,0.4)}
+.msg.nocap{color:#f87171}
+.msg.turn{color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(212,175,55,0.3)}
+.msg.think{color:#9ca3af;font-style:italic}
+
+/* PLAYER HAND */
+.phand{display:flex;justify-content:center;gap:6px;padding:6px;min-height:90px;flex-shrink:0;flex-wrap:wrap;align-items:flex-end}
+/* When 8+ cards (Kanza/Ronda), switch to single-row overlap layout (avoids wrapping) */
+.phand:has(> .cd:nth-child(8)){flex-wrap:nowrap;gap:0;overflow-x:auto;scrollbar-width:thin}
+.phand:has(> .cd:nth-child(8)) .cd{margin-left:-25px}
+.phand:has(> .cd:nth-child(8)) .cd:first-child{margin-left:0}
+.phand .cd.playable:hover{z-index:10}
+
+/* HAZZ 2 PLAYER HAND: always use overlap so 7+ cards fit on mobile.
+   Uses negative margin between cards but keeps centering via inline-block trick.
+   flex-wrap:nowrap prevents cards from wrapping to second row. */
+.hazz2-mode .phand{flex-wrap:nowrap;gap:0;overflow-x:auto;scrollbar-width:thin;padding:8px 4px;justify-content:center;min-height:95px;-webkit-overflow-scrolling:touch}
+.hazz2-mode .phand .cd{margin-left:-20px;flex-shrink:0}
+.hazz2-mode .phand .cd:first-child{margin-left:0}
+.hazz2-mode .phand .cd.playable:hover{z-index:10;transform:translateY(-15px) scale(1.05);margin-left:0;margin-right:-20px}
+
+/* CARD */
+.cd{
+  position:relative;border-radius:8px;overflow:hidden;flex-shrink:0;
+  box-shadow:0 3px 10px rgba(0,0,0,0.4),0 1px 3px rgba(0,0,0,0.3);
+  border:2px solid rgba(255,255,255,0.1);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
+  background:#1a2a4a;
+}
+.cd img{width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none;user-select:none;display:block}
+.cd.playable{cursor:pointer;border-color:rgba(212,175,55,0.3)}
+.cd.playable:hover{transform:translateY(-15px) scale(1.05);box-shadow:0 12px 25px rgba(212,175,55,0.35),0 4px 12px rgba(0,0,0,0.5);border-color:var(--gold)}
+.cd.playable:active{transform:translateY(-8px) scale(1.02)}
+.cd.playable::after{content:'';position:absolute;inset:0;border-radius:6px;animation:pg 2s infinite;pointer-events:none}
+@keyframes pg{0%,100%{box-shadow:inset 0 0 10px rgba(212,175,55,0.15)}50%{box-shadow:inset 0 0 18px rgba(212,175,55,0.4)}}
+
+/* Card animations */
+.cd.deal{animation:dealCard .5s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes dealCard{0%{opacity:0;transform:translateY(-100px) rotateZ(180deg) scale(.5)}100%{opacity:1;transform:translateY(0) rotateZ(0) scale(1)}}
+.cd.deal-table{animation:dealTable .4s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes dealTable{0%{opacity:0;transform:translateY(-80px) scale(.5)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.cd.play-out{animation:playOut .4s ease-in forwards}
+@keyframes playOut{0%{transform:translateY(0)}50%{transform:translateY(-30px) scale(1.1)}100%{transform:translateY(0);opacity:1}}
+.cd.capture-flash{animation:capFlash .6s ease-out}
+@keyframes capFlash{0%{box-shadow:0 0 0 rgba(74,222,128,0)}50%{box-shadow:0 0 30px rgba(74,222,128,0.8),0 0 60px rgba(74,222,128,0.4)}100%{box-shadow:0 3px 10px rgba(0,0,0,0.4)}}
+
+/* DECK INFO */
+.dinfo{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.72rem;color:#6b7a8a;padding:2px 0;flex-shrink:0;font-weight:600}
+.dicon{width:18px;height:26px;background:linear-gradient(135deg,#2a1a4a,#1a2a4a);border:1px solid rgba(212,175,55,0.3);border-radius:3px;display:inline-block;position:relative}
+.dicon::after{content:'';position:absolute;inset:2px;border:1px solid rgba(212,175,55,0.2);border-radius:2px}
+
+/* ===== MODAL ===== */
+.mover{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(5px);animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.mover.hidden{display:none}
+.modal{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:2px solid rgba(212,175,55,0.4);border-radius:22px;padding:25px;max-width:450px;width:92%;max-height:85vh;overflow-y:auto;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(212,175,55,0.15);animation:modalIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(40px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal h2{text-align:center;color:var(--gold);margin-bottom:14px;font-size:1.5rem;font-family:'Cinzel',serif;font-weight:700;text-shadow:0 2px 8px rgba(212,175,55,0.3)}
+.modal h3{color:var(--gold);margin:12px 0 5px;font-size:1.05rem;font-family:'Cairo',sans-serif;font-weight:700}
+.modal p,.modal li{font-size:.88rem;line-height:1.6;color:var(--text-d);font-family:'Cairo',sans-serif}
+.modal ul{padding-right:20px;padding-left:0}
+[dir="ltr"] .modal ul{padding-left:20px;padding-right:0}
+.mbtn{display:block;margin:20px auto 0;padding:12px 35px;background:linear-gradient(135deg,var(--gold-d),var(--gold) 50%,var(--gold-l));color:var(--bg1);border:none;border-radius:28px;font-size:1.1rem;font-weight:900;cursor:pointer;transition:all .3s;font-family:'Cairo',sans-serif;letter-spacing:.5px;box-shadow:0 4px 15px rgba(212,175,55,0.3)}
+.mbtn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 6px 22px rgba(212,175,55,0.5)}
+.ctags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.ctag{background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.35);padding:3px 9px;border-radius:10px;font-size:.82rem;color:var(--gold);font-weight:600;font-family:'Cairo',sans-serif}
+
+/* CAPTURE CHOICE */
+.copts{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.copt{display:flex;align-items:center;gap:8px;padding:10px;border:2px solid rgba(212,175,55,0.25);border-radius:12px;cursor:pointer;transition:all .2s;background:rgba(0,0,0,0.25);flex-wrap:wrap}
+.copt:hover{border-color:var(--gold);background:rgba(212,175,55,0.1);transform:translateX(3px)}
+.mcd{width:42px;height:62px;border-radius:5px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.mcd img{width:100%;height:100%;object-fit:cover}
+
+/* RESULT */
+.rsec{text-align:center;margin:14px 0}
+.rscores{display:flex;justify-content:center;gap:30px;margin:14px 0}
+.rpl{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 15px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(212,175,55,0.2)}
+.rpl.win{background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.4);box-shadow:0 0 20px rgba(74,222,128,0.2)}
+.rpl .nm{font-size:.85rem;color:#8899aa;font-weight:600}
+.rpl .sc{font-size:2.2rem;font-weight:900;color:var(--gold);font-family:'Cinzel',serif}
+.rpl.win .sc{color:var(--green);text-shadow:0 0 15px rgba(74,222,128,0.5)}
+.rhist{margin:10px 0}
+.rrow{display:flex;justify-content:center;gap:15px;padding:4px;font-size:.85rem;border-bottom:1px solid rgba(212,175,55,0.1);font-weight:600}
+.wtxt{font-size:1.6rem;font-weight:900;margin:10px 0;font-family:'Cinzel',serif;letter-spacing:1px}
+.wtxt.pw{color:var(--green);text-shadow:0 0 20px rgba(74,222,128,0.4)}
+.wtxt.cw{color:#f87171;text-shadow:0 0 20px rgba(248,113,113,0.4)}
+.wtxt.dw{color:var(--gold);text-shadow:0 0 20px rgba(212,175,55,0.4)}
+
+/* ===== CAPTURE PREVIEW OVERLAY ===== */
+.cap-preview{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:25px;backdrop-filter:blur(8px);animation:fadeIn .3s}
+.cap-preview.hidden{display:none}
+.cap-title{font-size:1.8rem;font-weight:900;color:var(--gold);font-family:'Cinzel',serif;text-shadow:0 0 25px rgba(212,175,55,0.6);animation:pulseT 1.5s infinite}
+.cap-title.player{color:var(--green);text-shadow:0 0 25px rgba(74,222,128,0.6)}
+.cap-title.computer{color:#f87171;text-shadow:0 0 25px rgba(248,113,113,0.6)}
+@keyframes pulseT{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.cap-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:90vw}
+.cap-cards .cd{width:80px;height:120px;animation:capCardIn .5s cubic-bezier(.34,1.56,.64,1) backwards}
+@keyframes capCardIn{0%{opacity:0;transform:translateY(-50px) rotateZ(180deg) scale(.3)}100%{opacity:1;transform:translateY(0) rotateZ(0) scale(1)}}
+.cap-info{font-size:1.1rem;color:var(--text-d);font-weight:600}
+.cap-pts{color:var(--gold);font-weight:900;font-size:1.4rem;font-family:'Cinzel',serif}
+
+/* ===== TURN INDICATOR ===== */
+.turn-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:var(--gold);padding:12px 28px;border-radius:18px;font-size:1.1rem;font-weight:700;z-index:150;pointer-events:none;opacity:0;transition:opacity .4s;border:1px solid rgba(212,175,55,0.4);box-shadow:0 0 30px rgba(212,175,55,0.3)}
+.turn-ind.show{opacity:1;animation:tiPulse 1.5s}
+@keyframes tiPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)}}
+
+/* ===== CONFETTI ===== */
+.confetti{position:fixed;width:10px;height:10px;pointer-events:none;z-index:250}
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* ===== RESPONSIVE: MOBILE (≤480px) ===== */
+@media(max-width:480px){
+  .wtitle{font-size:2.2rem}.wcards img{width:50px;height:75px}
+  .phand .cd{width:55px;height:82px}.chand .cd{width:36px;height:54px}
+  .tarea .cd{width:50px;height:75px}
+  .sbar{font-size:.72rem;padding:4px 8px}
+  .phand{gap:4px;min-height:90px}
+  .cap-cards .cd{width:55px;height:82px}
+  .wtxt{font-size:1.3rem}.rpl .sc{font-size:1.7rem}
+  .modal h2{font-size:1.25rem}.modal p{font-size:.82rem}
+  .rbtn{padding:8px 16px;min-width:75px}
+  /* Hazz 2 specific sizing on mobile */
+  .hazz2-mode .chand .cd{width:34px;height:50px}
+  .hazz2-mode .phand .cd{width:50px;height:75px}
+  .hazz2-mode .tarea .cd{width:80px !important;height:120px !important}
+  .hazz2-mode .phand:has(> .cd:nth-child(8)) .cd{margin-left:-22px}
+  .hazz2-mode .phand{min-height:85px}
+  .hazz2-mode .tarea{padding:6px 10px}
+}
+
+/* ===== RESPONSIVE: TABLET (481px–767px) ===== */
+@media(min-width:481px) and (max-width:767px){
+  .phand .cd{width:72px;height:108px}.chand .cd{width:48px;height:72px}
+  .tarea .cd{width:62px;height:93px}
+  .phand{min-height:115px}
+  .cap-cards .cd{width:75px;height:113px}
+  /* Hazz 2 specific sizing on tablet */
+  .hazz2-mode .chand .cd{width:42px;height:64px}
+  .hazz2-mode .phand .cd{width:62px;height:93px}
+  .hazz2-mode .tarea .cd{width:90px !important;height:135px !important}
+  .hazz2-mode .phand:has(> .cd:nth-child(8)) .cd{margin-left:-26px}
+  .hazz2-mode .tarea{padding:8px 12px}
+}
+
+/* ===== RESPONSIVE: DESKTOP (≥768px) ===== */
+@media(min-width:768px){
+  .phand .cd{width:88px;height:132px}.chand .cd{width:60px;height:90px}
+  .tarea .cd{width:75px;height:113px}
+  .cap-cards .cd{width:100px;height:150px}
+  /* Hazz 2 specific sizing on desktop — smaller than before so player hand fits on short screens */
+  .hazz2-mode .chand .cd{width:46px;height:70px}
+  .hazz2-mode .phand .cd{width:70px;height:105px}
+  .hazz2-mode .tarea .cd{width:100px !important;height:150px !important}
+  .hazz2-mode .phand:has(> .cd:nth-child(8)) .cd{margin-left:-28px}
+  .hazz2-mode .tarea{padding:8px 12px}
+}
+
+/* ===== SHORT SCREENS (height ≤ 750px) — make Hazz 2 layout compact so player hand stays visible ===== */
+@media(max-height:750px){
+  .hazz2-mode .chand .cd{width:38px;height:58px}
+  .hazz2-mode .chand{min-height:40px;padding:2px}
+  .hazz2-mode .phand .cd{width:56px;height:84px}
+  .hazz2-mode .phand{min-height:80px;padding:4px}
+  .hazz2-mode .tarea .cd{width:80px !important;height:120px !important}
+  .hazz2-mode .tarea{padding:6px 10px}
+  .hazz2-mode .sbar{padding:4px 12px;font-size:.78rem}
+  .hazz2-mode .sval{font-size:1.1rem}
+  .hazz2-mode .msg{padding:3px 10px;min-height:24px;font-size:.85rem}
+  .hazz2-mode .dinfo{font-size:.68rem;padding:1px 0}
+  .hazz2-mode .garea{gap:2px;padding:3px 8px}
+  .hazz2-mode .draw-btn{padding:5px 18px;font-size:.85rem}
+  .hazz2-mode .phand:has(> .cd:nth-child(8)) .cd{margin-left:-22px}
+}
+
+/* ===== VERY SHORT SCREENS (height ≤ 600px) ===== */
+@media(max-height:600px){
+  .hazz2-mode .chand .cd{width:32px;height:48px}
+  .hazz2-mode .phand .cd{width:48px;height:72px}
+  .hazz2-mode .tarea .cd{width:66px !important;height:100px !important}
+  .hazz2-mode .tarea{padding:4px 8px}
+  .hazz2-mode .sbar{padding:3px 10px;font-size:.72rem}
+  .hazz2-mode .sval{font-size:1rem}
+  .hazz2-mode .msg{padding:2px 8px;min-height:22px;font-size:.8rem}
+  .hazz2-mode .dinfo{font-size:.65rem}
+  .hazz2-mode .garea{gap:2px;padding:2px 6px}
+  .hazz2-mode .draw-btn{padding:4px 16px;font-size:.8rem}
+  .hazz2-mode .phand{min-height:70px;padding:3px}
+  .hazz2-mode .phand:has(> .cd:nth-child(8)) .cd{margin-left:-18px}
+  .hazz2-mode .hdr{min-height:38px;padding:4px 12px}
+  .hazz2-mode .hbtn{padding:3px 10px;font-size:.72rem}
+}
+
+/* ===== HAZZ 2 MODE LAYOUT ===== */
+/* (Activated when JS adds .hazz2-mode class to <body> or #app.
+   Until then, Kanza/Ronda layout is untouched.) */
+.hazz2-mode .tarea{
+  flex:0 0 auto;flex-direction:column;flex-wrap:nowrap;
+  min-height:auto;padding:10px 12px;gap:6px;
+  align-content:center;
+}
+.hazz2-mode .tarea .cd{
+  /* sized responsively via @media rules above (with !important to override JS inline 90×135) */
+  border-radius:10px;border-width:2px;
+}
+/* Subtle glow on the top card when the current suit differs from the top card suit
+   (i.e. a 7 was just played and the suit changed).
+   The JS currently applies an inline glow; this class is provided as a cleaner
+   replacement — when JS adds .suit-changed to the top card div it will take over. */
+.hazz2-mode .tarea .cd.suit-changed{
+  box-shadow:0 0 25px var(--gold),0 4px 20px rgba(0,0,0,0.4) !important;
+  border-color:var(--gold) !important;
+  animation:suitGlow 1.8s ease-in-out infinite;
+}
+@keyframes suitGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+
+/* ===== HAZZ 2 SUIT BADGE ===== */
+/* Cleaner badge for the current-suit indicator (use when JS adds .hazz-suit-badge class
+   to the indicator div inside .tarea). The plain inline-styled indicator still works
+   because the rules below only apply to the new badge class. */
+.hazz-suit-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border-radius:20px;
+  background:rgba(0,0,0,0.4);
+  border:1px solid rgba(212,175,55,0.3);
+  font-size:.85rem;font-weight:700;
+  margin-top:12px;
+  font-family:'Cairo',sans-serif;
+}
+.hazz-suit-badge .suit-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);box-shadow:0 0 6px currentColor}
+.hazz-suit-badge .badge-skip{color:#c4b5fd;margin-right:8px;font-weight:700}
+.hazz-suit-badge .badge-draw{color:#fca5a5;margin-right:8px;font-weight:700}
+
+/* ===== HAZZ 2 SCORE BAR ===== */
+/* Bigger card-count numbers, smaller caption text. The score bar markup is shared
+   with Kanza/Ronda, so we only retune it inside .hazz2-mode. */
+.hazz2-mode .sbar{padding:5px 14px}
+.hazz2-mode .sval{font-size:1.25rem}
+.hazz2-mode .capinfo{font-size:.72rem}
+.hazz2-mode .chand{padding:2px;min-height:44px}
+.hazz2-mode .msg{padding:4px 10px;min-height:26px}
+.hazz2-mode .dinfo{padding:1px 0}
+.hazz2-mode .garea{gap:3px;padding:4px 8px}
+.hazz2-mode .phand{padding:5px 4px;min-height:90px;gap:4px}
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="welcome" class="welcome">
+  <div class="wtitle">Kanza 15</div>
+  <div class="wsub" data-t="welcomeSubtitle">لعبة الكارطة المغربية</div>
+  <div class="wcards">
+    <img src="cards/1-flouss.png" alt=""><img src="cards/back.png" alt="">
+    <img src="cards/7-syofa.png" alt=""><img src="cards/12-compass.png" alt="">
+  </div>
+  <div class="lbtns">
+    <button class="lbtn" onclick="setLang('en')">English</button>
+    <button class="lbtn" onclick="setLang('fr')">Français</button>
+    <button class="lbtn on" onclick="setLang('ar')">العربية</button>
+  </div>
+  <div class="mode-choice">
+    <div class="mode-choice-label" data-t="modeChoice">اختر نوع اللعبة</div>
+    <div class="mode-btns">
+      <button class="mbtn-opt on" onclick="setMode('kanza')" data-t="modeKanza">كانزا 15<span class="mbtn-opt-sub" data-t="modeKanzaSub">مجموع 15</span></button>
+      <button class="mbtn-opt" onclick="setMode('ronda')" data-t="modeRonda">الروندا<span class="mbtn-opt-sub" data-t="modeRondaSub">كل رقم يأخذ مثيله</span></button>
+      <button class="mbtn-opt" onclick="setMode('hazz2')" data-t="modeHazz2">هز 2<span class="mbtn-opt-sub" data-t="modeHazz2Sub">خلص يدك وربح</span></button>
+    </div>
+  </div>
+  <div class="round-choice">
+    <div class="round-choice-label" data-t="roundChoice">عدد الجولات</div>
+    <div class="round-btns">
+      <button class="rbtn on" onclick="setRounds(1)" data-t="oneRound">جولة واحدة<span class="rbtn-sub" data-t="quick">سريعة</span></button>
+      <button class="rbtn" onclick="setRounds(3)" data-t="threeRounds">3 جولات<span class="rbtn-sub" data-t="full">كاملة</span></button>
+    </div>
+  </div>
+  <div class="scoring-choice">
+    <div class="scoring-choice-label" data-t="scoringChoice">نظام التنقيط</div>
+    <div class="scoring-btns">
+      <button class="sbtn-opt on" onclick="setScoring('classic')" data-t="scoringClassic">عادي<span class="sbtn-opt-sub" data-t="scoringClassicSub">النقاط الافتراضية</span></button>
+      <button class="sbtn-opt" onclick="setScoring('ultra')" data-t="scoringUltra">Ultra<span class="sbtn-opt-sub" data-t="scoringUltraSub">نقاط مضاعفة مبتكرة</span></button>
+    </div>
+  </div>
+  <button class="sbtn" onclick="startGame()" data-t="startGame">ابدأ اللعبة</button>
+  <div class="vslbl" data-t="vsComputer">ضد الحاسوب (صعب)</div>
+</div>
+
+<!-- GAME -->
+<div id="app" style="display:none">
+  <div class="hdr">
+    <div class="htitle">Kanza 15</div>
+    <div class="hbtns">
+      <button class="hbtn" onclick="showRules()" data-t="rules">القواعد</button>
+      <button class="hbtn" onclick="newGame()" data-t="newGame">لعبة جديدة</button>
+      <button class="hbtn leave" onclick="leaveGame()" data-t="leaveGame">مغادرة</button>
+      <select class="lsel" onchange="setLang(this.value)" id="langSel">
+        <option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option>
+      </select>
+    </div>
+  </div>
+  <div class="garea">
+    <div class="chand" id="chand"></div>
+    <div class="sbar" id="sbar">
+      <div class="sitem">
+        <div class="sitem-top"><span class="slbl" data-t="you">أنت</span> <span class="sval" id="pscore">0</span></div>
+        <div class="capinfo" id="pcapI"></div>
+      </div>
+      <div class="rbadge" id="rbadge">1/1</div>
+      <div class="sitem">
+        <div class="sitem-top"><span class="slbl" data-t="computer">الحاسوب</span> <span class="sval" id="cscore">0</span></div>
+        <div class="capinfo" id="ccapI"></div>
+      </div>
+    </div>
+    <div class="tarea" id="tarea"><div class="tempty" data-t="tableEmpty">الطاولة فارغة</div><div class="turn-ind" id="turnInd"></div></div>
+    <div class="dinfo"><span class="dicon"></span><span id="deckC">0</span></div>
+    <div class="msg turn" id="msg" data-t="yourTurn">دورك! اضغط على ورقة للعب</div>
+    <div id="drawBtnWrap" style="display:none"><button class="draw-btn" id="drawBtn" onclick="onDrawCard()"></button></div>
+    <div class="phand" id="phand"></div>
+  </div>
+</div>
+
+<!-- RULES -->
+<div id="rulesM" class="mover hidden" onclick="if(event.target===this)closeRules()">
+  <div class="modal" id="rulesC"></div>
+</div>
+
+<!-- CAPTURE CHOICE -->
+<div id="capM" class="mover hidden">
+  <div class="modal">
+    <h2 data-t="chooseCapture">اختر الأوراق التي تريد أخذها</h2>
+    <div class="copts" id="capOpts"></div>
+  </div>
+</div>
+
+<!-- SUIT CHOOSER (HAZZ 2 - for card 7) -->
+<div id="suitM" class="mover hidden" onclick="if(event.target===this)cancelSuitChoice()">
+  <div class="modal">
+    <h2 data-t="chooseSuit">اختر النوع الجديد</h2>
+    <p style="text-align:center;color:var(--text-d);margin-bottom:6px" data-t="suitChoiceHint">الورقة 7 تبدل النوع — اختر اللي يناسبك</p>
+    <div class="suit-opts" id="suitOpts"></div>
+  </div>
+</div>
+
+<!-- CAPTURE PREVIEW -->
+<div id="capPreview" class="cap-preview hidden">
+  <div class="cap-title" id="capTitle">أخذت!</div>
+  <div class="cap-cards" id="capCards"></div>
+  <div class="cap-info" id="capInfo"></div>
+</div>
+
+<!-- ROUND/MATCH END -->
+<div id="endM" class="mover hidden">
+  <div class="modal" id="endC"></div>
+</div>
+
+<script>
+// ============ I18N ============
+const TR={
+  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left'},
+  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante'},
+  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة'}
+};
+let lang='ar';
+function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
+function setLang(l){
+  lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';document.documentElement.lang=l;
+  document.querySelectorAll('.lbtn').forEach(b=>{b.classList.toggle('on',(l==='ar'&&b.textContent==='العربية')||(l==='fr'&&b.textContent==='Français')||(l==='en'&&b.textContent==='English'))});
+  document.getElementById('langSel').value=l;
+  document.querySelectorAll('[data-t]').forEach(e=>{const k=e.getAttribute('data-t');if(k){const sub=e.querySelector('.rbtn-sub,.mbtn-opt-sub,.sbtn-opt-sub');if(sub){e.firstChild.textContent=t(k)+' ';sub.textContent=t(sub.getAttribute('data-t'))}else e.textContent=t(k)}});
+  if(G)render();
+  updateHeader();
+}
+function setMode(m){
+  gameMode=m;
+  document.querySelectorAll('.mbtn-opt').forEach(b=>{const k=b.getAttribute('data-t');const on=(m==='kanza'&&k==='modeKanza')||(m==='ronda'&&k==='modeRonda')||(m==='hazz2'&&k==='modeHazz2');b.classList.toggle('on',on)});
+  // Hazz 2 has no rounds or ultra scoring — hide those choices
+  const isHazz2=m==='hazz2';
+  document.querySelector('.round-choice').style.display=isHazz2?'none':'';
+  document.querySelector('.scoring-choice').style.display=isHazz2?'none':'';
+  updateHeader();
+}
+function setScoring(s){
+  scoringMode=s;
+  document.querySelectorAll('.sbtn-opt').forEach(b=>{
+    const k=b.getAttribute('data-t');
+    const on=(s==='classic'&&k==='scoringClassic')||(s==='ultra'&&k==='scoringUltra');
+    b.classList.toggle('on',on);
+    b.classList.toggle('ultra-on',(s==='ultra'&&k==='scoringUltra'));
+  });
+  updateHeader();
+}
+function updateHeader(){
+  const ht=document.querySelector('.htitle');
+  if(!ht)return;
+  let modeName,modeShort;
+  if(gameMode==='ronda'){modeName=t('modeRonda');modeShort='Ronda'}
+  else if(gameMode==='hazz2'){modeName=t('modeHazz2');modeShort='Hazz 2'}
+  else{modeName=t('modeKanza');modeShort='Kanza 15'}
+  const ultraTag=(scoringMode==='ultra'&&gameMode!=='hazz2')?'<span class="ultra-badge">ULTRA</span>':'';
+  ht.innerHTML=ultraTag+'<span class="mode-badge">'+modeName+'</span>'+modeShort;
+}
+function setRounds(n){
+  totalRounds=n;
+  document.querySelectorAll('.rbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.rbtn').forEach(b=>{const txt=b.getAttribute('data-t');if((n===1&&txt==='oneRound')||(n===3&&txt==='threeRounds'))b.classList.add('on')});
+  document.querySelectorAll('.rbtn').forEach(b=>{const k=b.getAttribute('data-t');if((n===1&&k==='oneRound')||(n===3&&k==='threeRounds'))b.classList.add('on')});
+}
+
+// ============ SOUND ============
+let actx=null;
+function aud(){if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();return actx}
+function tn(f,d,tp='sine',v=.12){try{const c=aud(),o=c.createOscillator(),g=c.createGain();o.type=tp;o.frequency.setValueAtTime(f,c.currentTime);g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start(c.currentTime);o.stop(c.currentTime+d)}catch(e){}}
+function nz(d,v=.08){try{const c=aud(),n=c.sampleRate*d,b=c.createBuffer(1,n,c.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=(Math.random()*2-1)*v;const s=c.createBufferSource(),g=c.createGain();s.buffer=b;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);s.connect(g);g.connect(c.destination);s.start(c.currentTime)}catch(e){}}
+function sCard(){nz(.04,.1);tn(800,.04,'square',.03)}
+function sCap(){nz(.1,.12);tn(600,.1,'sine',.1);setTimeout(()=>tn(800,.1,'sine',.07),70);setTimeout(()=>tn(1000,.12,'sine',.05),140);setTimeout(()=>tn(1200,.15,'sine',.04),210)}
+function sNoCap(){tn(300,.12,'triangle',.06)}
+function sWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tn(f,.18,'sine',.13),i*130))}
+function sLose(){[400,350,300,250].forEach((f,i)=>setTimeout(()=>tn(f,.2,'sine',.08),i*180))}
+function sDeal(){nz(.03,.08);tn(500,.03,'square',.03)}
+
+// ============ ENGINE ============
+const COMBOS=[[3,12],[4,11],[5,10],[1,2,12],[1,3,11],[1,4,10],[1,7,7],[2,2,11],[2,3,10],[2,6,7],[3,5,7],[3,6,6],[4,4,7],[4,5,6],[5,5,5]];
+const VALS=[1,2,3,4,5,6,7,10,11,12];
+const SUITS=['flouss','zrawat','syofa','compass'];
+function mkDeck(){const d=[];for(const s of SUITS)for(const v of VALS)d.push({id:v+'-'+s,value:v,suit:s,img:'cards/'+v+'-'+s+'.png'});return d}
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]]}return b}
+function calcSc(c){
+  if(scoringMode==='ultra')return c.reduce((s,x)=>s+ultraCardPts(x),0);
+  if(gameMode==='ronda')return c.length;
+  return c.reduce((s,x)=>x.suit==='flouss'?s+(x.value===1?10:x.value):s+1,0);
+}
+function capVal(c){
+  if(scoringMode==='ultra')return c.reduce((s,x)=>s+ultraCardPts(x),0);
+  if(gameMode==='ronda')return c.length;
+  return c.reduce((s,x)=>x.suit==='flouss'?s+(x.value===1?10:x.value):s+1,0);
+}
+function ultraCardPts(card){
+  if(card.value===1&&card.suit==='flouss')return 50;
+  const mult={flouss:5,zrawat:3,syofa:4,compass:2}[card.suit]||1;
+  return card.value*mult;
+}
+function findTbl(req,tbl){
+  if(!req.length)return[[]];
+  const tg=req[0],r=req.slice(1),res=[];
+  for(let i=0;i<tbl.length;i++){
+    if(tbl[i].value===tg){const rt=[...tbl.slice(0,i),...tbl.slice(i+1)];for(const sub of findTbl(r,rt))res.push([tbl[i],...sub])}
+  }
+  return res;
+}
+function findCaps(card,tbl){
+  if(gameMode==='ronda'){
+    // Ronda: capture ALL cards with same value as the played card
+    const matches=tbl.filter(c=>c.value===card.value);
+    return matches.length>0?[matches]:[];
+  }
+  // Kanza 15 mode: original combination logic
+  const res=[];
+  for(const cb of COMBOS){
+    if(!cb.includes(card.value))continue;
+    const rm=[...cb];rm.splice(rm.indexOf(card.value),1);
+    const m=findTbl(rm,tbl);if(m.length)res.push(...m);
+  }
+  const seen=new Set();
+  return res.filter(c=>{const k=c.map(x=>x.id).sort().join(',');if(seen.has(k))return false;seen.add(k);return true});
+}
+
+// ============ STATE ============
+let G=null,busy=false,rHist=[],totalRounds=1,gameMode='kanza',scoringMode='classic';
+let hazz2Choice=null; // pending suit choice for card 7
+
+function deepClone(s){
+  return{deck:s.deck.map(c=>({...c})),table:s.table.map(c=>({...c})),pH:s.pH.map(c=>({...c})),cH:s.cH.map(c=>({...c})),pCap:s.pCap.map(c=>({...c})),cCap:s.cCap.map(c=>({...c})),pTotal:s.pTotal,cTotal:s.cTotal,turn:s.turn,round:s.round,lastCap:s.lastCap,phase:s.phase,pRS:s.pRS,cRS:s.cRS};
+}
+function newGS(prev){
+  const dk=shuf(mkDeck());
+  const pH=dk.splice(0,4),cH=dk.splice(0,4);
+  const ft=Math.random()<.5?'p':'c';
+  return{deck:dk,table:[],pH,cH,pCap:[],cCap:[],pTotal:prev?prev.pTotal:0,cTotal:prev?prev.cTotal:0,turn:ft,round:prev?prev.round+1:1,lastCap:null,phase:'play',pRS:0,cRS:0};
+}
+function dealMore(s){
+  if(s.deck.length<8)return s;
+  const ns=deepClone(s);
+  ns.pH=[...ns.pH,...ns.deck.splice(0,4)];
+  ns.cH=[...ns.cH,...ns.deck.splice(0,4)];
+  return ns;
+}
+function endRound(s){
+  const ns=deepClone(s);
+  if(ns.table.length>0&&ns.lastCap){
+    if(ns.lastCap==='p')ns.pCap=[...ns.pCap,...ns.table];
+    else ns.cCap=[...ns.cCap,...ns.table];
+    ns.table=[];
+  }
+  ns.pRS=calcSc(ns.pCap);ns.cRS=calcSc(ns.cCap);
+  ns.pTotal+=ns.pRS;ns.cTotal+=ns.cRS;
+  ns.phase=ns.round>=totalRounds?'match':'roundEnd';
+  return ns;
+}
+function doPlay(s,ci,isP,chosenCap){
+  const ns=deepClone(s);
+  const hand=isP?[...ns.pH]:[...ns.cH];
+  if(ci<0||ci>=hand.length)return s;
+  const card={...hand[ci]};hand.splice(ci,1);
+  const tbl=ns.table.map(c=>({...c}));
+  const caps=findCaps(card,tbl);
+  let captured=null;
+  if(caps.length>0)captured=chosenCap||caps.sort((a,b)=>capVal(b)-capVal(a))[0];
+  let playInfo={by:isP?'p':'c',card,cards:[],did:false};
+  if(captured&&captured.length>0){
+    const ids=new Set(captured.map(c=>c.id));
+    ns.table=tbl.filter(c=>!ids.has(c.id));
+    if(isP){ns.pCap=[...ns.pCap,card,...captured];ns.pH=hand;ns.lastCap='p'}
+    else{ns.cCap=[...ns.cCap,card,...captured];ns.cH=hand;ns.lastCap='c'}
+    playInfo.cards=captured.map(c=>({...c}));playInfo.did=true;
+  }else{
+    ns.table=[...tbl,card];
+    if(isP)ns.pH=hand;else ns.cH=hand;
+  }
+  ns.lastPlay=playInfo;
+  if(ns.pH.length===0&&ns.cH.length===0){
+    if(ns.deck.length>=8){const d=dealMore(ns);d.turn=isP?'c':'p';return d}
+    return endRound(ns);
+  }
+  ns.turn=isP?'c':'p';
+  return ns;
+}
+
+// ============ HAZZ 2 ENGINE ============
+const HAZZ_SUITS=['flouss','zrawat','syofa','compass'];
+const HAZZ_SUIT_COLORS={flouss:'#FFD700',zrawat:'#22c55e',syofa:'#ef4444',compass:'#3b82f6'};
+const HAZZ_SUIT_LABELS={flouss:'suitFlouss',zrawat:'suitZrawat',syofa:'suitSyofa',compass:'suitCompass'};
+
+function newGSHazz2(){
+  const dk=shuf(mkDeck());
+  const pH=dk.splice(0,7),cH=dk.splice(0,7);
+  // First table card cannot be 1, 2, or 7 (avoid starting with action cards)
+  let starter=null;
+  while(dk.length>0){
+    const c=dk.shift();
+    if(c.value===1||c.value===2||c.value===7){
+      dk.push(c); // put it back at the end
+    } else {
+      starter=c;
+      break;
+    }
+  }
+  if(!starter){ // fallback: use any card
+    starter=dk.shift();
+  }
+  const ft=Math.random()<.5?'p':'c';
+  return{
+    deck:dk,table:[starter],pH,cH,
+    currentSuit:starter.suit,
+    skipCounter:0,drawCounter:0,
+    turn:ft,phase:'play',
+    pTotal:0,cTotal:0,pRS:0,cRS:0,
+    round:1,lastCap:null,
+    lastAction:null // for messaging
+  };
+}
+
+function hazz2DeepClone(s){
+  return{
+    deck:s.deck.map(c=>({...c})),
+    table:s.table.map(c=>({...c})),
+    pH:s.pH.map(c=>({...c})),
+    cH:s.cH.map(c=>({...c})),
+    currentSuit:s.currentSuit,
+    skipCounter:s.skipCounter,
+    drawCounter:s.drawCounter,
+    turn:s.turn,phase:s.phase,
+    pTotal:s.pTotal,cTotal:s.cTotal,
+    pRS:s.pRS,cRS:s.cRS,
+    round:s.round,lastCap:s.lastCap,
+    lastAction:s.lastAction
+  };
+}
+
+// Check if a card can be played on the current state
+function hazz2CanPlay(card,s){
+  // If there's an active draw counter, only 2 can be played (counter)
+  if(s.drawCounter>0){
+    return card.value===2;
+  }
+  // If there's an active skip counter, only 1 can be played (counter)
+  if(s.skipCounter>0){
+    return card.value===1;
+  }
+  // Normal play: ALL cards (including 1, 2, 7) must match suit or value of top card
+  const top=s.table[s.table.length-1];
+  return card.suit===s.currentSuit||card.value===top.value;
+}
+
+// Get all playable indices for a hand
+function hazz2PlayableIndices(hand,s){
+  const idx=[];
+  for(let i=0;i<hand.length;i++){
+    if(hazz2CanPlay(hand[i],s))idx.push(i);
+  }
+  return idx;
+}
+
+// Apply a card play (no suit choice here for 7 - handled separately)
+function hazz2Play(s,ci,isP,newSuit){
+  const ns=hazz2DeepClone(s);
+  const hand=isP?[...ns.pH]:[...ns.cH];
+  if(ci<0||ci>=hand.length)return null;
+  const card={...hand[ci]};
+  hand.splice(ci,1);
+  if(isP)ns.pH=hand;else ns.cH=hand;
+  ns.table=[...ns.table,card];
+  let actionType='play';
+  // Handle card effects
+  if(card.value===1){
+    ns.skipCounter=s.skipCounter+1;
+    ns.drawCounter=0; // 1 cancels 2 chain? No — they are separate. Keep separate.
+    actionType='skip';
+  } else if(card.value===2){
+    ns.drawCounter=s.drawCounter+1;
+    ns.skipCounter=0;
+    actionType='draw';
+  } else if(card.value===7){
+    if(newSuit)ns.currentSuit=newSuit;
+    else ns.currentSuit=card.suit;
+    ns.skipCounter=0;
+    ns.drawCounter=0;
+    actionType='suit';
+  } else {
+    // Normal card - suit follows card
+    ns.currentSuit=card.suit;
+    ns.skipCounter=0;
+    ns.drawCounter=0;
+    actionType='play';
+  }
+  // Wait — 1 and 2 are separate accumulators. Each can only be countered by same value.
+  // Actually re-reading the rules: 1 chain and 2 chain are independent.
+  // But when a non-1 non-2 card is played, the chain resets to 0 (since the player chose not to counter).
+  // The "counter" only happens if the player under attack decides to play a 1 or 2.
+  // Let me reconsider: if A plays 1, B can either skip (skipCounter) turns OR play 1 (bounce back, skipCounter++).
+  // If B decides to play a non-1 card (which is not allowed if skipCounter>0), they must skip first.
+  // Actually the rule is: when skipCounter>0, the ONLY valid play is a 1 (to counter). Otherwise the player MUST skip.
+  // Same for drawCounter>0: only a 2 can be played (counter). Otherwise player MUST draw 2*drawCounter cards.
+  // So in hazz2CanPlay, when skipCounter>0, only 1 is playable. ✓ (already implemented)
+  // When drawCounter>0, only 2 is playable. ✓
+  // After playing a non-1/non-2 card normally, both counters reset. ✓ (already implemented)
+  ns.lastAction={type:actionType,by:isP?'p':'c',card,skipCounter:ns.skipCounter,drawCounter:ns.drawCounter,suit:ns.currentSuit};
+  // Check win
+  if((isP&&ns.pH.length===0)||(!isP&&ns.cH.length===0)){
+    ns.phase='end';
+    ns.winner=isP?'p':'c';
+    ns.turn=isP?'p':'p'; // game over
+    return ns;
+  }
+  // Pass turn
+  ns.turn=isP?'c':'p';
+  return ns;
+}
+
+// Player cannot/will not counter — apply skip penalty or draw penalty
+function hazz2ApplyPenalty(s,isP){
+  const ns=hazz2DeepClone(s);
+  let drawnCards=[];
+  if(s.skipCounter>0){
+    // Player skips s.skipCounter turns (which means turn passes back to other player)
+    const skipped=s.skipCounter;
+    ns.skipCounter=0;
+    ns.lastAction={type:'skipApplied',by:isP?'p':'c',count:skipped};
+    ns.turn=isP?'c':'p'; // other player's turn (this player skipped)
+    return {state:ns,skipped,drawn:0};
+  }
+  if(s.drawCounter>0){
+    // Player draws 2*drawCounter cards
+    const toDraw=2*s.drawCounter;
+    for(let i=0;i<toDraw;i++){
+      if(ns.deck.length===0){
+        // Reshuffle table (except top) into deck
+        if(ns.table.length>1){
+          const top=ns.table[ns.table.length-1];
+          const rest=ns.table.slice(0,-1);
+          ns.deck=shuf(rest);
+          ns.table=[top];
+        } else break;
+      }
+      if(ns.deck.length===0)break;
+      const c=ns.deck.shift();
+      drawnCards.push(c);
+      if(isP)ns.pH=[...ns.pH,c];else ns.cH=[...ns.cH,c];
+    }
+    ns.drawCounter=0;
+    ns.lastAction={type:'drawApplied',by:isP?'p':'c',count:drawnCards.length,drawnCards};
+    ns.turn=isP?'c':'p';
+    return {state:ns,skipped:0,drawn:drawnCards.length};
+  }
+  return {state:ns,skipped:0,drawn:0};
+}
+
+// Player draws a card voluntarily (no counter active, player chooses to draw instead of playing)
+function hazz2DrawVoluntary(s,isP){
+  const ns=hazz2DeepClone(s);
+  if(ns.deck.length===0){
+    if(ns.table.length>1){
+      const top=ns.table[ns.table.length-1];
+      const rest=ns.table.slice(0,-1);
+      ns.deck=shuf(rest);
+      ns.table=[top];
+    } else return {state:ns,drawn:null};
+  }
+  if(ns.deck.length===0)return {state:ns,drawn:null};
+  const c=ns.deck.shift();
+  if(isP)ns.pH=[...ns.pH,c];else ns.cH=[...ns.cH,c];
+  ns.lastAction={type:'voluntaryDraw',by:isP?'p':'c',card:c};
+  // After voluntary draw, turn passes to the other player
+  ns.turn=isP?'c':'p';
+  return {state:ns,drawn:c};
+}
+
+// Hazz 2 AI
+function aiMoveHazz2(s){
+  const hand=s.cH;
+  if(!hand.length)return {action:'pass'};
+  const playable=hazz2PlayableIndices(hand,s);
+  // If no playable cards and no counter active, must draw
+  if(playable.length===0){
+    // If counter active, we're forced to take penalty
+    if(s.skipCounter>0||s.drawCounter>0){
+      return {action:'penalty'};
+    }
+    return {action:'draw'};
+  }
+  // Evaluate each playable card
+  const ev=[];
+  for(const i of playable){
+    const card=hand[i];
+    let sc=0;
+    // Strategic priorities:
+    // 1. If we can win this turn (last card), do it!
+    if(hand.length===1)sc+=10000;
+    // 2. If we have very few cards, prefer to play them
+    if(hand.length<=3)sc+=50;
+    // 3. Card 1 (skip): good to keep if opponent has many cards (forces them to skip)
+    if(card.value===1){
+      // If opponent has few cards, skip is very valuable
+      if(s.pH.length<=3)sc+=80;
+      else sc+=30;
+      // Don't waste 1 if opponent has many cards and chain is 0
+      if(s.skipCounter===0&&s.pH.length>5)sc-=10;
+    }
+    // 4. Card 2 (draw): very valuable when opponent has few cards
+    if(card.value===2){
+      if(s.pH.length<=3)sc+=90;
+      else sc+=40;
+      // If chain already at 2+, opponent will draw lots
+      if(s.drawCounter>=2)sc+=30;
+    }
+    // 5. Card 7 (suit change): great if we have many cards of one suit
+    if(card.value===7){
+      // Count our suits
+      const suitCount={};
+      for(const c of hand)if(c.value!==7&&c.value!==1&&c.value!==2)suitCount[c.suit]=(suitCount[c.suit]||0)+1;
+      const bestSuit=Object.entries(suitCount).sort((a,b)=>b[1]-a[1])[0];
+      if(bestSuit&&bestSuit[1]>=2){
+        sc+=20+bestSuit[1]*10;
+      } else sc+=5;
+    }
+    // 6. Normal cards: prefer to play cards that match opponent's likely weak suit
+    if(card.value!==1&&card.value!==2&&card.value!==7){
+      // Play high-value cards first (10,11,12) to reduce hand size
+      if(card.value>=10)sc+=15;
+      else sc+=card.value;
+      // Slight preference for matching current suit (frees up hand)
+      sc+=2;
+    }
+    // 7. Penalty for not playing when opponent has few cards (they'll win)
+    if(s.pH.length<=2){
+      // Prefer cards that disrupt: 1 and 2
+      if(card.value===1||card.value===2)sc+=100;
+    }
+    ev.push({i,card,sc});
+  }
+  ev.sort((a,b)=>b.sc-a.sc);
+  const best=ev[0];
+  // If best card is a 7, decide the suit to choose
+  let chosenSuit=null;
+  if(best.card.value===7){
+    // Choose suit we have most of (excluding action cards)
+    const suitCount={};
+    for(const c of hand)if(c.id!==best.card.id&&c.value!==7&&c.value!==1&&c.value!==2)suitCount[c.suit]=(suitCount[c.suit]||0)+1;
+    const entries=Object.entries(suitCount);
+    if(entries.length>0){
+      entries.sort((a,b)=>b[1]-a[1]);
+      chosenSuit=entries[0][0];
+    } else {
+      // No normal cards in hand — pick any suit randomly
+      chosenSuit=HAZZ_SUITS[Math.floor(Math.random()*4)];
+    }
+  }
+  return {action:'play',ci:best.i,suit:chosenSuit};
+}
+
+// ============ AI ============
+function tblDanger(tbl){
+  let d=0;
+  for(const cb of COMBOS){
+    const av=cb.filter(v=>tbl.some(c=>c.value===v)).length;
+    if(av===cb.length){d+=5;if(cb.some(v=>tbl.some(c=>c.value===v&&c.suit==='flouss')))d+=8}
+    else if(av===cb.length-1)d+=2;
+  }
+  return d;
+}
+function aiMove(s){
+  if(gameMode==='ronda')return aiMoveRonda(s);
+  // Kanza 15 mode
+  const hand=s.cH,tbl=s.table;
+  if(!hand.length)return{ci:-1,cap:null};
+  const ev=[];
+  const ultra=scoringMode==='ultra';
+  for(let i=0;i<hand.length;i++){
+    const card=hand[i],caps=findCaps(card,tbl);
+    if(caps.length>0){
+      for(const cap of caps){
+        let sc;
+        if(ultra){
+          // Ultra: value = sum of ultra points of all cards gained (cap + our played card)
+          sc = (capVal(cap) + ultraCardPts(card)) * 2;
+          // Bonus: clearing the table
+          const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
+          if(nt.length===0)sc+=25;
+          // Penalty: leaving high-value cards on table for opponent
+          for(const c of nt)sc -= ultraCardPts(c) * 0.3;
+          // Slight penalty: spending a high-value card to capture low-value cards is bad trade
+          const tradeOff = ultraCardPts(card) - capVal(cap);
+          if(tradeOff > 0) sc -= tradeOff * 0.5;
+        } else {
+          // Classic Kanza
+          sc=capVal(cap)*3;sc+=cap.filter(c=>c.suit==='flouss').length*5;
+          if(cap.some(c=>c.suit==='flouss'&&c.value===1))sc+=15;
+          for(const c of cap)if(c.suit==='flouss')sc+=c.value===1?10:c.value*2;
+          const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));sc-=tblDanger(nt)*2;if(!nt.length)sc+=8;
+          if(card.suit==='flouss'&&card.value>=5)sc-=3;
+        }
+        ev.push({ci:i,cap,sc});
+      }
+    }else{
+      let sc;
+      if(ultra){
+        // Ultra non-capture: big penalty for leaving a high-value card on the table
+        sc = -ultraCardPts(card) * 0.5;
+        const nt=[...tbl,card];
+        // Penalty: this play creates a capture opportunity that includes our high-value card
+        for(const cb of COMBOS){
+          if(!cb.includes(card.value))continue;
+          const rm=[...cb];rm.splice(rm.indexOf(card.value),1);
+          if(rm.every(r=>nt.some(x=>x.value===r&&x.id!==card.id))){
+            sc -= ultraCardPts(card) * 1.2; // opponent could capture our card
+            break;
+          }
+        }
+        // Penalty: leaving high-value cards on table for opponent's future captures
+        for(const c of nt)sc -= ultraCardPts(c) * 0.05;
+      } else {
+        // Classic Kanza
+        sc=0;if(card.suit==='flouss')sc-=card.value===1?20:card.value*3;else sc-=2;
+        const nt=[...tbl,card];sc-=tblDanger(nt)*2;
+        if(COMBOS.some(cb=>{if(!cb.includes(card.value))return false;const rm=[...cb];rm.splice(rm.indexOf(card.value),1);return rm.every(r=>nt.some(x=>x.value===r&&x.id!==card.id))}))sc-=10;
+        if(card.suit!=='flouss')sc+=1;
+      }
+      ev.push({ci:i,cap:null,sc});
+    }
+  }
+  ev.sort((a,b)=>b.sc-a.sc);return{ci:ev[0].ci,cap:ev[0].cap};
+}
+
+// ===== RONDA AI =====
+function aiMoveRonda(s){
+  const hand=s.cH,tbl=s.table;
+  if(!hand.length)return{ci:-1,cap:null};
+  const ev=[];
+  const ultra=scoringMode==='ultra';
+  // Count occurrences of each value on table
+  const tblValCount={};
+  for(const c of tbl)tblValCount[c.value]=(tblValCount[c.value]||0)+1;
+  // Count occurrences of each value in our hand
+  const handValCount={};
+  for(const c of hand)handValCount[c.value]=(handValCount[c.value]||0)+1;
+  for(let i=0;i<hand.length;i++){
+    const card=hand[i],caps=findCaps(card,tbl);
+    if(caps.length>0){
+      const cap=caps[0]; // single option in Ronda (all matches)
+      let sc;
+      if(ultra){
+        // Ultra: value = sum of ultra points of captured cards + our played card
+        sc = (capVal(cap) + ultraCardPts(card)) * 2;
+        // Bonus: clearing the table
+        const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
+        if(nt.length===0)sc+=25;
+        // Penalty: leaving high-value cards on table for opponent
+        for(const c of nt)sc -= ultraCardPts(c) * 0.3;
+      } else {
+        // Classic Ronda
+        sc=cap.length*15+5;
+        const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
+        if(nt.length===0)sc+=8;
+        if(cap.length>=2)sc+=cap.length*5;
+      }
+      ev.push({ci:i,cap,sc});
+    }else{
+      let sc=0;
+      const newValCount=(tblValCount[card.value]||0)+1;
+      if(ultra){
+        // Ultra non-capture: penalty for leaving a high-value card on the table
+        sc -= ultraCardPts(card) * 0.5;
+        // Big penalty: creating a pair/triple on table (opponent captures our high-value card)
+        if(newValCount>=2)sc -= ultraCardPts(card) * 1.5;
+        // Penalty: our card matches an existing table value (vulnerable)
+        if(tblValCount[card.value]>0)sc -= ultraCardPts(card) * 0.4;
+        // Hold pairs in hand for guaranteed capture next time
+        if(handValCount[card.value]>=2)sc -= ultraCardPts(card) * 0.2;
+      } else {
+        // Classic Ronda
+        if(newValCount>=2)sc-=newValCount*8;
+        if(tblValCount[card.value]>0)sc-=5;
+        if(handValCount[card.value]>=2)sc-=3;
+      }
+      ev.push({ci:i,cap:null,sc});
+    }
+  }
+  ev.sort((a,b)=>b.sc-a.sc);return{ci:ev[0].ci,cap:ev[0].cap};
+}
+
+// ============ RENDER ============
+// Safety check: ensure player hand is visible after every render. If the layout
+// doesn't fit in the viewport (e.g. very short browser window), enable scrolling
+// on .garea as a fallback so the player can still see and play their cards.
+function ensurePlayerHandVisible(){
+  const garea=document.querySelector('.garea');
+  const phand=document.getElementById('phand');
+  if(!garea||!phand)return;
+  // Use rAF so layout has settled before measuring
+  requestAnimationFrame(()=>{
+    const gRect=garea.getBoundingClientRect();
+    const pRect=phand.getBoundingClientRect();
+    // If bottom of phand is below bottom of garea + 5px tolerance, switch to scrollable
+    if(pRect.bottom>gRect.bottom+5){
+      garea.classList.add('scrollable');
+    } else {
+      garea.classList.remove('scrollable');
+    }
+  });
+}
+
+function render(){
+  if(!G)return;
+  if(gameMode==='hazz2'){renderHazz2();ensurePlayerHandVisible();return;}
+  // Hide Hazz 2 UI elements
+  document.getElementById('drawBtnWrap').style.display='none';
+  const pCS=calcSc(G.pCap),cCS=calcSc(G.cCap);
+  document.getElementById('pscore').textContent=G.pTotal+(G.phase==='play'?pCS:0);
+  document.getElementById('cscore').textContent=G.cTotal+(G.phase==='play'?cCS:0);
+  document.getElementById('pcapI').textContent=G.pCap.length?'('+G.pCap.length+' '+t('cards')+')':'';
+  document.getElementById('ccapI').textContent=G.cCap.length?'('+G.cCap.length+' '+t('cards')+')':'';
+  document.getElementById('rbadge').textContent=G.round+'/'+totalRounds;
+  document.getElementById('deckC').textContent=t('deck')+': '+G.deck.length;
+
+  const ch=document.getElementById('chand');ch.innerHTML='';
+  for(let i=0;i<G.cH.length;i++){const d=document.createElement('div');d.className='cd';d.innerHTML='<img src="cards/back.png" alt="" draggable="false">';ch.appendChild(d)}
+
+  const ta=document.getElementById('tarea');
+  // Keep turn indicator
+  const ti=document.getElementById('turnInd');
+  ta.innerHTML='';
+  ta.appendChild(ti);
+  if(!G.table.length){
+    const e=document.createElement('div');e.className='tempty';e.textContent=t('tableEmpty');ta.appendChild(e);
+  }
+  else for(const c of G.table){const d=document.createElement('div');d.className='cd deal-table';d.innerHTML='<img src="'+c.img+'" alt="" draggable="false">';ta.appendChild(d)}
+
+  const ph=document.getElementById('phand');ph.innerHTML='';
+  const myTurn=G.turn==='p'&&G.phase==='play'&&!busy;
+  for(let i=0;i<G.pH.length;i++){
+    const c=G.pH[i],d=document.createElement('div');
+    d.className='cd'+(myTurn?' playable':'');
+    d.innerHTML='<img src="'+c.img+'" alt="" draggable="false">';
+    if(myTurn)(function(idx){d.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();onPlayCard(idx)})})(i);
+    ph.appendChild(d);
+  }
+}
+
+// ============ HAZZ 2 RENDER ============
+function renderHazz2(){
+  // Score bar — show card counts instead
+  document.getElementById('pscore').textContent=G.pH.length;
+  document.getElementById('cscore').textContent=G.cH.length;
+  document.getElementById('pcapI').textContent=G.pH.length===1?t('hazz2CardsLeftOne'):t('hazz2CardsLeft',{n:G.pH.length});
+  document.getElementById('ccapI').textContent=G.cH.length===1?t('hazz2CardsLeftOne'):t('hazz2CardsLeft',{n:G.cH.length});
+  document.getElementById('rbadge').textContent=t('hazz2TopCard');
+  document.getElementById('deckC').textContent=t('deck')+': '+G.deck.length;
+
+  // Computer hand (face down)
+  const ch=document.getElementById('chand');ch.innerHTML='';
+  for(let i=0;i<G.cH.length;i++){const d=document.createElement('div');d.className='cd';d.innerHTML='<img src="cards/back.png" alt="" draggable="false">';ch.appendChild(d)}
+
+  // Table area — show only top card prominently
+  const ta=document.getElementById('tarea');
+  const ti=document.getElementById('turnInd');
+  ta.innerHTML='';
+  ta.appendChild(ti);
+  if(G.table.length){
+    const top=G.table[G.table.length-1];
+    const d=document.createElement('div');
+    d.className='cd deal-table'+(top.suit!==G.currentSuit?' suit-changed':'');
+    d.innerHTML='<img src="'+top.img+'" alt="" draggable="false">';
+    ta.appendChild(d);
+    // Suit indicator badge below the card
+    const indicator=document.createElement('div');
+    indicator.className='hazz-suit-badge';
+    indicator.style.color=HAZZ_SUIT_COLORS[G.currentSuit];
+    let badgeHTML='<span class="suit-dot" style="background:'+HAZZ_SUIT_COLORS[G.currentSuit]+'"></span><span>'+t('hazz2CurrentSuit')+': '+t(HAZZ_SUIT_LABELS[G.currentSuit])+'</span>';
+    if(G.skipCounter>0)badgeHTML+='<span class="badge-skip">⊘ '+t('hazz2SkipPill',{n:G.skipCounter})+'</span>';
+    if(G.drawCounter>0)badgeHTML+='<span class="badge-draw">✎ '+t('hazz2DrawPill',{n:2*G.drawCounter})+'</span>';
+    indicator.innerHTML=badgeHTML;
+    ta.appendChild(indicator);
+  }
+
+  // Player hand
+  const ph=document.getElementById('phand');ph.innerHTML='';
+  const myTurn=G.turn==='p'&&G.phase==='play'&&!busy;
+  const drawBtnWrap=document.getElementById('drawBtnWrap');
+  if(myTurn){
+    const playableIdx=hazz2PlayableIndices(G.pH,G);
+    const counterActive=G.skipCounter>0||G.drawCounter>0;
+    if(counterActive){
+      // Counter is active — player must counter (if can't, auto-penalty)
+      if(playableIdx.length===0){
+        // Cannot counter, auto-apply penalty
+        drawBtnWrap.style.display='none';
+        setTimeout(()=>{onHazz2Penalty();},600);
+      } else {
+        // Can counter, must play (no draw button)
+        drawBtnWrap.style.display='none';
+      }
+    } else {
+      // No counter active — always show draw button
+      // (player can choose to draw even if they have playable cards)
+      drawBtnWrap.style.display='block';
+      const btn=document.getElementById('drawBtn');
+      btn.textContent=t('hazz2DrawBtn');
+    }
+    for(let i=0;i<G.pH.length;i++){
+      const c=G.pH[i],d=document.createElement('div');
+      const canPlay=hazz2CanPlay(c,G);
+      d.className='cd'+(canPlay?' playable':'');
+      d.innerHTML='<img src="'+c.img+'" alt="" draggable="false">';
+      if(canPlay)(function(idx){d.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();onHazz2PlayCard(idx)})})(i);
+      ph.appendChild(d);
+    }
+  } else {
+    drawBtnWrap.style.display='none';
+    for(let i=0;i<G.pH.length;i++){
+      const c=G.pH[i],d=document.createElement('div');
+      d.className='cd';
+      d.innerHTML='<img src="'+c.img+'" alt="" draggable="false">';
+      ph.appendChild(d);
+    }
+  }
+}
+function setMsg(txt,cls){const e=document.getElementById('msg');e.textContent=txt;e.className='msg'+(cls?' '+cls:'')}
+
+// ============ CAPTURE PREVIEW ============
+function showCapPreview(who,cards,cb){
+  const pv=document.getElementById('capPreview');
+  const tt=document.getElementById('capTitle');
+  const cc=document.getElementById('capCards');
+  const ci=document.getElementById('capInfo');
+  tt.className='cap-title '+(who==='p'?'player':'computer');
+  tt.textContent=who==='p'?t('youTook'):t('computerTook');
+  cc.innerHTML='';
+  cards.forEach((c,i)=>{
+    const d=document.createElement('div');d.className='cd';
+    d.style.animationDelay=(i*0.1)+'s';
+    d.innerHTML='<img src="'+c.img+'" alt="">';
+    cc.appendChild(d);
+  });
+  const pts=capVal(cards);
+  ci.innerHTML='<span class="cap-pts">'+pts+'</span> '+t('points')+' • '+cards.length+' '+t('cards');
+  pv.classList.remove('hidden');
+  sCap();
+  setTimeout(()=>{
+    pv.classList.add('hidden');
+    if(cb)cb();
+  },2200);
+}
+
+// ============ CONFETTI ============
+function confetti(){
+  const colors=['#D4AF37','#F5E6A3','#4ade80','#e74c3c','#3498db'];
+  for(let i=0;i<60;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[i%colors.length];
+    c.style.borderRadius=Math.random()>0.5?'50%':'0';
+    c.style.animation='confettiFall '+(2+Math.random()*2)+'s linear';
+    c.style.animationDelay=Math.random()*0.5+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+}
+
+// ============ GAME ACTIONS ============
+function onPlayCard(i){
+  if(busy||G.turn!=='p'||G.phase!=='play')return;
+  sCard();
+  const card=G.pH[i];
+  const caps=findCaps(card,G.table);
+  if(caps.length>1)showCapChoice(i,caps);
+  else doPlayerPlay(i,caps.length===1?caps[0]:null);
+}
+function showCapChoice(ci,caps){
+  const m=document.getElementById('capM'),o=document.getElementById('capOpts');
+  o.innerHTML='';
+  caps.forEach(cap=>{
+    const opt=document.createElement('div');opt.className='copt';
+    let h='<span style="color:#D4AF37;font-weight:bold">'+t('captureWith')+':</span> ';
+    for(const c of cap)h+='<div class="mcd"><img src="'+c.img+'" alt=""></div>';
+    h+=' <span style="color:#8899aa;font-size:.8rem">('+capVal(cap)+' '+t('points')+')</span>';
+    opt.innerHTML=h;
+    opt.addEventListener('click',function(){m.classList.add('hidden');doPlayerPlay(ci,cap)});
+    o.appendChild(opt);
+  });
+  m.classList.remove('hidden');
+}
+function doPlayerPlay(ci,chosenCap){
+  busy=true;
+  const willCap=chosenCap!==null;
+  const previewCards=willCap?[G.pH[ci],...chosenCap]:[];
+  G=doPlay(G,ci,true,chosenCap);
+  if(willCap){
+    setMsg(t('youCaptured',{n:previewCards.length}),'cap');
+    showCapPreview('p',previewCards,()=>{
+      render();
+      if(G.phase!=='play'){setTimeout(showEnd,400);return}
+      setTimeout(compTurn,400);
+    });
+  }else{
+    sNoCap();setMsg(t('noCapture'),'nocap');
+    render();
+    if(G.phase!=='play'){setTimeout(showEnd,800);return}
+    setTimeout(compTurn,700);
+  }
+}
+function compTurn(){
+  if(G.turn!=='c'||G.phase!=='play'){busy=false;render();return}
+  if(gameMode==='hazz2')return compTurnHazz2();
+  setMsg(t('computerThinking'),'think');render();
+  setTimeout(()=>{
+    const mv=aiMove(G);
+    if(mv.ci<0){busy=false;render();return}
+    const willCap=mv.cap!==null&&mv.cap.length>0;
+    const card=G.cH[mv.ci];
+    const previewCards=willCap?[card,...mv.cap]:[];
+    G=doPlay(G,mv.ci,false,mv.cap);
+    if(willCap){
+      setMsg(t('computerCaptured',{n:previewCards.length}),'nocap');
+      showCapPreview('c',previewCards,()=>{
+        render();
+        if(G.phase!=='play'){setTimeout(showEnd,400);return}
+        setMsg(t('yourTurn'),'turn');
+        busy=false;render();
+      });
+    }else{
+      sNoCap();setMsg(t('computerNoCapture'),'nocap');
+      render();
+      if(G.phase!=='play'){setTimeout(showEnd,800);return}
+      setMsg(t('yourTurn'),'turn');
+      busy=false;render();
+    }
+  },900);
+}
+
+// ============ HAZZ 2 GAME FLOW ============
+function onHazz2PlayCard(i){
+  if(busy||G.turn!=='p'||G.phase!=='play')return;
+  const card=G.pH[i];
+  if(!hazz2CanPlay(card,G))return;
+  sCard();
+  // If card is 7, prompt for suit choice
+  if(card.value===7){
+    hazz2Choice={ci:i};
+    showSuitChooser();
+    return;
+  }
+  doHazz2PlayerPlay(i,null);
+}
+
+function showSuitChooser(){
+  const m=document.getElementById('suitM');
+  const o=document.getElementById('suitOpts');
+  o.innerHTML='';
+  HAZZ_SUITS.forEach(suit=>{
+    const opt=document.createElement('div');
+    opt.className='suit-opt';
+    opt.innerHTML='<div class="suit-circle" style="background:'+HAZZ_SUIT_COLORS[suit]+';color:'+HAZZ_SUIT_COLORS[suit]+'"></div><div class="suit-nm">'+t(HAZZ_SUIT_LABELS[suit])+'</div>';
+    opt.addEventListener('click',function(){
+      m.classList.add('hidden');
+      const ci=hazz2Choice.ci;
+      hazz2Choice=null;
+      doHazz2PlayerPlay(ci,suit);
+    });
+    o.appendChild(opt);
+  });
+  m.classList.remove('hidden');
+}
+
+function cancelSuitChoice(){
+  document.getElementById('suitM').classList.add('hidden');
+  hazz2Choice=null;
+}
+
+function doHazz2PlayerPlay(ci,newSuit){
+  busy=true;
+  const card=G.pH[ci];
+  const wasSkipChain=G.skipCounter>0;
+  const wasDrawChain=G.drawCounter>0;
+  G=hazz2Play(G,ci,true,newSuit);
+  // Determine message
+  if(card.value===1){
+    setMsg(t('hazz2SkipPill',{n:G.skipCounter})+' ⚡','turn');
+  } else if(card.value===2){
+    setMsg(t('hazz2DrawPill',{n:2*G.drawCounter})+' ✎','turn');
+  } else if(card.value===7){
+    setMsg(t('hazz2SuitChanged',{s:t(HAZZ_SUIT_LABELS[G.currentSuit])}),'cap');
+  } else {
+    setMsg(t('youCaptured',{n:1}),'turn');
+  }
+  sCap();
+  render();
+  if(G.phase==='end'){setTimeout(showEnd,600);return}
+  setTimeout(compTurnHazz2,800);
+}
+
+function onDrawCard(){
+  if(busy||G.turn!=='p'||G.phase!=='play')return;
+  if(gameMode!=='hazz2')return;
+  // Player voluntarily draws a card — turn passes to computer after drawing
+  busy=true;
+  sCard();
+  const result=hazz2DrawVoluntary(G,true);
+  G=result.state;
+  if(result.drawn===null){
+    setMsg(t('tableEmpty'),'nocap');
+    busy=false;
+    render();
+    return;
+  }
+  setMsg(t('hazz2Drew'),'think');
+  render();
+  // Turn has been passed to computer by hazz2DrawVoluntary
+  setTimeout(()=>{
+    if(G.phase==='play'){
+      setMsg(t('hazz2ComputerTurn'),'think');
+      setTimeout(compTurnHazz2,700);
+    } else {
+      busy=false;
+    }
+  },900);
+}
+
+function onHazz2Penalty(){
+  if(busy)return;
+  busy=true;
+  // Player must take penalty (skip or draw)
+  const wasSkip=G.skipCounter>0;
+  const wasDraw=G.drawCounter>0;
+  const result=hazz2ApplyPenalty(G,true);
+  G=result.state;
+  if(result.skipped>0){
+    sNoCap();
+    setMsg(t('hazz2SkipYou',{n:result.skipped}),'nocap');
+  } else if(result.drawn>0){
+    sNoCap();
+    setMsg(t('hazz2DrawYou',{n:result.drawn}),'nocap');
+  }
+  render();
+  if(G.phase==='end'){setTimeout(showEnd,600);return}
+  setTimeout(()=>{
+    setMsg(t('hazz2ComputerTurn'),'think');
+    setTimeout(compTurnHazz2,700);
+  },1200);
+}
+
+function compTurnHazz2(){
+  if(G.turn!=='c'||G.phase!=='play'){busy=false;render();return}
+  setMsg(t('hazz2ComputerTurn'),'think');render();
+  setTimeout(()=>{
+    const mv=aiMoveHazz2(G);
+    if(mv.action==='penalty'){
+      // Computer takes penalty
+      const wasSkip=G.skipCounter>0;
+      const wasDraw=G.drawCounter>0;
+      const result=hazz2ApplyPenalty(G,false);
+      G=result.state;
+      if(result.skipped>0){
+        sNoCap();
+        setMsg(t('hazz2SkipComputer',{n:result.skipped}),'nocap');
+      } else if(result.drawn>0){
+        sNoCap();
+        setMsg(t('hazz2DrawComputer',{n:result.drawn}),'nocap');
+      }
+      render();
+      if(G.phase==='end'){setTimeout(showEnd,800);return}
+      setTimeout(()=>{
+        setMsg(t('hazz2YourTurn'),'turn');
+        busy=false;render();
+      },1200);
+      return;
+    }
+    if(mv.action==='draw'){
+      // Computer draws voluntarily
+      sCard();
+      const result=hazz2DrawVoluntary(G,false);
+      G=result.state;
+      setMsg(t('hazz2ComputerDrew'),'think');
+      render();
+      if(G.phase==='end'){setTimeout(showEnd,800);return}
+      // After drawing, computer turn ends (no auto-play)
+      setTimeout(()=>{
+        setMsg(t('hazz2YourTurn'),'turn');
+        busy=false;render();
+      },1000);
+      return;
+    }
+    if(mv.action==='play'){
+      const card=G.cH[mv.ci];
+      sCard();
+      G=hazz2Play(G,mv.ci,false,mv.suit);
+      if(card.value===1){
+        setMsg(t('hazz2SkipPill',{n:G.skipCounter})+' ⚡','nocap');
+      } else if(card.value===2){
+        setMsg(t('hazz2DrawPill',{n:2*G.drawCounter})+' ✎','nocap');
+      } else if(card.value===7){
+        setMsg(t('hazz2SuitChanged',{s:t(HAZZ_SUIT_LABELS[G.currentSuit])}),'nocap');
+      } else {
+        setMsg(t('computerNoCapture'),'nocap');
+      }
+      render();
+      if(G.phase==='end'){setTimeout(showEnd,800);return}
+      // If after computer's play, player has a counter to apply or skip/draw counter active
+      // Player's turn
+      setTimeout(()=>{
+        setMsg(t('hazz2YourTurn'),'turn');
+        busy=false;render();
+      },900);
+      return;
+    }
+    // pass
+    busy=false;render();
+  },900);
+}
+
+function showEnd(){
+  busy=false;
+  if(gameMode==='hazz2')return showEndHazz2();
+  if(G.phase==='roundEnd'){
+    rHist.push({p:G.pRS,c:G.cRS});
+    const pw=G.pRS>G.cRS,cw=G.cRS>G.pRS;
+    if(pw)sWin();else sLose();
+    let h='<h2>'+t('roundResult',{n:G.round})+'</h2><div class="rsec"><div class="rscores">';
+    h+='<div class="rpl'+(pw?' win':'')+'"><div class="nm">'+t('yourScore')+'</div><div class="sc">'+G.pRS+'</div></div>';
+    h+='<div class="rpl'+(cw?' win':'')+'"><div class="nm">'+t('computerScore')+'</div><div class="sc">'+G.cRS+'</div></div></div>';
+    if(rHist.length){h+='<div class="rhist"><h3>'+t('roundScores')+'</h3>';rHist.forEach((r,i)=>{h+='<div class="rrow">'+t('round')+' '+(i+1)+': '+r.p+' - '+r.c+'</div>'});h+='</div>'}
+    h+='</div><button class="mbtn" onclick="nextRound()">'+t('nextRound')+'</button>';
+    document.getElementById('endC').innerHTML=h;document.getElementById('endM').classList.remove('hidden');
+  }else{
+    rHist.push({p:G.pRS,c:G.cRS});
+    const pw=G.pTotal>G.cTotal,cw=G.cTotal>G.pTotal;
+    if(pw){sWin();confetti()}else sLose();
+    let h='<h2>'+t('matchEnd')+'</h2><div class="rsec">';
+    if(pw)h+='<div class="wtxt pw">'+t('youWin')+'</div>';
+    else if(cw)h+='<div class="wtxt cw">'+t('computerWins')+'</div>';
+    else h+='<div class="wtxt dw">'+t('draw')+'</div>';
+    h+='<h3>'+t('finalScore')+'</h3><div class="rscores">';
+    h+='<div class="rpl'+(pw?' win':'')+'"><div class="nm">'+t('yourScore')+'</div><div class="sc">'+G.pTotal+'</div></div>';
+    h+='<div class="rpl'+(cw?' win':'')+'"><div class="nm">'+t('computerScore')+'</div><div class="sc">'+G.cTotal+'</div></div></div>';
+    h+='<div class="rhist"><h3>'+t('roundScores')+'</h3>';rHist.forEach((r,i)=>{h+='<div class="rrow">'+t('round')+' '+(i+1)+': '+r.p+' - '+r.c+'</div>'});h+='</div>';
+    h+='</div><button class="mbtn" onclick="newGame()">'+t('playAgain')+'</button>';
+    document.getElementById('endC').innerHTML=h;document.getElementById('endM').classList.remove('hidden');
+  }
+}
+function showEndHazz2(){
+  const pw=G.winner==='p';
+  if(pw){sWin();confetti()}else sLose();
+  let h='<h2>'+(pw?t('youWin'):t('computerWins'))+'</h2><div class="rsec">';
+  if(pw)h+='<div class="wtxt pw">'+t('hazz2Win')+'</div>';
+  else h+='<div class="wtxt cw">'+t('hazz2Lose')+'</div>';
+  h+='<h3>'+t('finalScore')+'</h3><div class="rscores">';
+  h+='<div class="rpl'+(pw?' win':'')+'"><div class="nm">'+t('yourScore')+'</div><div class="sc">'+G.pH.length+'</div></div>';
+  h+='<div class="rpl'+(!pw?' win':'')+'"><div class="nm">'+t('computerScore')+'</div><div class="sc">'+G.cH.length+'</div></div></div>';
+  h+='</div><button class="mbtn" onclick="newGame()">'+t('playAgain')+'</button>';
+  document.getElementById('endC').innerHTML=h;document.getElementById('endM').classList.remove('hidden');
+}
+function nextRound(){
+  document.getElementById('endM').classList.add('hidden');
+  G=newGS({pTotal:G.pTotal,cTotal:G.cTotal,round:G.round});
+  busy=false;setMsg(t('yourTurn'),'turn');render();
+  if(G.turn==='c'){busy=true;setMsg(t('computerThinking'),'think');setTimeout(compTurn,600)}
+}
+function startGame(){
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('app').style.display='flex';
+  document.body.classList.toggle('hazz2-mode',gameMode==='hazz2');
+  updateHeader();
+  newGame();
+}
+function newGame(){
+  document.getElementById('endM').classList.add('hidden');
+  document.body.classList.toggle('hazz2-mode',gameMode==='hazz2');
+  if(gameMode==='hazz2'){
+    rHist=[];G=newGSHazz2();busy=false;
+    setMsg(t('hazz2YourTurn'),'turn');render();
+    if(G.turn==='c'){busy=true;setMsg(t('hazz2ComputerTurn'),'think');setTimeout(compTurnHazz2,600)}
+    return;
+  }
+  rHist=[];G=newGS();busy=false;
+  setMsg(t('yourTurn'),'turn');render();
+  if(G.turn==='c'){busy=true;setMsg(t('computerThinking'),'think');setTimeout(compTurn,600)}
+}
+function leaveGame(){
+  // Stop any pending computer turns
+  busy=true;
+  // Hide all modals
+  document.getElementById('endM').classList.add('hidden');
+  document.getElementById('rulesM').classList.add('hidden');
+  document.getElementById('capM').classList.add('hidden');
+  document.getElementById('suitM').classList.add('hidden');
+  document.getElementById('capPreview').classList.add('hidden');
+  // Reset state
+  G=null;rHist=[];hazz2Choice=null;busy=false;
+  // Remove Hazz 2 mode class
+  document.body.classList.remove('hazz2-mode');
+  // Show welcome screen, hide game
+  document.getElementById('app').style.display='none';
+  document.getElementById('welcome').classList.remove('hidden');
+}
+function showRules(){
+  document.getElementById('rulesC').innerHTML=buildRules();
+  document.getElementById('rulesM').classList.remove('hidden');
+}
+function closeRules(){document.getElementById('rulesM').classList.add('hidden')}
+function buildRules(){
+  if(gameMode==='hazz2'){
+    return '<h2>'+t('hazz2Title')+'</h2>'+
+      '<h3>'+t('rulesCards')+'</h3>'+
+      '<p>'+t('rulesCardsText')+'</p>'+
+      '<h3>'+t('hazz2Objective')+'</h3>'+
+      '<p>'+t('hazz2ObjectiveText')+'</p>'+
+      '<h3>'+t('hazz2Mechanic')+'</h3>'+
+      '<p>'+t('hazz2MechanicText')+'</p>'+
+      '<h3>① '+t('hazz2Card1')+'</h3>'+
+      '<p>'+t('hazz2Card1Text')+'</p>'+
+      '<h3>② '+t('hazz2Card2')+'</h3>'+
+      '<p>'+t('hazz2Card2Text')+'</p>'+
+      '<h3>⑦ '+t('hazz2Card7')+'</h3>'+
+      '<p>'+t('hazz2Card7Text')+'</p>'+
+      '<h3>'+t('hazz2Note')+'</h3>'+
+      '<p>'+t('hazz2NoteText')+'</p>'+
+      '<button class="mbtn" onclick="closeRules()">'+t('gotIt')+'</button>';
+  }
+  if(gameMode==='ronda'){
+    return '<h2>'+t('rondaTitle')+'</h2>'+
+      '<h3>'+t('rulesCards')+'</h3>'+
+      '<p>'+t('rulesCardsText')+'</p>'+
+      '<h3>'+t('rondaObjective')+'</h3>'+
+      '<p>'+t('rondaObjectiveText')+'</p>'+
+      '<h3>'+(scoringMode==='ultra'?t('ultraTitle'):t('rondaScoring'))+'</h3>'+
+      '<p>'+(scoringMode==='ultra'?t('ultraFormula'):t('rondaScoringText'))+'</p>'+
+      (scoringMode==='ultra'?buildUltraTable():'')+
+      '<h3>'+t('rondaHint')+'</h3>'+
+      '<p>'+t('rondaHintText')+'</p>'+
+      '<h3>'+t('rulesRemaining')+'</h3>'+
+      '<p>'+t('rulesRemainingText')+'</p>'+
+      '<button class="mbtn" onclick="closeRules()">'+t('gotIt')+'</button>';
+  }
+  // Kanza 15
+  return '<h2>'+t('rulesTitle')+'</h2>'+
+    '<h3>'+t('rulesCards')+'</h3>'+
+    '<p>'+t('rulesCardsText')+'</p>'+
+    '<h3>'+t('rulesObjective')+'</h3>'+
+    '<p>'+t('rulesObjectiveText')+'</p>'+
+    '<h3>'+t('rulesValidCombos')+'</h3>'+
+    '<p>'+t('rulesValidCombosText')+'</p>'+
+    '<div class="ctags">'+
+      '<span class="ctag">3+12</span><span class="ctag">4+11</span><span class="ctag">5+10</span>'+
+      '<span class="ctag">1+2+12</span><span class="ctag">1+3+11</span><span class="ctag">1+4+10</span>'+
+      '<span class="ctag">1+7+7</span><span class="ctag">2+2+11</span><span class="ctag">2+3+10</span>'+
+      '<span class="ctag">2+6+7</span><span class="ctag">3+5+7</span><span class="ctag">3+6+6</span>'+
+      '<span class="ctag">4+4+7</span><span class="ctag">4+5+6</span><span class="ctag">5+5+5</span>'+
+    '</div>'+
+    '<h3>'+(scoringMode==='ultra'?t('ultraTitle'):t('rulesScoring'))+'</h3>'+
+    '<p>'+(scoringMode==='ultra'?t('ultraFormula'):t('rulesScoringText'))+'</p>'+
+    (scoringMode==='ultra'?buildUltraTable():'')+
+    '<h3>'+t('rulesRemaining')+'</h3>'+
+    '<p>'+t('rulesRemainingText')+'</p>'+
+    '<button class="mbtn" onclick="closeRules()">'+t('gotIt')+'</button>';
+}
+function buildUltraTable(){
+  const suits=[['flouss',t('suitFlouss'),'×5'],['zrawat',t('suitZrawat'),'×3'],['syofa',t('suitSyofa'),'×4'],['compass',t('suitCompass'),'×2']];
+  const vals=[1,2,3,4,5,6,7,10,11,12];
+  let h='<table class="ultra-table"><thead><tr><th>'+t('ultraTableCard')+'</th>';
+  for(const [sn,slabel,mult] of suits)h+='<th>'+slabel+'<br><span style="font-size:.7rem;opacity:.7">'+mult+'</span></th>';
+  h+='</tr></thead><tbody>';
+  for(const v of vals){
+    h+='<tr><td class="v">'+v+'</td>';
+    for(const [sn] of suits){
+      const card={value:v,suit:sn};
+      const pts=ultraCardPts(card);
+      h+='<td class="pts">'+pts+'</td>';
+    }
+    h+='</tr>';
+  }
+  h+='</tbody></table>';
+  return h;
+}
+
+// Re-check layout on resize / orientation change so player hand always stays visible
+window.addEventListener('resize',()=>{if(G)ensurePlayerHandVisible();});
+window.addEventListener('orientationchange',()=>{setTimeout(()=>{if(G)ensurePlayerHandVisible();},200);});
+</script>
+</body>
+</html>
