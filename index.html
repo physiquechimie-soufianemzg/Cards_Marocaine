@@ -468,72 +468,6 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 
 /* ===== MULTIPLAYER INDICATOR IN HEADER ===== */
 .mp-mode-badge{display:inline-block;padding:2px 8px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-size:.65rem;font-weight:900;margin-right:6px;letter-spacing:.5px}
-
-/* ===== FLOATING CHAT NOTIFICATIONS ===== */
-.mp-float-notif {
-  position: fixed;
-  top: 60px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-20px);
-  background: linear-gradient(135deg, rgba(26,42,74,0.95), rgba(13,31,60,0.95));
-  border: 1px solid rgba(212,175,55,0.4);
-  border-radius: 16px;
-  padding: 10px 20px;
-  color: var(--text);
-  font-size: .95rem;
-  z-index: 300;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  max-width: 85vw;
-  text-align: center;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.mp-float-notif.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-  pointer-events: auto;
-}
-.mp-float-notif .notif-name {
-  color: var(--gold);
-  font-weight: 700;
-  font-size: .8rem;
-  margin-bottom: 2px;
-}
-.mp-float-notif .notif-text {
-  color: var(--text);
-  word-break: break-word;
-}
-
-
-/* ===== FRIEND SYSTEM ===== */
-.mp-section-friends { margin-top: 10px; }
-.friend-list { max-height: 120px; overflow-y: auto; margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
-.friend-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.15); border-radius: 10px; font-size: .85rem; }
-.friend-item .friend-name { color: var(--text); font-weight: 600; }
-.friend-item .friend-actions { display: flex; gap: 6px; }
-.friend-btn-sm { padding: 4px 10px; border: 1px solid var(--gold); background: transparent; color: var(--gold); border-radius: 8px; cursor: pointer; font-size: .75rem; font-family: 'Cairo',sans-serif; transition: all .2s; }
-.friend-btn-sm:hover { background: var(--gold); color: var(--bg1); }
-.friend-btn-sm.danger { border-color: #ef4444; color: #ef4444; }
-.friend-btn-sm.danger:hover { background: #ef4444; color: #fff; }
-.mp-add-friend-row { display: flex; gap: 6px; margin-top: 6px; }
-.mp-add-friend-row input { flex: 1; }
-.mp-field { width: 100%; padding: 9px 14px; border: 1px solid rgba(212,175,55,0.3); background: rgba(255,255,255,0.05); color: var(--text); border-radius: 10px; font-size: .9rem; font-family: 'Cairo',sans-serif; outline: none; transition: border-color .2s; }
-.mp-field:focus { border-color: var(--gold); }
-.mp-field::placeholder { color: rgba(196,168,106,0.5); }
-.mp-row { display: flex; gap: 8px; align-items: center; }
-.friend-status { font-size: .7rem; padding: 1px 6px; border-radius: 6px; }
-.friend-status.online { background: rgba(74,222,128,0.2); color: #4ade80; }
-.friend-status.offline { background: rgba(148,163,184,0.2); color: #94a3b8; }
-.incoming-req { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.25); border-radius: 10px; margin-bottom: 6px; }
-.incoming-req .req-text { font-size: .85rem; color: var(--text); }
-.incoming-req .req-actions { display: flex; gap: 6px; }
-.mp-account-info { font-size: .8rem; color: var(--text-d); text-align: center; margin-bottom: 8px; cursor: pointer; padding: 4px; border-radius: 6px; transition: background .2s; }
-.mp-account-info:hover { background: rgba(255,255,255,0.05); }
-.mp-account-info:active { background: rgba(255,255,255,0.08); }
-
 </style>
 </head>
 <body>
@@ -577,32 +511,15 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
   <!-- MULTIPLAYER SECTION -->
   <div class="mp-section" id="mpSection">
     <div class="mp-section-title">🌐 <span data-t="onlinePlay">لعب أون لاين مع صديق</span></div>
-    <div class="mp-tabs" id="mpTabs">
-      <button class="mp-tab" onclick="setMpTab('friends')" data-t="friendsTab">👥 أصدقاء</button>
+    <div class="mp-tabs">
       <button class="mp-tab on" onclick="setMpTab('create')" data-t="createRoom">إنشاء غرفة</button>
       <button class="mp-tab" onclick="setMpTab('join')" data-t="joinRoom">انضمام برمز</button>
     </div>
     <input class="mp-field" id="mpName" placeholder="اسمك" maxlength="24" value="">
-    <!-- FRIENDS TAB -->
-    <div id="mpFriendsBox" style="display:none">
-      <div style="color:var(--text-d);font-size:.78rem;text-align:center;margin:6px 0;line-height:1.6">
-        أضف أصدقاءك لمرة واحدة باستخدام معرّفهم الشخصي، ثم أرسل لهم طلب لعب مباشرة بدون رمز غرفة.
-        <br><span style="color:var(--gold)">معرّفك: <span id="mpMyIdDisplay" style="cursor:pointer;user-select:all" onclick="mpCopyMyId()"></span></span>
-        <span style="font-size:.7rem;opacity:.6">(انقر للنسخ)</span>
-      </div>
-      <div class="friend-list" id="mpFriendList"></div>
-      <div class="mp-add-friend-row">
-        <input class="mp-field" id="mpFriendIdInput" placeholder="ألصق معرّف صديقك هنا" maxlength="20" style="font-size:.8rem;padding:7px 10px">
-        <button class="friend-btn-sm" onclick="mpSendFriendRequest()" style="white-space:nowrap">➕ أضف صديق</button>
-      </div>
-      <div id="mpIncomingReqs"></div>
-    </div>
-    <!-- CREATE TAB -->
     <div id="mpCreateBox">
       <button class="mp-btn" onclick="mpCreateRoom()" data-t="createRoomBtn">🎮 إنشاء غرفة جديدة</button>
       <div class="mp-status" id="mpCreateStatus"></div>
     </div>
-    <!-- JOIN TAB (default hidden) -->
     <div id="mpJoinBox" style="display:none">
       <div class="mp-row">
         <input class="mp-field" id="mpCode" placeholder="رمز الغرفة (6 أحرف)" maxlength="6" style="text-transform:uppercase;letter-spacing:2px">
@@ -623,11 +540,7 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
     <div style="text-align:center;margin:14px 0">
       <div style="color:var(--text-d);font-size:.85rem;margin-bottom:6px" data-t="roomCode">رمز الغرفة — شاركه مع صديقك</div>
       <div class="mp-code-display" id="mpLobbyCode">------</div>
-      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
-        <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
-        <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;background:linear-gradient(135deg,#3b82f6,#2563eb)" onclick="mpShareLink()">🔗 مشاركة رابط دعوة</button>
-      </div>
-      <div style="color:var(--text-d);font-size:.72rem;margin-top:6px;opacity:.7">أرسل الرابط لصديقك — سيحصل على طلب انضمام تلقائي</div>
+      <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;margin-top:6px" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
     </div>
     <div class="mp-status" id="mpLobbyStatus">⏳ <span data-t="waitingOpponent">بانتظار انضمام اللاعب الثاني...</span></div>
     <div style="display:flex;gap:8px;margin-top:14px">
@@ -639,11 +552,6 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 
 <!-- CHAT TOGGLE BUTTON (visible during multiplayer) -->
 <button id="chatToggle" onclick="toggleChat()">💬<span class="chat-badge" id="chatBadge"></span></button>
-<!-- FLOATING CHAT NOTIFICATION -->
-<div class="mp-float-notif" id="mpFloatNotif">
-  <div class="notif-name" id="mpFloatNotifName"></div>
-  <div class="notif-text" id="mpFloatNotifText"></div>
-</div>
 
 <!-- CHAT PANEL -->
 <div id="chatPanel">
@@ -732,1152 +640,252 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 <script>
 // ============ I18N ============
 const TR={
-  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (6 chars)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting to server...',mpDisconnected:'⚠️ Disconnected from server. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 6-character code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left',mpYourId:'Your ID',friendsTab:'Friends',addFriend:'Add Friend',friendReqSent:'Friend request sent',friendAccepted:'Friend added',friendRemoved:'Friend removed',invalidId:'Invalid ID',playReqSent:'Play request sent',noFriends:'No friends yet'},
-  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (6 caractères)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion au serveur...',mpDisconnected:'⚠️ Déconnecté. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (6 caractères)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes',mpYourId:'Votre identifiant',friendsTab:'Amis',addFriend:'Ajouter',friendReqSent:'Demande envoyée',friendAccepted:'Ami ajouté',friendRemoved:'Ami supprimé',invalidId:'Identifiant invalide',playReqSent:'Invitation envoyée',noFriends:'Pas encore d\'amis'},
-  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (6 أحرف)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال بالخادم...',mpDisconnected:'⚠️ انقطع الاتصال. إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'من فضلك أدخل رمز صحيح من 6 أحرف',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق',mpYourId:'معرّفك',friendsTab:'أصدقاء',addFriend:'أضف صديق',friendReqSent:'تم إرسال طلب الصداقة',friendAccepted:'تم قبول الصداقة',friendRemoved:'تم حذف الصديق',invalidId:'معرّف غير صحيح',playReqSent:'تم إرسال طلب اللعب',noFriends:'لا يوجد أصدقاء بعد'}
+  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (6 chars)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting to server...',mpDisconnected:'⚠️ Disconnected from server. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 6-character code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
+  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (6 caractères)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion au serveur...',mpDisconnected:'⚠️ Déconnecté. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (6 caractères)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
+  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (6 أحرف)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال بالخادم...',mpDisconnected:'⚠️ انقطع الاتصال. إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'من فضلك أدخل رمز صحيح من 6 أحرف',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
 };
 let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
 
 // ============================================================
-// MULTIPLAYER MODULE — ntfy.sh P2P (no server needed!)
-// Uses ntfy.sh as a free pub/sub transport. No dedicated server.
-// Host browser runs the game engine; guest sends actions via ntfy.
-//
-// Transport:  POST to https://ntfy.sh/{topic} for sending,
-//             EventSource from https://ntfy.sh/{topic}/sse for receiving.
-// ntfy SSE format: data field is a JSON wrapper with .message = our payload
-// Chunking:  3200 bytes per chunk, 1.2s delay, 15s assembly window.
-// Ping:      Host sends ping every 25 seconds.
+// MULTIPLAYER MODULE — Socket.IO client
+// Works across different networks via the public preview URL.
+// Server is hosted alongside the Next.js app on port 3003, and
+// Caddy forwards the connection based on ?XTransformPort=3003.
 // ============================================================
+const MP = (() => {
+  let socket = null;
+  let connected = false;
+  let myPlayer = null;     // 'p1' | 'p2'
+  let myName = '';
+  let roomCode = null;
+  let roomState = null;    // last received server state (client view)
+  let pendingAck = {};
+  let chatCallbacks = [];
+  let stateCallbacks = [];
+  let connCallbacks = [];
+  let chatHistory = [];
+  let unreadChat = 0;
 
-class NtfyConn {
-  constructor(topic) {
-    this.topic = topic;
-    this.senderId = Math.random().toString(36).slice(2, 10);
-    this.isHost = false;
-    this.es = null;
-    this.handlers = {};
-    this.connected = false;
-    this.chunks = {};
-    this.pingTimer = null;
-    this.peerSeen = {};
-    this._openResolve = null;
-  }
-
-  subscribe() {
-    var self = this;
-    if (this.es) { try { this.es.close(); } catch (e) {} }
-    var url = 'https://ntfy.sh/' + this.topic + '/sse?since=5m';
-    console.log('[ntfy] Connecting to', url);
-    this.es = new EventSource(url);
-
-    this.es.onopen = function () {
-      console.log('[ntfy] SSE connected to topic:', self.topic);
-      self.connected = true;
-      self._emit('connect', {});
-      if (self._openResolve) { self._openResolve(); self._openResolve = null; }
-    };
-
-    this.es.onerror = function () {
-      console.warn('[ntfy] SSE error, will reconnect...');
-      self.connected = false;
-      self._emit('disconnect', {});
-      if (self._openResolve) { self._openResolve(); self._openResolve = null; }
-      setTimeout(function () { try { self.subscribe(); } catch (e) {} }, 3000);
-    };
-
-    this.es.onmessage = function (evt) {
-      try {
-        // ntfy.sh wraps ALL messages in a JSON envelope:
-        //   {"id":"...","time":...,"event":"message","topic":"...","message":"<our payload>"}
-        // The actual payload is in the .message field as a STRING.
-        var ntfyWrapper = JSON.parse(evt.data);
-
-        // Skip open/keepalive events (they have no .message field)
-        if (!ntfyWrapper.message && ntfyWrapper.event !== 'message') return;
-
-        // The .message field is our JSON payload as a string
-        var msg = JSON.parse(ntfyWrapper.message);
-
-        // Ignore our own messages (ntfy echoes them back)
-        if (msg._f === self.senderId) return;
-
-        // Handle chunked messages
-        if (msg._ch) { self._onChunk(msg); return; }
-
-        // Handle keepalive pings
-        if (msg.type === 'ping') {
-          self._post(JSON.stringify({ type: 'pong', _f: self.senderId }));
-          return;
-        }
-        if (msg.type === 'pong') {
-          self.peerSeen[msg._f] = Date.now();
-          return;
-        }
-
-        // Track peer activity
-        self.peerSeen[msg._f] = Date.now();
-
-        console.log('[ntfy] Received:', msg.type, 'from', msg._f);
-        self._emit('data', msg);
-      } catch (e) {
-        // Ignore non-JSON or malformed messages (keepalive, etc.)
-      }
-    };
-  }
-
-  // Returns a promise that resolves when SSE is open (or fails after timeout)
-  waitOpen(timeoutMs) {
-    var self = this;
-    if (this.connected) return Promise.resolve();
-    return new Promise(function (resolve) {
-      self._openResolve = resolve;
-      setTimeout(function () {
-        if (self._openResolve) { self._openResolve(); self._openResolve = null; }
-      }, timeoutMs || 8000);
+  // Load socket.io client lib dynamically if not present
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) return resolve();
+      const s = document.createElement('script');
+      s.src = src; s.async = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load ' + src));
+      document.head.appendChild(s);
     });
   }
 
-  send(data) {
-    var payload = JSON.stringify(Object.assign({}, data, { _f: this.senderId, _t: Date.now() }));
-    if (payload.length <= 3200) {
-      return this._post(payload);
+  async function ensureSocket() {
+    if (socket && connected) return socket;
+    if (socket) return socket;
+    // Try local socket.io first (served by Next.js page itself via <script src="/socket.io/socket.io.js">)
+    // We bundle a minimal socket.io client loader from CDN as fallback.
+    if (typeof io === 'undefined') {
+      // Try several CDNs in order — works across different networks
+      const cdns = [
+        'https://cdn.socket.io/4.7.5/socket.io.min.js',
+        'https://cdn.jsdelivr.net/npm/socket.io@4.7.5/client-dist/socket.io.min.js',
+        'https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js'
+      ];
+      let loaded = false;
+      for (const src of cdns) {
+        try { await loadScript(src); if (typeof io !== 'undefined') { loaded = true; break; } } catch (e) {}
+      }
+      if (!loaded) throw new Error('Could not load Socket.IO client library. Check your internet connection.');
     }
-    // Chunking for large messages (ntfy.sh limit ~4KB)
-    var chunkId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    var total = Math.ceil(payload.length / 3200);
-    var self = this;
-    for (var i = 0; i < total; i++) {
-      (function (idx) {
-        var part = payload.slice(idx * 3200, (idx + 1) * 3200);
-        var chunkMsg = JSON.stringify({
-          _ch: 1, _cid: chunkId, _ci: idx, _ct: total, _cd: part, _f: self.senderId
-        });
-        setTimeout(function () { self._post(chunkMsg); }, 1200 * idx);
-      })(i);
-    }
-  }
-
-  on(evt, fn) {
-    if (!this.handlers[evt]) this.handlers[evt] = [];
-    this.handlers[evt].push(fn);
-  }
-
-  startPing() {
-    this.isHost = true;
-    var self = this;
-    this.pingTimer = setInterval(function () { self.send({ type: 'ping' }); }, 25000);
-  }
-
-  close() {
-    if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
-    if (this.es) { try { this.es.close(); } catch (e) {} this.es = null; }
-    this.connected = false;
-  }
-
-  _post(body) {
-    // No Content-Type header — ntfy.sh treats entire body as message
-    return fetch('https://ntfy.sh/' + this.topic, {
-      method: 'POST', body: body
-    }).then(function (r) {
-      if (!r.ok) console.warn('[ntfy] POST failed:', r.status);
-    }).catch(function (e) {
-      console.error('[ntfy] POST error:', e);
+    // Connect via the same origin (Caddy will route to port 3003 via XTransformPort)
+    // This works across different networks because the user accesses the page via the
+    // public preview URL, and the WebSocket also goes through that same public URL.
+    const transports = ['websocket', 'polling'];
+    socket = io('/?XTransformPort=3003', {
+      transports,
+      reconnection: true,
+      reconnectionAttempts: 999,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 15000,
+      forceNew: true
     });
-  }
 
-  _emit(evt, data) {
-    (this.handlers[evt] || []).forEach(function (fn) { try { fn(data); } catch (e) {} });
-  }
-
-  _onChunk(msg) {
-    var cid = msg._cid, ci = msg._ci, ct = msg._ct, cd = msg._cd;
-    if (!this.chunks[cid]) {
-      this.chunks[cid] = {
-        parts: new Array(ct),
-        t: setTimeout(function () { delete this.chunks[cid]; }.bind(this), 15000)
-      };
-    }
-    var entry = this.chunks[cid];
-    entry.parts[ci] = cd;
-    var allDone = true;
-    for (var i = 0; i < ct; i++) { if (entry.parts[i] == null) { allDone = false; break; } }
-    if (allDone) {
-      clearTimeout(entry.t);
-      delete this.chunks[cid];
-      try {
-        var fullJson = entry.parts.join('');
-        var data = JSON.parse(fullJson);
-        this.peerSeen[data._f] = Date.now();
-        this._emit('data', data);
-      } catch (e) {}
-    }
-  }
-}
-
-// ============================================================
-// Host-side Game Engine (runs entirely in the host's browser)
-// Reuses existing single-player engine functions.
-// ============================================================
-var HostEngine = {
-  _s: null,
-  _settings: {},
-  _players: {},
-  _chat: [],
-  _code: '',
-
-  init: function (settings, players) {
-    this._settings = settings;
-    this._players = players;
-    this._chat = [];
-    var _g = gameMode, _sc = scoringMode, _tr = totalRounds;
-    gameMode = settings.mode;
-    scoringMode = settings.scoring;
-    totalRounds = settings.totalRounds;
-    try {
-      if (settings.mode === 'hazz2') {
-        this._s = newGSHazz2();
-      } else {
-        this._s = newGS(null);
+    socket.on('connect', () => {
+      connected = true;
+      connCallbacks.forEach(cb => cb({ connected: true }));
+    });
+    socket.on('disconnect', () => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false }));
+    });
+    socket.on('connect_error', () => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false, error: true }));
+    });
+    socket.on('reconnect', () => {
+      connCallbacks.forEach(cb => cb({ connected: true, reconnected: true }));
+      // Try to rejoin if we have a room code
+      if (roomCode && myName) {
+        socket.emit('room:reconnect', { code: roomCode, name: myName });
       }
-    } finally {
-      gameMode = _g; scoringMode = _sc; totalRounds = _tr;
-    }
-  },
-
-  processAction: function (player, action, data) {
-    var _g = gameMode, _sc = scoringMode, _tr = totalRounds;
-    gameMode = this._settings.mode;
-    scoringMode = this._settings.scoring;
-    totalRounds = this._settings.totalRounds;
-    try {
-      return this._doAction(player, action, data);
-    } finally {
-      gameMode = _g; scoringMode = _sc; totalRounds = _tr;
-    }
-  },
-
-  _doAction: function (player, action, data) {
-    var isP = player === 'p1';
-    var turnKey = isP ? 'p' : 'c';
-    var s = this._s;
-    if (!s) return null;
-
-    if (action === 'play') {
-      if (s.phase !== 'play' || s.turn !== turnKey) {
-        console.warn('[HostEngine] REJECTED play from', player, '- not their turn. turn=', s.turn, 'phase=', s.phase);
-        return null;
+    });
+    socket.on('room:state', (data) => {
+      roomState = data;
+      myPlayer = data.myPlayer;
+      roomCode = data.code;
+      // Update chat history (server sends last 50)
+      chatHistory = data.chat || [];
+      stateCallbacks.forEach(cb => cb(data));
+    });
+    socket.on('chat:message', (msg) => {
+      chatHistory.push(msg);
+      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+      chatCallbacks.forEach(cb => cb(msg));
+      // Increment unread if chat panel is closed
+      const panel = document.getElementById('chatPanel');
+      if (panel && !panel.classList.contains('open') && msg.from !== myPlayer) {
+        unreadChat++;
+        updateChatBadge();
       }
-      if (this._settings.mode === 'hazz2') {
-        var ns = hazz2Play(s, data.ci, isP, data.newSuit || null);
-        if (!ns) return null;
-        this._s = ns;
-      } else {
-        this._s = doPlay(s, data.ci, isP, data.chosenCap || null);
+    });
+    socket.on('chat:typing', (data) => {
+      const el = document.getElementById('chatTyping');
+      if (el) {
+        el.textContent = t('mpTyping', { name: data.name });
+        clearTimeout(window._mpTypingTimer);
+        window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
       }
-      return true;
-    }
-    if (action === 'draw') {
-      if (s.phase !== 'play' || s.turn !== turnKey) return null;
-      if (this._settings.mode === 'hazz2') {
-        var r = hazz2DrawVoluntary(s, isP);
-        if (r && r.state) this._s = r.state;
-      }
-      return true;
-    }
-    if (action === 'penalty') {
-      if (s.phase !== 'play' || s.turn !== turnKey) return null;
-      if (this._settings.mode === 'hazz2') {
-        var r2 = hazz2ApplyPenalty(s, isP);
-        if (r2 && r2.state) this._s = r2.state;
-      }
-      return true;
-    }
-    if (action === 'next-round') {
-      if (s.phase !== 'roundEnd') return null;
-      this._s = this._settings.mode === 'hazz2' ? newGSHazz2() : newGS(s);
-      return true;
-    }
-    if (action === 'restart') {
-      this._s = this._settings.mode === 'hazz2' ? newGSHazz2() : newGS(null);
-      return true;
-    }
-    return null;
-  },
+    });
 
-  getCaptureOptions: function (player, ci) {
-    var _g = gameMode;
-    gameMode = this._settings.mode;
-    try {
-      var isP = player === 'p1';
-      var hand = isP ? this._s.pH : this._s.cH;
-      var card = hand[ci];
-      if (!card) return [];
-      return findCaps(card, this._s.table);
-    } finally {
-      gameMode = _g;
-    }
-  },
-
-  getStateFor: function (player) {
-    var s = this._s;
-    if (!s) return null;
-    var _g = gameMode, _sc = scoringMode, _tr = totalRounds;
-    gameMode = this._settings.mode;
-    scoringMode = this._settings.scoring;
-    totalRounds = this._settings.totalRounds;
-    try {
-      var isP1 = player === 'p1';
-      var pHand = isP1 ? s.pH : s.cH;
-      var oHand = isP1 ? s.cH : s.pH;
-      var pCap = isP1 ? (s.pCap || []) : (s.cCap || []);
-      var oCap = isP1 ? (s.cCap || []) : (s.pCap || []);
-      var pTotal = isP1 ? s.pTotal : s.cTotal;
-      var oTotal = isP1 ? s.cTotal : s.pTotal;
-      var pRS = calcSc(pCap);
-      var oRS = calcSc(oCap);
-      var isMyTurn = s.phase === 'play' &&
-        ((isP1 && s.turn === 'p') || (!isP1 && s.turn === 'c'));
-      var winner = null;
-      if (s.phase === 'end') winner = s.winner === 'p' ? 'p1' : 'p2';
-      return {
-        myHand: pHand.map(function (c) { return { id: c.id, value: c.value, suit: c.suit, img: c.img }; }),
-        oppHandCount: oHand.length,
-        table: s.table.map(function (c) { return { id: c.id, value: c.value, suit: c.suit, img: c.img }; }),
-        myTotal: pTotal, oppTotal: oTotal,
-        myRoundScore: pRS, oppRoundScore: oRS,
-        myCaptures: pCap, oppCaptures: oCap,
-        round: s.round, totalRounds: this._settings.totalRounds,
-        isMyTurn: isMyTurn, phase: s.phase, winner: winner,
-        deckCount: s.deck.length,
-        currentSuit: s.currentSuit || null,
-        skipCounter: s.skipCounter || 0,
-        drawCounter: s.drawCounter || 0
-      };
-    } finally {
-      gameMode = _g; scoringMode = _sc; totalRounds = _tr;
-    }
-  },
-
-  getFullState: function (player) {
-    var gs = this.getStateFor(player);
-    if (!gs) {
-      return {
-        code: this._code, mode: this._settings.mode, scoring: this._settings.scoring,
-        totalRounds: this._settings.totalRounds, gameStarted: false,
-        players: {
-          p1: { name: this._players.p1.name, connected: true },
-          p2: { name: this._players.p2.name || '', connected: !!this._players.p2.senderId }
-        },
-        chat: this._chat.slice()
-      };
-    }
-    return {
-      code: this._code, mode: this._settings.mode, scoring: this._settings.scoring,
-      totalRounds: this._settings.totalRounds, gameStarted: true,
-      players: {
-        p1: { name: this._players.p1.name, connected: true },
-        p2: { name: this._players.p2.name || '', connected: true }
-      },
-      chat: this._chat.slice(),
-      gameState: gs
-    };
-  },
-
-  addChat: function (msg) {
-    this._chat.push(msg);
-    if (this._chat.length > 200) this._chat = this._chat.slice(-200);
-  }
-};
-
-// ============================================================
-// MP Module — same public API as old Socket.IO version,
-// now powered entirely by ntfy.sh (no server needed!)
-// ============================================================
-var MP = (() => {
-  var conn = null;
-  var myPlayer = null;
-  var myName = '';
-  var roomCode = null;
-  var roomState = null;
-  var chatCallbacks = [];
-  var stateCallbacks = [];
-  var connCallbacks = [];
-  var chatHistory = [];
-  var unreadChat = 0;
-  var pendingReqs = {};
-  var _reqId = 0;
-
-  function genCode() {
-    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    var c = '';
-    for (var i = 0; i < 6; i++) c += chars[0 | Math.random() * chars.length];
-    return c;
-  }
-
-  function makeTopic(code) { return 'qt5-' + code.toLowerCase(); }
-
-  function notifyConn(data) {
-    connCallbacks.forEach(function (cb) { try { cb(data); } catch (e) {} });
-  }
-
-  function notifyState(state) {
-    roomState = state;
-    stateCallbacks.forEach(function (cb) { try { cb(state); } catch (e) {} });
-  }
-
-  function notifyChat(msg) {
-    chatHistory.push(msg);
-    if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
-    chatCallbacks.forEach(function (cb) { try { cb(msg); } catch (e) {} });
-    var panel = document.getElementById('chatPanel');
-    if (panel && !panel.classList.contains('open') && msg.from !== myPlayer) {
-      unreadChat++;
-      updateChatBadge();
-    }
+    return socket;
   }
 
   function updateChatBadge() {
-    var badge = document.getElementById('chatBadge');
+    const badge = document.getElementById('chatBadge');
     if (badge) badge.textContent = unreadChat > 0 ? (unreadChat > 9 ? '9+' : String(unreadChat)) : '';
-  }
-
-  function broadcastState() {
-    if (myPlayer !== 'p1') return;
-    var state = HostEngine.getFullState('p1');
-    state.myPlayer = 'p1';
-    notifyState(state);
-    if (conn) {
-      var guestState = HostEngine.getFullState('p2');
-      guestState.myPlayer = 'p2';
-      conn.send({ type: 'game:state', state: guestState });
-      console.log('[MP] State broadcasted to guest');
-    }
-  }
-
-  // --- Host message handlers ---
-  function setupHostHandlers() {
-    conn.on('data', function (msg) {
-      if (!msg || !msg.type) return;
-
-      if (msg.type === 'join') {
-        console.log('[MP] Guest joined:', msg.name, 'senderId:', msg._f);
-        HostEngine._players.p2 = { name: msg.name || 'Player 2', senderId: msg._f, connected: true };
-        HostEngine._code = roomCode;
-        conn.send({
-          type: 'welcome', _to: msg._f, player: 'p2',
-          settings: { mode: HostEngine._settings.mode, scoring: HostEngine._settings.scoring, totalRounds: HostEngine._settings.totalRounds },
-          hostName: myName, code: roomCode
-        });
-        console.log('[MP] Welcome sent to guest');
-        var lobbyState = HostEngine.getFullState('p1');
-        lobbyState.myPlayer = 'p1';
-        notifyState(lobbyState);
-        var sysMsg = { id: Date.now().toString(36), from: 'system', name: 'System',
-          text: t('mpNameJoined', { name: msg.name || 'Player 2' }), ts: Date.now() };
-        HostEngine.addChat(sysMsg);
-        notifyChat(sysMsg);
-        return;
-      }
-
-      if (msg.type === 'action' && myPlayer === 'p1') {
-        console.log('[MP] Guest action:', msg.action);
-        var result = HostEngine.processAction('p2', msg.action, msg.data);
-        if (result) broadcastState();
-        return;
-      }
-
-      if (msg.type === 'capture-options' && myPlayer === 'p1') {
-        var options = HostEngine.getCaptureOptions('p2', msg.ci);
-        conn.send({ type: 'capture-options-resp', _to: msg._f, _reqId: msg._reqId, options: options });
-        return;
-      }
-
-      if (msg.type === 'chat') {
-        var chatMsg = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-          from: 'p2', name: msg.name || 'P2', text: msg.text, ts: Date.now() };
-        HostEngine.addChat(chatMsg);
-        notifyChat(chatMsg);
-        return;
-      }
-
-      if (msg.type === 'chat:typing') {
-        var el = document.getElementById('chatTyping');
-        if (el) {
-          el.textContent = t('mpTyping', { name: msg.name || '...' });
-          clearTimeout(window._mpTypingTimer);
-          window._mpTypingTimer = setTimeout(function () { el.textContent = ''; }, 3000);
-        }
-        return;
-      }
-    });
-  }
-
-  // --- Guest message handlers ---
-  function setupGuestHandlers() {
-    conn.on('data', function (msg) {
-      if (!msg || !msg.type) return;
-      console.log('[MP-Guest] Received:', msg.type);
-
-      if (msg.type === 'welcome' && msg._to === conn.senderId) {
-        console.log('[MP-Guest] Got welcome from host!');
-        myPlayer = 'p2';
-        roomCode = msg.code;
-        var s = msg.settings;
-        if (s) { gameMode = s.mode; scoringMode = s.scoring; totalRounds = s.totalRounds; }
-        notifyConn({ connected: true });
-        notifyState({
-          code: roomCode, mode: s ? s.mode : gameMode,
-          scoring: s ? s.scoring : scoringMode, totalRounds: s ? s.totalRounds : totalRounds,
-          gameStarted: false,
-          players: { p1: { name: msg.hostName || 'Host', connected: true }, p2: { name: myName, connected: true } },
-          chat: []
-        });
-        return;
-      }
-
-      if (msg.type === 'game:state') {
-        var state = msg.state;
-        if (state) {
-          state.myPlayer = 'p2';
-          if (state.chat && state.chat.length > chatHistory.length) {
-            state.chat.slice(chatHistory.length).forEach(function (m) {
-              if (!chatHistory.find(function (c) { return c.id === m.id; })) {
-                chatHistory.push(m);
-                chatCallbacks.forEach(function (cb) { try { cb(m); } catch (e) {} });
-              }
-            });
-          }
-          notifyState(state);
-        }
-        return;
-      }
-
-      if (msg.type === 'capture-options-resp' && msg._to === conn.senderId) {
-        var id = msg._reqId;
-        if (pendingReqs[id]) { pendingReqs[id](msg.options || []); delete pendingReqs[id]; }
-        return;
-      }
-
-      if (msg.type === 'chat') {
-        var chatMsg = { id: Date.now().toString(36), from: 'p1', name: msg.name || 'P1',
-          text: msg.text, ts: Date.now() };
-        chatHistory.push(chatMsg);
-        chatCallbacks.forEach(function (cb) { try { cb(chatMsg); } catch (e) {} });
-        var panel = document.getElementById('chatPanel');
-        if (panel && !panel.classList.contains('open') && chatMsg.from !== myPlayer) { unreadChat++; updateChatBadge(); }
-        return;
-      }
-
-      if (msg.type === 'chat:typing') {
-        var el = document.getElementById('chatTyping');
-        if (el) {
-          el.textContent = t('mpTyping', { name: msg.name || '...' });
-          clearTimeout(window._mpTypingTimer);
-          window._mpTypingTimer = setTimeout(function () { el.textContent = ''; }, 3000);
-        }
-        return;
-      }
-    });
   }
 
   // ============ Public API ============
   return {
-    onConnection: function (cb) { connCallbacks.push(cb); },
-    onState: function (cb) { stateCallbacks.push(cb); },
-    onChat: function (cb) { chatCallbacks.push(cb); },
-    isConnected: function () { return conn && conn.connected; },
-    getMyPlayer: function () { return myPlayer; },
-    getMyName: function () { return myName; },
-    getRoomCode: function () { return roomCode; },
-    getRoomState: function () { return roomState; },
-    getChatHistory: function () { return chatHistory; },
-    resetUnread: function () { unreadChat = 0; updateChatBadge(); },
+    onConnection(cb) { connCallbacks.push(cb); },
+    onState(cb) { stateCallbacks.push(cb); },
+    onChat(cb) { chatCallbacks.push(cb); },
+    isConnected() { return connected; },
+    getMyPlayer() { return myPlayer; },
+    getMyName() { return myName; },
+    getRoomCode() { return roomCode; },
+    getRoomState() { return roomState; },
+    getChatHistory() { return chatHistory; },
+    resetUnread() { unreadChat = 0; updateChatBadge(); },
 
-    createRoom: function (name, mode, scoring, rounds) {
+    async createRoom(name, mode, scoring, totalRounds) {
       myName = (name || 'Player').slice(0, 24);
-      roomCode = genCode();
-      var topic = makeTopic(roomCode);
-      conn = new NtfyConn(topic);
-      conn.subscribe();
-      conn.startPing();
-      myPlayer = 'p1';
-      HostEngine._settings = { mode: mode, scoring: scoring, totalRounds: rounds };
-      HostEngine._players = {
-        p1: { name: myName, senderId: conn.senderId, connected: true },
-        p2: { name: '', senderId: '', connected: false }
-      };
-      HostEngine._code = roomCode;
-      setupHostHandlers();
-      notifyConn({ connected: true });
-      notifyState({
-        code: roomCode, mode: mode, scoring: scoring, totalRounds: rounds,
-        gameStarted: false,
-        players: { p1: { name: myName, connected: true }, p2: { name: '', connected: false } },
-        chat: []
-      });
-      console.log('[MP] Room created:', roomCode, 'topic:', topic, 'senderId:', conn.senderId);
-      return Promise.resolve({ ok: true, code: roomCode, player: 'p1' });
-    },
-
-    joinRoom: function (name, code) {
-      myName = (name || 'Player').slice(0, 24);
-      roomCode = code.toUpperCase();
-      var topic = makeTopic(roomCode);
-      conn = new NtfyConn(topic);
-      conn.subscribe();
-      setupGuestHandlers();
-      console.log('[MP] Joining room:', roomCode, 'topic:', topic);
-      // Wait for SSE to be open, then send join
-      return conn.waitOpen(8000).then(function () {
-        console.log('[MP] SSE open, sending join...');
-        conn.send({ type: 'join', name: myName });
-        return new Promise(function (resolve, reject) {
-          var timer = setTimeout(function () {
-            console.error('[MP] Timed out waiting for welcome');
-            reject(new Error('Room not found or host not available'));
-          }, 15000);
-          var checkWelcome = function (state) {
-            if (myPlayer === 'p2') {
-              clearTimeout(timer);
-              var idx = stateCallbacks.indexOf(checkWelcome);
-              if (idx >= 0) stateCallbacks.splice(idx, 1);
-              console.log('[MP] Successfully joined room!');
-              resolve({ ok: true, code: roomCode, player: 'p2' });
-            }
-          };
-          stateCallbacks.push(checkWelcome);
+      await ensureSocket();
+      return new Promise((resolve, reject) => {
+        socket.emit('room:create', { name: myName, mode, scoring, totalRounds }, (r) => {
+          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
+          else reject(new Error(r && r.error ? r.error : 'Failed to create room'));
         });
+        // Timeout fallback
+        setTimeout(() => reject(new Error('Server did not respond')), 12000);
       });
     },
 
-    startGame: function () {
-      if (myPlayer !== 'p1' || !conn) return;
-      HostEngine.init(HostEngine._settings, HostEngine._players);
-      var starterName = HostEngine._s.turn === 'p' ? HostEngine._players.p1.name : (HostEngine._players.p2.name || 'Player 2');
-      var sysMsg = { id: Date.now().toString(36), from: 'system', name: 'System',
-        text: t('mpGameStarted', { name: starterName }), ts: Date.now() };
-      HostEngine.addChat(sysMsg);
-      notifyChat(sysMsg);
-      broadcastState();
-    },
-
-    playCard: function (ci, chosenCap, newSuit) {
-      if (!conn) return;
-      if (myPlayer === 'p1') {
-        var result = HostEngine.processAction('p1', 'play', { ci: ci, chosenCap: chosenCap, newSuit: newSuit });
-        if (result) broadcastState();
-      } else {
-        conn.send({ type: 'action', action: 'play', data: { ci: ci, chosenCap: chosenCap, newSuit: newSuit } });
-      }
-    },
-
-    requestCaptureOptions: function (ci) {
-      return new Promise(function (resolve, reject) {
-        if (!conn) return reject(new Error('Not connected'));
-        if (myPlayer === 'p1') {
-          resolve(HostEngine.getCaptureOptions('p1', ci) || []);
-        } else {
-          var reqId = String(++_reqId);
-          pendingReqs[reqId] = resolve;
-          conn.send({ type: 'capture-options', ci: ci, _reqId: reqId });
-          setTimeout(function () { if (pendingReqs[reqId]) { delete pendingReqs[reqId]; reject(new Error('Timeout')); } }, 8000);
-        }
+    async joinRoom(name, code) {
+      myName = (name || 'Player').slice(0, 24);
+      await ensureSocket();
+      return new Promise((resolve, reject) => {
+        socket.emit('room:join', { code, name: myName }, (r) => {
+          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
+          else reject(new Error(r && r.error ? r.error : 'Failed to join room'));
+        });
+        setTimeout(() => reject(new Error('Server did not respond')), 12000);
       });
     },
 
-    applyPenalty: function () {
-      if (!conn) return;
-      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'penalty', {}); broadcastState(); }
-      else { conn.send({ type: 'action', action: 'penalty', data: {} }); }
+    startGame() {
+      if (!socket) return;
+      socket.emit('game:start', {}, () => {});
     },
 
-    drawCard: function () {
-      if (!conn) return;
-      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'draw', {}); broadcastState(); }
-      else { conn.send({ type: 'action', action: 'draw', data: {} }); }
+    playCard(ci, chosenCap, newSuit) {
+      if (!socket) return;
+      socket.emit('game:play', { ci, chosenCap, newSuit }, () => {});
     },
 
-    nextRound: function () {
-      if (!conn) return;
-      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'next-round', {}); broadcastState(); }
-      else { conn.send({ type: 'action', action: 'next-round', data: {} }); }
+    requestCaptureOptions(ci) {
+      return new Promise((resolve, reject) => {
+        if (!socket) return reject(new Error('Not connected'));
+        socket.emit('game:capture-options', { ci }, (r) => {
+          if (r && r.ok) resolve(r.options || []);
+          else reject(new Error(r && r.error ? r.error : 'Failed'));
+        });
+        setTimeout(() => reject(new Error('No response')), 8000);
+      });
     },
 
-    restart: function () {
-      if (!conn) return;
-      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'restart', {}); broadcastState(); }
-      else { conn.send({ type: 'action', action: 'restart', data: {} }); }
+    applyPenalty() {
+      if (!socket) return;
+      socket.emit('game:penalty', {}, () => {});
     },
 
-    sendChat: function (text) {
-      if (!conn || !text.trim()) return;
-      var chatMsg = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-        from: myPlayer, name: myName, text: text.slice(0, 500), ts: Date.now() };
-      if (myPlayer === 'p1') {
-        HostEngine.addChat(chatMsg); notifyChat(chatMsg);
-        conn.send({ type: 'chat', name: myName, text: text.slice(0, 500) });
-      } else {
-        conn.send({ type: 'chat', name: myName, text: text.slice(0, 500) });
-        chatHistory.push(chatMsg);
-        chatCallbacks.forEach(function (cb) { try { cb(chatMsg); } catch (e) {} });
-      }
+    drawCard() {
+      if (!socket) return;
+      socket.emit('game:draw', {}, () => {});
     },
 
-    sendTyping: function () {
-      if (!conn) return;
-      conn.send({ type: 'chat:typing', name: myName });
+    nextRound() {
+      if (!socket) return;
+      socket.emit('game:next-round', {}, () => {});
     },
 
-    leaveRoom: function () {
-      if (conn) { conn.send({ type: 'leave', name: myName }); conn.close(); conn = null; }
+    restart() {
+      if (!socket) return;
+      socket.emit('game:restart', {}, () => {});
+    },
+
+    sendChat(text) {
+      if (!socket || !text.trim()) return;
+      socket.emit('chat:send', { text: text.slice(0, 500) }, () => {});
+    },
+
+    sendTyping() {
+      if (!socket) return;
+      socket.emit('chat:typing', {});
+    },
+
+    leaveRoom() {
+      if (!socket) return;
+      socket.emit('room:leave', {}, () => {});
       roomCode = null; myPlayer = null; roomState = null; chatHistory = [];
-      HostEngine._s = null;
     }
   };
 })();
-
-
-// ============================================================
-// FRIEND / ACCOUNT SYSTEM (localStorage + ntfy.sh)
-// Each user has a persistent ID stored in localStorage.
-// Friends list and incoming requests are also in localStorage.
-// Play requests go through ntfy.sh on personal topics.
-// ============================================================
-var FriendSystem = (function() {
-  var STORAGE_KEY = 'kanza_account';
-  var account = null;
-  var notifConn = null; // separate ntfy connection for friend notifications
-  var playReqCallbacks = {};
-
-  function getOrCreateAccount() {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try { account = JSON.parse(raw); } catch(e) { account = null; }
-    }
-    if (!account || !account.userId) {
-      account = {
-        userId: 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-        name: '',
-        friends: [], // [{userId, name, addedAt}]
-        incomingReqs: [] // [{fromUserId, fromName, ts}]
-      };
-      saveAccount();
-    }
-    return account;
-  }
-
-  function saveAccount() {
-    if (!account) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(account));
-  }
-
-  function getMyId() {
-    if (!account) getOrCreateAccount();
-    return account.userId;
-  }
-
-  function getMyName() {
-    if (!account) getOrCreateAccount();
-    return account.name;
-  }
-
-  function setMyName(name) {
-    if (!account) getOrCreateAccount();
-    account.name = name;
-    saveAccount();
-  }
-
-  function getFriends() {
-    if (!account) getOrCreateAccount();
-    return account.friends || [];
-  }
-
-  function getIncomingReqs() {
-    if (!account) getOrCreateAccount();
-    return account.incomingReqs || [];
-  }
-
-  function addFriend(userId, name) {
-    if (!account) getOrCreateAccount();
-    // Check if already a friend
-    if (account.friends.find(function(f) { return f.userId === userId; })) return;
-    account.friends.push({ userId: userId, name: name, addedAt: Date.now() });
-    // Remove from incoming reqs if present
-    account.incomingReqs = (account.incomingReqs || []).filter(function(r) { return r.fromUserId !== userId; });
-    saveAccount();
-  }
-
-  function removeFriend(userId) {
-    if (!account) getOrCreateAccount();
-    account.friends = (account.friends || []).filter(function(f) { return f.userId !== userId; });
-    saveAccount();
-  }
-
-  function addIncomingReq(fromUserId, fromName) {
-    if (!account) getOrCreateAccount();
-    // Don't duplicate
-    if (account.incomingReqs.find(function(r) { return r.fromUserId === fromUserId; })) return;
-    account.incomingReqs.push({ fromUserId: fromUserId, fromName: fromName, ts: Date.now() });
-    saveAccount();
-  }
-
-  function getNotifTopic(userId) {
-    return 'qt5-notif-' + userId;
-  }
-
-  // Start listening for friend requests and play requests
-  function startListening(onPlayRequest, onFriendAccepted) {
-    var myId = getMyId();
-    var topic = getNotifTopic(myId);
-    notifConn = new NtfyConn(topic);
-    notifConn.subscribe();
-
-    notifConn.on('data', function(msg) {
-      if (!msg || !msg.type) return;
-
-      if (msg.type === 'friend-request') {
-        // Someone wants to be friends
-        console.log('[Friends] Got friend request from', msg.fromName, msg._f);
-        addIncomingReq(msg.fromUserId, msg.fromName);
-        renderFriendsUI();
-        showFloatingNotif('↕', msg.fromName + ' يطلب إضافة صديق');
-        return;
-      }
-
-      if (msg.type === 'friend-accepted') {
-        // Someone accepted our friend request
-        console.log('[Friends] Friend request accepted by', msg.fromName);
-        addFriend(msg.fromUserId, msg.fromName);
-        renderFriendsUI();
-        if (onFriendAccepted) onFriendAccepted(msg.fromUserId, msg.fromName);
-        return;
-      }
-
-      if (msg.type === 'play-request') {
-        // Someone wants to play
-        console.log('[Friends] Got play request from', msg.fromName, 'code:', msg.roomCode);
-        if (onPlayRequest) onPlayRequest(msg);
-        return;
-      }
-
-      if (msg.type === 'play-cancel') {
-        console.log('[Friends] Play request cancelled by', msg.fromName);
-        return;
-      }
-    });
-  }
-
-  function stopListening() {
-    if (notifConn) { try { notifConn.close(); } catch(e) {} notifConn = null; }
-  }
-
-  // Send a friend request to someone
-  function sendFriendRequest(targetUserId, myName) {
-    if (!account) getOrCreateAccount();
-    var topic = getNotifTopic(targetUserId);
-    // Send via a temporary connection or direct POST
-    var payload = JSON.stringify({
-      type: 'friend-request',
-      fromUserId: account.userId,
-      fromName: myName || account.name || 'Player',
-      _f: account.userId,
-      _t: Date.now()
-    });
-    fetch('https://ntfy.sh/' + topic, { method: 'POST', body: payload })
-      .catch(function(e) { console.error('[Friends] Failed to send friend request:', e); });
-  }
-
-  // Accept a friend request (notifies the requester)
-  function acceptFriendRequest(fromUserId) {
-    if (!account) getOrCreateAccount();
-    var myName = account.name || 'Player';
-    // Add them locally
-    addFriend(fromUserId, '');
-    // Notify them
-    var topic = getNotifTopic(fromUserId);
-    var payload = JSON.stringify({
-      type: 'friend-accepted',
-      fromUserId: account.userId,
-      fromName: myName,
-      _f: account.userId,
-      _t: Date.now()
-    });
-    fetch('https://ntfy.sh/' + topic, { method: 'POST', body: payload })
-      .catch(function(e) { console.error('[Friends] Failed to send accept:', e); });
-    renderFriendsUI();
-  }
-
-  // Reject (just remove from incoming)
-  function rejectFriendRequest(fromUserId) {
-    if (!account) getOrCreateAccount();
-    account.incomingReqs = (account.incomingReqs || []).filter(function(r) { return r.fromUserId !== fromUserId; });
-    saveAccount();
-    renderFriendsUI();
-  }
-
-  // Send a play request to a friend
-  function sendPlayRequest(friendUserId, roomCode, mode, scoring, rounds) {
-    if (!account) getOrCreateAccount();
-    var topic = getNotifTopic(friendUserId);
-    var payload = JSON.stringify({
-      type: 'play-request',
-      fromUserId: account.userId,
-      fromName: account.name || 'Player',
-      roomCode: roomCode,
-      mode: mode, scoring: scoring, rounds: rounds,
-      _f: account.userId,
-      _t: Date.now()
-    });
-    fetch('https://ntfy.sh/' + topic, { method: 'POST', body: payload })
-      .catch(function(e) { console.error('[Friends] Failed to send play request:', e); });
-  }
-
-  return {
-    getOrCreateAccount: getOrCreateAccount,
-    getMyId: getMyId,
-    getMyName: getMyName,
-    setMyName: setMyName,
-    getFriends: getFriends,
-    getIncomingReqs: getIncomingReqs,
-    addFriend: addFriend,
-    removeFriend: removeFriend,
-    sendFriendRequest: sendFriendRequest,
-    acceptFriendRequest: acceptFriendRequest,
-    rejectFriendRequest: rejectFriendRequest,
-    sendPlayRequest: sendPlayRequest,
-    startListening: startListening,
-    stopListening: stopListening
-  };
-})();
-
-// ============================================================
-// FRIENDS UI RENDERING
-// ============================================================
-function renderFriendsUI() {
-  var account = FriendSystem.getOrCreateAccount();
-  var friends = FriendSystem.getFriends();
-  var incoming = FriendSystem.getIncomingReqs();
-
-  // Update account info
-  var infoEl = document.getElementById('mpAccountInfo');
-  if (infoEl) {
-    infoEl.textContent = '🪪 ' + t('mpYourId') + ': ' + account.userId;
-  }
-  var idDisplay = document.getElementById('mpMyIdDisplay');
-  if (idDisplay) {
-    idDisplay.textContent = account.userId;
-  }
-
-  // Update name field
-  var nameField = document.getElementById('mpName');
-  if (nameField && !nameField.value && account.name) {
-    nameField.value = account.name;
-  }
-
-  // Render friend list
-  var listEl = document.getElementById('mpFriendList');
-  if (!listEl) return;
-  listEl.innerHTML = '';
-
-  if (friends.length === 0 && incoming.length === 0) {
-    listEl.innerHTML = '<div style="text-align:center;color:var(--text-d);font-size:.8rem;padding:12px">لا يوجد أصدقاء بعد. أضف صديقك باستخدام معرّفه.</div>';
-  }
-
-  // Show incoming requests first
-  var reqsEl = document.getElementById('mpIncomingReqs');
-  if (reqsEl) {
-    reqsEl.innerHTML = '';
-    incoming.forEach(function(req) {
-      var div = document.createElement('div');
-      div.className = 'incoming-req';
-      div.innerHTML = '<div class="req-text">👤 ' + escapeHtml(req.fromName) + ' يريد إضافة صديق</div>' +
-        '<div class="req-actions">' +
-        '<button class="friend-btn-sm" onclick="mpAcceptFriend('' + req.fromUserId + '',\'' + escapeHtml(req.fromName).replace(/'/g, "\\'") + '\')">✅</button>' +
-        '<button class="friend-btn-sm danger" onclick="mpRejectFriend('' + req.fromUserId + '')">❌</button>' +
-        '</div>';
-      reqsEl.appendChild(div);
-    });
-  }
-
-  // Show friends
-  friends.forEach(function(f) {
-    var div = document.createElement('div');
-    div.className = 'friend-item';
-    div.innerHTML = '<div style="display:flex;align-items:center;gap:8px">' +
-      '<span class="friend-name">👤 ' + escapeHtml(f.name || f.userId) + '</span>' +
-      '<span class="friend-status offline" id="friend-status-' + f.userId + '">● </span>' +
-      '</div>' +
-      '<div class="friend-actions">' +
-      '<button class="friend-btn-sm" onclick="mpInviteFriend('' + f.userId + '',\'' + escapeHtml(f.name || '').replace(/'/g, "\\'") + '\')">🎮</button>' +
-      '<button class="friend-btn-sm danger" onclick="mpRemoveFriend('' + f.userId + '')">✕</button>' +
-      '</div>';
-    listEl.appendChild(div);
-  });
-}
-
-function mpSendFriendRequest() {
-  var input = document.getElementById('mpFriendIdInput');
-  var targetId = input.value.trim();
-  if (!targetId || targetId.length < 5) {
-    showFloatingNotif('⚠️', 'معرّف غير صحيح');
-    return;
-  }
-  var myName = document.getElementById('mpName').value.trim() || 'Player';
-  FriendSystem.setMyName(myName);
-  FriendSystem.sendFriendRequest(targetId, myName);
-  input.value = '';
-  showFloatingNotif('✅', 'تم إرسال طلب الصداقة');
-}
-
-function mpAcceptFriend(userId, fromName) {
-  var myName = document.getElementById('mpName').value.trim() || 'Player';
-  FriendSystem.setMyName(myName);
-  FriendSystem.acceptFriendRequest(userId);
-  // Update the friend name (in case it was empty)
-  if (fromName) {
-    var account = FriendSystem.getOrCreateAccount();
-    var f = account.friends.find(function(fr) { return fr.userId === userId; });
-    if (f && !f.name) f.name = fromName;
-    localStorage.setItem('kanza_account', JSON.stringify(account));
-  }
-  showFloatingNotif('✅', 'تمت إضافة الصديق');
-  renderFriendsUI();
-}
-
-function mpRejectFriend(userId) {
-  FriendSystem.rejectFriendRequest(userId);
-  renderFriendsUI();
-}
-
-function mpRemoveFriend(userId) {
-  FriendSystem.removeFriend(userId);
-  renderFriendsUI();
-  showFloatingNotif('✕', 'تم حذف الصديق');
-}
-
-function mpInviteFriend(friendUserId, friendName) {
-  // Create a room and send the code directly to the friend
-  var name = document.getElementById('mpName').value.trim();
-  if (!name) { showFloatingNotif('⚠️', t('mpEnterName')); return; }
-  FriendSystem.setMyName(name);
-
-  // Create room first
-  mpCreateRoomForFriend(friendUserId, friendName);
-}
-
-async function mpCreateRoomForFriend(friendUserId, friendName) {
-  var name = document.getElementById('mpName').value.trim();
-  var statusEl = document.getElementById('mpCreateStatus');
-  if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
-  statusEl.textContent = t('mpConnecting');
-  statusEl.className = 'mp-status waiting';
-  try {
-    var r = await MP.createRoom(name, gameMode, scoringMode, totalRounds);
-    // Send play request to friend via their notification topic
-    FriendSystem.sendPlayRequest(friendUserId, r.code, gameMode, scoringMode, totalRounds);
-    statusEl.textContent = '';
-    showMpLobby(r.code);
-    showFloatingNotif('🎮', 'تم إرسال طلب اللعب لـ ' + (friendName || 'صديقك'));
-  } catch(e) {
-    statusEl.textContent = t('mpCreateFailed') + ' (' + e.message + ')';
-    statusEl.className = 'mp-status waiting';
-  }
-}
-
-function mpCopyMyId() {
-  var id = FriendSystem.getMyId();
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(id);
-    showFloatingNotif('📋', 'تم نسخ المعرّف: ' + id);
-  }
-}
-
-// Initialize friend system on page load
-(function initFriendSystem() {
-  FriendSystem.getOrCreateAccount();
-  // Start listening for friend/play notifications
-  FriendSystem.startListening(
-    // onPlayRequest callback
-    function(msg) {
-      // Show a modal asking if user wants to join
-      mpShowPlayRequestModal(msg);
-    },
-    // onFriendAccepted callback
-    function(userId, name) {
-      showFloatingNotif('👥', name + ' قبل طلب الصداقة');
-      renderFriendsUI();
-    }
-  );
-})();
-
-function mpShowPlayRequestModal(msg) {
-  var m = document.getElementById('playReqModal');
-  if (!m) {
-    // Create modal if it doesn't exist
-    m = document.createElement('div');
-    m.id = 'playReqModal';
-    m.className = 'mover hidden';
-    m.style.zIndex = '250';
-    m.innerHTML = '<div class="modal" style="max-width:380px;text-align:center" id="playReqContent"></div>';
-    document.body.appendChild(m);
-  }
-  var content = document.getElementById('playReqContent');
-  content.innerHTML =
-    '<h2 style="margin-bottom:12px">🎮 طلب لعب</h2>' +
-    '<p style="margin-bottom:16px;color:var(--text-d)"><strong>' + escapeHtml(msg.fromName) + '</strong> يدعوك للعب!</p>' +
-    '<div style="display:flex;gap:10px;justify-content:center">' +
-    '<button class="mp-btn" style="background:linear-gradient(135deg,#4ade80,#22c55e)" onclick="mpAcceptPlayRequest(\'' + msg.roomCode + '\',\'' + escapeHtml(msg.fromName).replace(/'/g, "\\'") + '\')">✅ انضمام</button>' +
-    '<button class="mp-btn" style="background:linear-gradient(135deg,#ef4444,#dc2626)" onclick="mpDeclinePlayRequest()">❌ رفض</button>' +
-    '</div>';
-  m.classList.remove('hidden');
-  // Auto-dismiss after 30 seconds
-  clearTimeout(window._playReqTimer);
-  window._playReqTimer = setTimeout(function() { m.classList.add('hidden'); }, 30000);
-}
-
-async function mpAcceptPlayRequest(code, hostName) {
-  document.getElementById('playReqModal').classList.add('hidden');
-  var name = document.getElementById('mpName').value.trim();
-  if (!name) name = 'Player';
-  FriendSystem.setMyName(name);
-  // Switch to the room code and join
-  setMpTab('join');
-  var codeInput = document.getElementById('mpCode');
-  codeInput.value = code;
-  await mpJoinRoom();
-}
-
-function mpDeclinePlayRequest() {
-  document.getElementById('playReqModal').classList.add('hidden');
-}
 
 // ============================================================
 // MULTIPLAYER UI HANDLERS
 // ============================================================
-let mpActiveTab = 'create';  // default tab
+let mpActiveTab = 'create';
 
 function setMpTab(tab) {
   mpActiveTab = tab;
   document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('on'));
   event && event.currentTarget && event.currentTarget.classList.add('on');
+  // Just toggle by data-t since event may not be available
   document.querySelectorAll('.mp-tab').forEach(b => {
     const k = b.getAttribute('data-t');
-    const on = (tab === 'friends' && k === 'friendsTab') || (tab === 'create' && k === 'createRoom') || (tab === 'join' && k === 'joinRoom');
+    const on = (tab === 'create' && k === 'createRoom') || (tab === 'join' && k === 'joinRoom');
     b.classList.toggle('on', on);
   });
-  document.getElementById('mpFriendsBox').style.display = tab === 'friends' ? 'block' : 'none';
   document.getElementById('mpCreateBox').style.display = tab === 'create' ? 'block' : 'none';
   document.getElementById('mpJoinBox').style.display = tab === 'join' ? 'block' : 'none';
-  if (tab === 'friends') renderFriendsUI();
 }
 
 async function mpCreateRoom() {
   const name = document.getElementById('mpName').value.trim();
   const statusEl = document.getElementById('mpCreateStatus');
   if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
-  FriendSystem.setMyName(name);
   statusEl.textContent = t('mpConnecting');
   statusEl.className = 'mp-status waiting';
   try {
@@ -1895,7 +903,6 @@ async function mpJoinRoom() {
   const code = document.getElementById('mpCode').value.trim().toUpperCase();
   const statusEl = document.getElementById('mpJoinStatus');
   if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
-  FriendSystem.setMyName(name);
   if (code.length !== 6) { statusEl.textContent = t('mpInvalidCode'); statusEl.className = 'mp-status waiting'; return; }
   statusEl.textContent = t('mpConnecting');
   statusEl.className = 'mp-status waiting';
@@ -2015,8 +1022,6 @@ function mpLeaveLobby() {
   G = null; busy = false; rHist = [];
   document.getElementById('app').style.display = 'none';
   document.body.classList.remove('hazz2-mode');
-  // Refresh friends list
-  renderFriendsUI();
 }
 
 function mpCopyCode() {
@@ -2031,60 +1036,12 @@ function mpCopyCode() {
   }
 }
 
-function mpShareLink() {
-  const code = document.getElementById('mpLobbyCode').textContent;
-  // Build invite URL using current page URL + ?join=CODE
-  const baseUrl = window.location.href.split('?')[0].split('#')[0];
-  const inviteUrl = baseUrl + '?join=' + code;
-  if (navigator.share) {
-    // Use native share on mobile
-    navigator.share({
-      title: 'Kanza 15 - دعوة للعب',
-      text: 'العب معي في كانزا 15! رمز الغرفة: ' + code,
-      url: inviteUrl
-    }).catch(function() {
-      // Fallback: just copy
-      navigator.clipboard && navigator.clipboard.writeText(inviteUrl);
-      showFloatingNotif('📋', 'تم نسخ رابط الدعوة!');
-    });
-  } else {
-    navigator.clipboard && navigator.clipboard.writeText(inviteUrl);
-    showFloatingNotif('📋', 'تم نسخ رابط الدعوة!');
-  }
-}
-
-// Auto-join from URL parameter ?join=CODE
-(function checkInviteLink() {
-  var params = new URLSearchParams(window.location.search);
-  var joinCode = params.get('join');
-  if (joinCode && joinCode.length === 6) {
-    // Wait for page to load, then auto-switch to join tab and fill code
-    setTimeout(function() {
-      // Set tab to join
-      setMpTab('join');
-      var codeInput = document.getElementById('mpCode');
-      if (codeInput) {
-        codeInput.value = joinCode.toUpperCase();
-        // Show a hint
-        var statusEl = document.getElementById('mpJoinStatus');
-        if (statusEl) {
-          statusEl.textContent = '🔗 تم استلام دعوة! أدخل اسمك ثم اضغط "انضمام"';
-          statusEl.className = 'mp-status ready';
-        }
-      }
-      // Clean URL
-      window.history.replaceState({}, '', window.location.pathname);
-    }, 500);
-  }
-})();
-
 // ============================================================
 // MULTIPLAYER GAME INTEGRATION
 // ============================================================
 let mpGameState = null;
 let mpWaitingForSuitChoice = false;
 let mpPendingPlayCi = -1;
-let mpActionLock = false;  // Prevents rapid double-clicks causing desync
 
 function enterMultiplayerGame(state) {
   window._mpInGame = true;
@@ -2187,19 +1144,10 @@ function mpRenderGameState(state) {
       if (counterActive) {
         if (playableIdx.length === 0) {
           drawBtnWrap.style.display = 'none';
-          // Auto-apply penalty — use turn epoch to prevent stale firings
-          var penaltyEpoch = gs.round + '-' + gs.turn + '-' + gs.skipCounter + '-' + gs.drawCounter;
-          if (window._mpPenaltyEpoch !== penaltyEpoch) {
-            window._mpPenaltyEpoch = penaltyEpoch;
-            setTimeout(() => {
-              // Only fire if we're STILL in the same situation
-              var gsNow = mpGameState;
-              var nowEpoch = gsNow ? (gsNow.round + '-' + gsNow.turn + '-' + gsNow.skipCounter + '-' + gsNow.drawCounter) : '';
-              if (nowEpoch === penaltyEpoch && gsNow && gsNow.isMyTurn && gsNow.phase === 'play') {
-                MP.applyPenalty();
-              }
-              window._mpPenaltyEpoch = null;
-            }, 600);
+          // Auto-apply penalty
+          if (!window._mpPenaltyPending) {
+            window._mpPenaltyPending = true;
+            setTimeout(() => { MP.applyPenalty(); window._mpPenaltyPending = false; }, 600);
           }
         } else {
           drawBtnWrap.style.display = 'none';
@@ -2268,25 +1216,14 @@ function mpHazz2CanPlay(card, gs) {
 }
 
 async function onMpPlayCard(ci) {
-  if (mpActionLock) return;
-  mpActionLock = true;
-  try {
   const gs = mpGameState;
   if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
   const card = gs.myHand[ci];
   if (!card) return;
-  // Snapshot the card identity to guard against stale index after async
-  const cardId = card.id;
   sCard();
   // Check if there are multiple capture options (Kanza 15)
   try {
     const options = await MP.requestCaptureOptions(ci);
-    // RE-CHECK: turn may have changed during the async requestCaptureOptions
-    const gs2 = mpGameState;
-    if (!gs2 || !gs2.isMyTurn || gs2.phase !== 'play') return;
-    // Verify card index is still valid and card hasn't changed
-    const cardNow = gs2.myHand[ci];
-    if (!cardNow || cardNow.id !== cardId) return;
     if (options.length > 1) {
       mpShowCaptureChoice(ci, options);
       return;
@@ -2294,11 +1231,8 @@ async function onMpPlayCard(ci) {
     MP.playCard(ci, options.length === 1 ? options[0] : null);
   } catch (e) {
     // Fallback: just play without chosen cap
-    const gs2 = mpGameState;
-    if (!gs2 || !gs2.isMyTurn || gs2.phase !== 'play') return;
     MP.playCard(ci, null);
   }
-  } finally { mpActionLock = false; }
 }
 
 function mpShowCaptureChoice(ci, options) {
@@ -2319,23 +1253,14 @@ function mpShowCaptureChoice(ci, options) {
 }
 
 async function onMpHazz2PlayCard(ci) {
-  if (mpActionLock) return;
-  mpActionLock = true;
-  try {
   const gs = mpGameState;
   if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
   const card = gs.myHand[ci];
   if (!card || !mpHazz2CanPlay(card, gs)) return;
-  const cardId = card.id;
   sCard();
-  // RE-CHECK after any potential async gap
-  const gs2 = mpGameState;
-  if (!gs2 || !gs2.isMyTurn || gs2.phase !== 'play') return;
-  const cardNow = gs2.myHand[ci];
-  if (!cardNow || cardNow.id !== cardId || !mpHazz2CanPlay(cardNow, gs2)) return;
   if (card.value === 7) {
     // Prompt for suit choice
-    hazz2Choice = { ci, cardId: cardId };
+    hazz2Choice = { ci };
     showSuitChooserMp();
     return;
   }
@@ -2352,15 +1277,8 @@ function showSuitChooserMp() {
     opt.innerHTML = '<div class="suit-circle" style="background:' + HAZZ_SUIT_COLORS[suit] + ';color:' + HAZZ_SUIT_COLORS[suit] + '"></div><div class="suit-nm">' + t(HAZZ_SUIT_LABELS[suit]) + '</div>';
     opt.addEventListener('click', function () {
       m.classList.add('hidden');
-      // RE-CHECK turn before playing
-      const gs = mpGameState;
-      if (!gs || !gs.isMyTurn || gs.phase !== 'play') { hazz2Choice = null; return; }
       const ci = hazz2Choice.ci;
-      const savedCardId = hazz2Choice.cardId;
       hazz2Choice = null;
-      // Verify card is still at this index
-      const cardNow = gs.myHand[ci];
-      if (!cardNow || (savedCardId && cardNow.id !== savedCardId)) return;
       MP.playCard(ci, null, suit);
     });
     o.appendChild(opt);
@@ -2374,8 +1292,6 @@ function onMpDrawCard() {
   if (gameMode !== 'hazz2') return;
   if (mpGameState.skipCounter > 0 || mpGameState.drawCounter > 0) return;
   sCard();
-  // Use a fresh check since sCard() or rendering may have updated state
-  if (!mpGameState || !mpGameState.isMyTurn || mpGameState.phase !== 'play') return;
   MP.drawCard();
 }
 
@@ -2486,24 +1402,6 @@ function mpAppendChatMsg(msg, skipScroll) {
   }
   body.appendChild(div);
   if (!skipScroll) mpScrollChatToBottom();
-  // Show floating notification for opponent messages (not system, not own)
-  if (msg.from !== MP.getMyPlayer() && msg.name !== 'System' && !skipScroll) {
-    showFloatingNotif(msg.name, msg.text);
-  }
-}
-
-// ===== FLOATING NOTIFICATION =====
-let _mpFloatTimer = null;
-function showFloatingNotif(name, text) {
-  const el = document.getElementById('mpFloatNotif');
-  const nameEl = document.getElementById('mpFloatNotifName');
-  const textEl = document.getElementById('mpFloatNotifText');
-  if (!el) return;
-  nameEl.textContent = name;
-  textEl.textContent = text;
-  el.classList.add('show');
-  clearTimeout(_mpFloatTimer);
-  _mpFloatTimer = setTimeout(() => { el.classList.remove('show'); }, 3500);
 }
 
 function mpScrollChatToBottom() {
@@ -3704,17 +2602,6 @@ function buildUltraTable(){
 // Re-check layout on resize / orientation change so player hand always stays visible
 window.addEventListener('resize',()=>{if(G)ensurePlayerHandVisible();});
 window.addEventListener('orientationchange',()=>{setTimeout(()=>{if(G)ensurePlayerHandVisible();},200);});
-
-// Initialize friend system UI on page load
-document.addEventListener('DOMContentLoaded', function() {
-  // Set name from account if available
-  var accName = FriendSystem.getMyName();
-  var nameField = document.getElementById('mpName');
-  if (nameField && accName) nameField.value = accName;
-  // Show ID in friends tab
-  var idDisplay = document.getElementById('mpMyIdDisplay');
-  if (idDisplay) idDisplay.textContent = FriendSystem.getMyId();
-});
 </script>
 </body>
 </html>
