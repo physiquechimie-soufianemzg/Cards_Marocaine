@@ -652,13 +652,13 @@ function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Ob
 // Uses ntfy.sh as a free pub/sub transport. No dedicated server.
 // Host browser runs the game engine; guest sends actions via ntfy.
 //
-// Transport: POST to https://ntfy.sh/{topic} for sending,
-//            EventSource from https://ntfy.sh/{topic}/sse for receiving.
-// Chunking: 3200 bytes per chunk, 1.2s delay, 15s assembly window.
-// Ping:     Host sends ping every 25 seconds.
+// Transport:  POST to https://ntfy.sh/{topic} for sending,
+//             EventSource from https://ntfy.sh/{topic}/sse for receiving.
+// ntfy SSE format: data field is a JSON wrapper with .message = our payload
+// Chunking:  3200 bytes per chunk, 1.2s delay, 15s assembly window.
+// Ping:      Host sends ping every 25 seconds.
 // ============================================================
 
-// --- NtfyConn: Transport layer mimicking WebSocket ---
 class NtfyConn {
   constructor(topic) {
     this.topic = topic;
@@ -670,43 +670,81 @@ class NtfyConn {
     this.chunks = {};
     this.pingTimer = null;
     this.peerSeen = {};
+    this._openResolve = null;
   }
 
   subscribe() {
+    var self = this;
     if (this.es) { try { this.es.close(); } catch (e) {} }
-    const url = 'https://ntfy.sh/' + this.topic + '/sse?since=5m';
+    var url = 'https://ntfy.sh/' + this.topic + '/sse?since=5m';
+    console.log('[ntfy] Connecting to', url);
     this.es = new EventSource(url);
-    this.es.onopen = () => {
-      this.connected = true;
-      this._emit('connect', {});
+
+    this.es.onopen = function () {
+      console.log('[ntfy] SSE connected to topic:', self.topic);
+      self.connected = true;
+      self._emit('connect', {});
+      if (self._openResolve) { self._openResolve(); self._openResolve = null; }
     };
-    this.es.onerror = () => {
-      this.connected = false;
-      this._emit('disconnect', {});
-      // Auto-reconnect after delay
-      setTimeout(() => { try { this.subscribe(); } catch (e) {} }, 3000);
+
+    this.es.onerror = function () {
+      console.warn('[ntfy] SSE error, will reconnect...');
+      self.connected = false;
+      self._emit('disconnect', {});
+      if (self._openResolve) { self._openResolve(); self._openResolve = null; }
+      setTimeout(function () { try { self.subscribe(); } catch (e) {} }, 3000);
     };
-    this.es.onmessage = (evt) => {
+
+    this.es.onmessage = function (evt) {
       try {
-        var msg = JSON.parse(evt.data);
+        // ntfy.sh wraps ALL messages in a JSON envelope:
+        //   {"id":"...","time":...,"event":"message","topic":"...","message":"<our payload>"}
+        // The actual payload is in the .message field as a STRING.
+        var ntfyWrapper = JSON.parse(evt.data);
+
+        // Skip open/keepalive events (they have no .message field)
+        if (!ntfyWrapper.message && ntfyWrapper.event !== 'message') return;
+
+        // The .message field is our JSON payload as a string
+        var msg = JSON.parse(ntfyWrapper.message);
+
         // Ignore our own messages (ntfy echoes them back)
-        if (msg._f === this.senderId) return;
+        if (msg._f === self.senderId) return;
+
         // Handle chunked messages
-        if (msg._ch) { this._onChunk(msg); return; }
+        if (msg._ch) { self._onChunk(msg); return; }
+
         // Handle keepalive pings
         if (msg.type === 'ping') {
-          this._post(JSON.stringify({ type: 'pong', _f: this.senderId }));
+          self._post(JSON.stringify({ type: 'pong', _f: self.senderId }));
           return;
         }
         if (msg.type === 'pong') {
-          this.peerSeen[msg._f] = Date.now();
+          self.peerSeen[msg._f] = Date.now();
           return;
         }
+
         // Track peer activity
-        this.peerSeen[msg._f] = Date.now();
-        this._emit('data', msg);
-      } catch (e) {}
+        self.peerSeen[msg._f] = Date.now();
+
+        console.log('[ntfy] Received:', msg.type, 'from', msg._f);
+        self._emit('data', msg);
+      } catch (e) {
+        // Ignore non-JSON or malformed messages (keepalive, etc.)
+      }
     };
+  }
+
+  // Returns a promise that resolves when SSE is open (or fails after timeout)
+  waitOpen(timeoutMs) {
+    var self = this;
+    if (this.connected) return Promise.resolve();
+    return new Promise(function (resolve) {
+      self._openResolve = resolve;
+      setTimeout(function () {
+        if (self._openResolve) { self._openResolve(); self._openResolve = null; }
+      }, timeoutMs || 8000);
+    });
   }
 
   send(data) {
@@ -724,12 +762,7 @@ class NtfyConn {
         var chunkMsg = JSON.stringify({
           _ch: 1, _cid: chunkId, _ci: idx, _ct: total, _cd: part, _f: self.senderId
         });
-        if (idx === 0) {
-          self._post(chunkMsg);
-        } else {
-          // 1.2 second delay between chunks to avoid rate limit
-          setTimeout(function () { self._post(chunkMsg); }, 1200 * idx);
-        }
+        setTimeout(function () { self._post(chunkMsg); }, 1200 * idx);
       })(i);
     }
   }
@@ -752,10 +785,14 @@ class NtfyConn {
   }
 
   _post(body) {
+    // No Content-Type header — ntfy.sh treats entire body as message
     return fetch('https://ntfy.sh/' + this.topic, {
-      method: 'POST', body: body,
-      headers: { 'Content-Type': 'application/json' }
-    }).catch(function () {});
+      method: 'POST', body: body
+    }).then(function (r) {
+      if (!r.ok) console.warn('[ntfy] POST failed:', r.status);
+    }).catch(function (e) {
+      console.error('[ntfy] POST error:', e);
+    });
   }
 
   _emit(evt, data) {
@@ -772,11 +809,8 @@ class NtfyConn {
     }
     var entry = this.chunks[cid];
     entry.parts[ci] = cd;
-    // Check if all parts received
     var allDone = true;
-    for (var i = 0; i < ct; i++) {
-      if (entry.parts[i] == null) { allDone = false; break; }
-    }
+    for (var i = 0; i < ct; i++) { if (entry.parts[i] == null) { allDone = false; break; } }
     if (allDone) {
       clearTimeout(entry.t);
       delete this.chunks[cid];
@@ -792,15 +826,12 @@ class NtfyConn {
 
 // ============================================================
 // Host-side Game Engine (runs entirely in the host's browser)
-// Reuses existing single-player engine functions:
-//   mkDeck, shuf, findCaps, calcSc, capVal, ultraCardPts,
-//   doPlay, newGS, endRound, dealMore,
-//   newGSHazz2, hazz2Play, hazz2ApplyPenalty, hazz2DrawVoluntary
+// Reuses existing single-player engine functions.
 // ============================================================
 var HostEngine = {
-  _s: null,          // full game state (both players' hands, deck, table, scores)
-  _settings: {},     // { mode, scoring, totalRounds }
-  _players: {},      // { p1: {name, senderId}, p2: {name, senderId} }
+  _s: null,
+  _settings: {},
+  _players: {},
   _chat: [],
   _code: '',
 
@@ -808,7 +839,6 @@ var HostEngine = {
     this._settings = settings;
     this._players = players;
     this._chat = [];
-    // Temporarily set globals for engine functions that use them
     var _g = gameMode, _sc = scoringMode, _tr = totalRounds;
     gameMode = settings.mode;
     scoringMode = settings.scoring;
@@ -853,7 +883,6 @@ var HostEngine = {
       }
       return true;
     }
-
     if (action === 'draw') {
       if (s.phase !== 'play' || s.turn !== turnKey) return null;
       if (this._settings.mode === 'hazz2') {
@@ -862,7 +891,6 @@ var HostEngine = {
       }
       return true;
     }
-
     if (action === 'penalty') {
       if (s.phase !== 'play' || s.turn !== turnKey) return null;
       if (this._settings.mode === 'hazz2') {
@@ -871,26 +899,15 @@ var HostEngine = {
       }
       return true;
     }
-
     if (action === 'next-round') {
       if (s.phase !== 'roundEnd') return null;
-      if (this._settings.mode === 'hazz2') {
-        this._s = newGSHazz2();
-      } else {
-        this._s = newGS(s);
-      }
+      this._s = this._settings.mode === 'hazz2' ? newGSHazz2() : newGS(s);
       return true;
     }
-
     if (action === 'restart') {
-      if (this._settings.mode === 'hazz2') {
-        this._s = newGSHazz2();
-      } else {
-        this._s = newGS(null);
-      }
+      this._s = this._settings.mode === 'hazz2' ? newGSHazz2() : newGS(null);
       return true;
     }
-
     return null;
   },
 
@@ -908,12 +925,9 @@ var HostEngine = {
     }
   },
 
-  // Generate a player-specific view of the game state
-  // (hides opponent's cards, shows card count instead)
   getStateFor: function (player) {
     var s = this._s;
     if (!s) return null;
-    // Set globals for calcSc
     var _g = gameMode, _sc = scoringMode, _tr = totalRounds;
     gameMode = this._settings.mode;
     scoringMode = this._settings.scoring;
@@ -936,17 +950,11 @@ var HostEngine = {
         myHand: pHand.map(function (c) { return { id: c.id, value: c.value, suit: c.suit, img: c.img }; }),
         oppHandCount: oHand.length,
         table: s.table.map(function (c) { return { id: c.id, value: c.value, suit: c.suit, img: c.img }; }),
-        myTotal: pTotal,
-        oppTotal: oTotal,
-        myRoundScore: pRS,
-        oppRoundScore: oRS,
-        myCaptures: pCap,
-        oppCaptures: oCap,
-        round: s.round,
-        totalRounds: this._settings.totalRounds,
-        isMyTurn: isMyTurn,
-        phase: s.phase,
-        winner: winner,
+        myTotal: pTotal, oppTotal: oTotal,
+        myRoundScore: pRS, oppRoundScore: oRS,
+        myCaptures: pCap, oppCaptures: oCap,
+        round: s.round, totalRounds: this._settings.totalRounds,
+        isMyTurn: isMyTurn, phase: s.phase, winner: winner,
         deckCount: s.deck.length,
         currentSuit: s.currentSuit || null,
         skipCounter: s.skipCounter || 0,
@@ -957,17 +965,12 @@ var HostEngine = {
     }
   },
 
-  // Full state object (lobby + game state)
   getFullState: function (player) {
     var gs = this.getStateFor(player);
     if (!gs) {
-      // Lobby state (game not started yet)
       return {
-        code: this._code,
-        mode: this._settings.mode,
-        scoring: this._settings.scoring,
-        totalRounds: this._settings.totalRounds,
-        gameStarted: false,
+        code: this._code, mode: this._settings.mode, scoring: this._settings.scoring,
+        totalRounds: this._settings.totalRounds, gameStarted: false,
         players: {
           p1: { name: this._players.p1.name, connected: true },
           p2: { name: this._players.p2.name || '', connected: !!this._players.p2.senderId }
@@ -976,11 +979,8 @@ var HostEngine = {
       };
     }
     return {
-      code: this._code,
-      mode: this._settings.mode,
-      scoring: this._settings.scoring,
-      totalRounds: this._settings.totalRounds,
-      gameStarted: true,
+      code: this._code, mode: this._settings.mode, scoring: this._settings.scoring,
+      totalRounds: this._settings.totalRounds, gameStarted: true,
       players: {
         p1: { name: this._players.p1.name, connected: true },
         p2: { name: this._players.p2.name || '', connected: true }
@@ -997,12 +997,12 @@ var HostEngine = {
 };
 
 // ============================================================
-// MP Module — same public API as the old Socket.IO version,
+// MP Module — same public API as old Socket.IO version,
 // now powered entirely by ntfy.sh (no server needed!)
 // ============================================================
 var MP = (() => {
   var conn = null;
-  var myPlayer = null;     // 'p1' (host) | 'p2' (guest)
+  var myPlayer = null;
   var myName = '';
   var roomCode = null;
   var roomState = null;
@@ -1021,9 +1021,7 @@ var MP = (() => {
     return c;
   }
 
-  function makeTopic(code) {
-    return 'qt5-' + code.toLowerCase();
-  }
+  function makeTopic(code) { return 'qt5-' + code.toLowerCase(); }
 
   function notifyConn(data) {
     connCallbacks.forEach(function (cb) { try { cb(data); } catch (e) {} });
@@ -1038,7 +1036,6 @@ var MP = (() => {
     chatHistory.push(msg);
     if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
     chatCallbacks.forEach(function (cb) { try { cb(msg); } catch (e) {} });
-    // Increment unread if chat panel is closed
     var panel = document.getElementById('chatPanel');
     if (panel && !panel.classList.contains('open') && msg.from !== myPlayer) {
       unreadChat++;
@@ -1051,18 +1048,16 @@ var MP = (() => {
     if (badge) badge.textContent = unreadChat > 0 ? (unreadChat > 9 ? '9+' : String(unreadChat)) : '';
   }
 
-  // Broadcast game state from host to both players
   function broadcastState() {
-    if (myPlayer !== 'p1') return; // Only host broadcasts
-    // Update host's own state
+    if (myPlayer !== 'p1') return;
     var state = HostEngine.getFullState('p1');
     state.myPlayer = 'p1';
     notifyState(state);
-    // Send guest's view via ntfy
     if (conn) {
       var guestState = HostEngine.getFullState('p2');
       guestState.myPlayer = 'p2';
       conn.send({ type: 'game:state', state: guestState });
+      console.log('[MP] State broadcasted to guest');
     }
   }
 
@@ -1071,75 +1066,47 @@ var MP = (() => {
     conn.on('data', function (msg) {
       if (!msg || !msg.type) return;
 
-      // Guest wants to join the room
       if (msg.type === 'join') {
-        HostEngine._players.p2 = {
-          name: msg.name || 'Player 2',
-          senderId: msg._f,
-          connected: true
-        };
+        console.log('[MP] Guest joined:', msg.name, 'senderId:', msg._f);
+        HostEngine._players.p2 = { name: msg.name || 'Player 2', senderId: msg._f, connected: true };
         HostEngine._code = roomCode;
-        // Send welcome message back to guest
         conn.send({
-          type: 'welcome',
-          _to: msg._f,
-          player: 'p2',
-          settings: {
-            mode: HostEngine._settings.mode,
-            scoring: HostEngine._settings.scoring,
-            totalRounds: HostEngine._settings.totalRounds
-          },
-          hostName: myName,
-          code: roomCode
+          type: 'welcome', _to: msg._f, player: 'p2',
+          settings: { mode: HostEngine._settings.mode, scoring: HostEngine._settings.scoring, totalRounds: HostEngine._settings.totalRounds },
+          hostName: myName, code: roomCode
         });
-        // Update local lobby state (show p2 connected)
+        console.log('[MP] Welcome sent to guest');
         var lobbyState = HostEngine.getFullState('p1');
         lobbyState.myPlayer = 'p1';
         notifyState(lobbyState);
-        // System chat message
-        var sysMsg = {
-          id: Date.now().toString(36),
-          from: 'system', name: 'System',
-          text: t('mpNameJoined', { name: msg.name || 'Player 2' }),
-          ts: Date.now()
-        };
+        var sysMsg = { id: Date.now().toString(36), from: 'system', name: 'System',
+          text: t('mpNameJoined', { name: msg.name || 'Player 2' }), ts: Date.now() };
         HostEngine.addChat(sysMsg);
         notifyChat(sysMsg);
         return;
       }
 
-      // Guest sends a game action
       if (msg.type === 'action' && myPlayer === 'p1') {
+        console.log('[MP] Guest action:', msg.action);
         var result = HostEngine.processAction('p2', msg.action, msg.data);
         if (result) broadcastState();
         return;
       }
 
-      // Guest requests capture options
       if (msg.type === 'capture-options' && myPlayer === 'p1') {
         var options = HostEngine.getCaptureOptions('p2', msg.ci);
-        conn.send({
-          type: 'capture-options-resp',
-          _to: msg._f, _reqId: msg._reqId,
-          options: options
-        });
+        conn.send({ type: 'capture-options-resp', _to: msg._f, _reqId: msg._reqId, options: options });
         return;
       }
 
-      // Chat message from guest
       if (msg.type === 'chat') {
-        var chatMsg = {
-          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-          from: 'p2', name: msg.name || 'P2',
-          text: msg.text, ts: Date.now()
-        };
+        var chatMsg = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+          from: 'p2', name: msg.name || 'P2', text: msg.text, ts: Date.now() };
         HostEngine.addChat(chatMsg);
         notifyChat(chatMsg);
-        // Relay to host (already done via notifyChat above)
         return;
       }
 
-      // Typing indicator from guest
       if (msg.type === 'chat:typing') {
         var el = document.getElementById('chatTyping');
         if (el) {
@@ -1156,45 +1123,31 @@ var MP = (() => {
   function setupGuestHandlers() {
     conn.on('data', function (msg) {
       if (!msg || !msg.type) return;
+      console.log('[MP-Guest] Received:', msg.type);
 
-      // Welcome from host (confirms join)
       if (msg.type === 'welcome' && msg._to === conn.senderId) {
+        console.log('[MP-Guest] Got welcome from host!');
         myPlayer = 'p2';
         roomCode = msg.code;
-        // Apply host's game settings
         var s = msg.settings;
-        if (s) {
-          gameMode = s.mode;
-          scoringMode = s.scoring;
-          totalRounds = s.totalRounds;
-        }
-        // Notify connected
+        if (s) { gameMode = s.mode; scoringMode = s.scoring; totalRounds = s.totalRounds; }
         notifyConn({ connected: true });
-        // Set lobby state
         notifyState({
-          code: roomCode,
-          mode: s ? s.mode : gameMode,
-          scoring: s ? s.scoring : scoringMode,
-          totalRounds: s ? s.totalRounds : totalRounds,
+          code: roomCode, mode: s ? s.mode : gameMode,
+          scoring: s ? s.scoring : scoringMode, totalRounds: s ? s.totalRounds : totalRounds,
           gameStarted: false,
-          players: {
-            p1: { name: msg.hostName || 'Host', connected: true },
-            p2: { name: myName, connected: true }
-          },
+          players: { p1: { name: msg.hostName || 'Host', connected: true }, p2: { name: myName, connected: true } },
           chat: []
         });
         return;
       }
 
-      // Game state broadcast from host
       if (msg.type === 'game:state') {
         var state = msg.state;
         if (state) {
           state.myPlayer = 'p2';
-          // Sync chat from host state
           if (state.chat && state.chat.length > chatHistory.length) {
-            var newMsgs = state.chat.slice(chatHistory.length);
-            newMsgs.forEach(function (m) {
+            state.chat.slice(chatHistory.length).forEach(function (m) {
               if (!chatHistory.find(function (c) { return c.id === m.id; })) {
                 chatHistory.push(m);
                 chatCallbacks.forEach(function (cb) { try { cb(m); } catch (e) {} });
@@ -1206,34 +1159,22 @@ var MP = (() => {
         return;
       }
 
-      // Capture options response from host
       if (msg.type === 'capture-options-resp' && msg._to === conn.senderId) {
         var id = msg._reqId;
-        if (pendingReqs[id]) {
-          pendingReqs[id](msg.options || []);
-          delete pendingReqs[id];
-        }
+        if (pendingReqs[id]) { pendingReqs[id](msg.options || []); delete pendingReqs[id]; }
         return;
       }
 
-      // Chat from host
       if (msg.type === 'chat') {
-        var chatMsg = {
-          id: Date.now().toString(36),
-          from: 'p1', name: msg.name || 'P1',
-          text: msg.text, ts: Date.now()
-        };
+        var chatMsg = { id: Date.now().toString(36), from: 'p1', name: msg.name || 'P1',
+          text: msg.text, ts: Date.now() };
         chatHistory.push(chatMsg);
         chatCallbacks.forEach(function (cb) { try { cb(chatMsg); } catch (e) {} });
         var panel = document.getElementById('chatPanel');
-        if (panel && !panel.classList.contains('open') && chatMsg.from !== myPlayer) {
-          unreadChat++;
-          updateChatBadge();
-        }
+        if (panel && !panel.classList.contains('open') && chatMsg.from !== myPlayer) { unreadChat++; updateChatBadge(); }
         return;
       }
 
-      // Typing indicator from host
       if (msg.type === 'chat:typing') {
         var el = document.getElementById('chatTyping');
         if (el) {
@@ -1246,7 +1187,7 @@ var MP = (() => {
     });
   }
 
-  // ============ Public API (same as old Socket.IO version) ============
+  // ============ Public API ============
   return {
     onConnection: function (cb) { connCallbacks.push(cb); },
     onState: function (cb) { stateCallbacks.push(cb); },
@@ -1267,27 +1208,21 @@ var MP = (() => {
       conn.subscribe();
       conn.startPing();
       myPlayer = 'p1';
-      // Initialize host engine (without starting the game yet)
       HostEngine._settings = { mode: mode, scoring: scoring, totalRounds: rounds };
       HostEngine._players = {
         p1: { name: myName, senderId: conn.senderId, connected: true },
         p2: { name: '', senderId: '', connected: false }
       };
       HostEngine._code = roomCode;
-      // Set up host message handlers
       setupHostHandlers();
-      // Notify connected
       notifyConn({ connected: true });
-      // Set initial lobby state
       notifyState({
         code: roomCode, mode: mode, scoring: scoring, totalRounds: rounds,
         gameStarted: false,
-        players: {
-          p1: { name: myName, connected: true },
-          p2: { name: '', connected: false }
-        },
+        players: { p1: { name: myName, connected: true }, p2: { name: '', connected: false } },
         chat: []
       });
+      console.log('[MP] Room created:', roomCode, 'topic:', topic, 'senderId:', conn.senderId);
       return Promise.resolve({ ok: true, code: roomCode, player: 'p1' });
     },
 
@@ -1297,59 +1232,49 @@ var MP = (() => {
       var topic = makeTopic(roomCode);
       conn = new NtfyConn(topic);
       conn.subscribe();
-      // Set up guest handlers before sending join
       setupGuestHandlers();
-      // Small delay to ensure SSE connection is established
-      return new Promise(function (resolve, reject) {
-        setTimeout(function () {
-          conn.send({ type: 'join', name: myName });
-          // Wait for welcome message from host
+      console.log('[MP] Joining room:', roomCode, 'topic:', topic);
+      // Wait for SSE to be open, then send join
+      return conn.waitOpen(8000).then(function () {
+        console.log('[MP] SSE open, sending join...');
+        conn.send({ type: 'join', name: myName });
+        return new Promise(function (resolve, reject) {
           var timer = setTimeout(function () {
+            console.error('[MP] Timed out waiting for welcome');
             reject(new Error('Room not found or host not available'));
-          }, 12000);
+          }, 15000);
           var checkWelcome = function (state) {
             if (myPlayer === 'p2') {
               clearTimeout(timer);
               var idx = stateCallbacks.indexOf(checkWelcome);
               if (idx >= 0) stateCallbacks.splice(idx, 1);
+              console.log('[MP] Successfully joined room!');
               resolve({ ok: true, code: roomCode, player: 'p2' });
             }
           };
           stateCallbacks.push(checkWelcome);
-        }, 600);
+        });
       });
     },
 
     startGame: function () {
       if (myPlayer !== 'p1' || !conn) return;
-      // Initialize the game engine with current settings
       HostEngine.init(HostEngine._settings, HostEngine._players);
-      // Add system chat
-      var starterName = HostEngine._s.turn === 'p' ? HostEngine._players.p1.name : HostEngine._players.p2.name;
-      var sysMsg = {
-        id: Date.now().toString(36),
-        from: 'system', name: 'System',
-        text: t('mpGameStarted', { name: starterName || '...' }),
-        ts: Date.now()
-      };
+      var starterName = HostEngine._s.turn === 'p' ? HostEngine._players.p1.name : (HostEngine._players.p2.name || 'Player 2');
+      var sysMsg = { id: Date.now().toString(36), from: 'system', name: 'System',
+        text: t('mpGameStarted', { name: starterName }), ts: Date.now() };
       HostEngine.addChat(sysMsg);
       notifyChat(sysMsg);
-      // Broadcast initial game state to both players
       broadcastState();
     },
 
     playCard: function (ci, chosenCap, newSuit) {
       if (!conn) return;
       if (myPlayer === 'p1') {
-        // Host processes directly
         var result = HostEngine.processAction('p1', 'play', { ci: ci, chosenCap: chosenCap, newSuit: newSuit });
         if (result) broadcastState();
       } else {
-        // Guest sends action to host via ntfy
-        conn.send({
-          type: 'action', action: 'play',
-          data: { ci: ci, chosenCap: chosenCap, newSuit: newSuit }
-        });
+        conn.send({ type: 'action', action: 'play', data: { ci: ci, chosenCap: chosenCap, newSuit: newSuit } });
       }
     },
 
@@ -1357,74 +1282,46 @@ var MP = (() => {
       return new Promise(function (resolve, reject) {
         if (!conn) return reject(new Error('Not connected'));
         if (myPlayer === 'p1') {
-          // Host computes locally
-          var options = HostEngine.getCaptureOptions('p1', ci);
-          resolve(options || []);
+          resolve(HostEngine.getCaptureOptions('p1', ci) || []);
         } else {
-          // Guest requests from host
           var reqId = String(++_reqId);
           pendingReqs[reqId] = resolve;
           conn.send({ type: 'capture-options', ci: ci, _reqId: reqId });
-          setTimeout(function () {
-            if (pendingReqs[reqId]) {
-              delete pendingReqs[reqId];
-              reject(new Error('Timeout'));
-            }
-          }, 8000);
+          setTimeout(function () { if (pendingReqs[reqId]) { delete pendingReqs[reqId]; reject(new Error('Timeout')); } }, 8000);
         }
       });
     },
 
     applyPenalty: function () {
       if (!conn) return;
-      if (myPlayer === 'p1') {
-        HostEngine.processAction('p1', 'penalty', {});
-        broadcastState();
-      } else {
-        conn.send({ type: 'action', action: 'penalty', data: {} });
-      }
+      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'penalty', {}); broadcastState(); }
+      else { conn.send({ type: 'action', action: 'penalty', data: {} }); }
     },
 
     drawCard: function () {
       if (!conn) return;
-      if (myPlayer === 'p1') {
-        HostEngine.processAction('p1', 'draw', {});
-        broadcastState();
-      } else {
-        conn.send({ type: 'action', action: 'draw', data: {} });
-      }
+      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'draw', {}); broadcastState(); }
+      else { conn.send({ type: 'action', action: 'draw', data: {} }); }
     },
 
     nextRound: function () {
       if (!conn) return;
-      if (myPlayer === 'p1') {
-        HostEngine.processAction('p1', 'next-round', {});
-        broadcastState();
-      } else {
-        conn.send({ type: 'action', action: 'next-round', data: {} });
-      }
+      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'next-round', {}); broadcastState(); }
+      else { conn.send({ type: 'action', action: 'next-round', data: {} }); }
     },
 
     restart: function () {
       if (!conn) return;
-      if (myPlayer === 'p1') {
-        HostEngine.processAction('p1', 'restart', {});
-        broadcastState();
-      } else {
-        conn.send({ type: 'action', action: 'restart', data: {} });
-      }
+      if (myPlayer === 'p1') { HostEngine.processAction('p1', 'restart', {}); broadcastState(); }
+      else { conn.send({ type: 'action', action: 'restart', data: {} }); }
     },
 
     sendChat: function (text) {
       if (!conn || !text.trim()) return;
-      var chatMsg = {
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
-        from: myPlayer, name: myName,
-        text: text.slice(0, 500), ts: Date.now()
-      };
+      var chatMsg = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        from: myPlayer, name: myName, text: text.slice(0, 500), ts: Date.now() };
       if (myPlayer === 'p1') {
-        HostEngine.addChat(chatMsg);
-        notifyChat(chatMsg);
+        HostEngine.addChat(chatMsg); notifyChat(chatMsg);
         conn.send({ type: 'chat', name: myName, text: text.slice(0, 500) });
       } else {
         conn.send({ type: 'chat', name: myName, text: text.slice(0, 500) });
@@ -1439,15 +1336,8 @@ var MP = (() => {
     },
 
     leaveRoom: function () {
-      if (conn) {
-        conn.send({ type: 'leave', name: myName });
-        conn.close();
-        conn = null;
-      }
-      roomCode = null;
-      myPlayer = null;
-      roomState = null;
-      chatHistory = [];
+      if (conn) { conn.send({ type: 'leave', name: myName }); conn.close(); conn = null; }
+      roomCode = null; myPlayer = null; roomState = null; chatHistory = [];
       HostEngine._s = null;
     }
   };
