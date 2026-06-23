@@ -577,24 +577,28 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
   <!-- MULTIPLAYER SECTION -->
   <div class="mp-section" id="mpSection">
     <div class="mp-section-title">🌐 <span data-t="onlinePlay">لعب أون لاين مع صديق</span></div>
-    <div class="mp-account-info" id="mpAccountInfo" onclick="mpCopyMyId()" title="انقر للنسخ"></div>
     <div class="mp-tabs" id="mpTabs">
-      <button class="mp-tab on" onclick="setMpTab('friends')" data-t="friendsTab">👥 أصدقاء</button>
-      <button class="mp-tab" onclick="setMpTab('create')" data-t="createRoom">إنشاء غرفة</button>
+      <button class="mp-tab" onclick="setMpTab('friends')" data-t="friendsTab">👥 أصدقاء</button>
+      <button class="mp-tab on" onclick="setMpTab('create')" data-t="createRoom">إنشاء غرفة</button>
       <button class="mp-tab" onclick="setMpTab('join')" data-t="joinRoom">انضمام برمز</button>
     </div>
     <input class="mp-field" id="mpName" placeholder="اسمك" maxlength="24" value="">
     <!-- FRIENDS TAB -->
-    <div id="mpFriendsBox">
+    <div id="mpFriendsBox" style="display:none">
+      <div style="color:var(--text-d);font-size:.78rem;text-align:center;margin:6px 0;line-height:1.6">
+        أضف أصدقاءك لمرة واحدة باستخدام معرّفهم الشخصي، ثم أرسل لهم طلب لعب مباشرة بدون رمز غرفة.
+        <br><span style="color:var(--gold)">معرّفك: <span id="mpMyIdDisplay" style="cursor:pointer;user-select:all" onclick="mpCopyMyId()"></span></span>
+        <span style="font-size:.7rem;opacity:.6">(انقر للنسخ)</span>
+      </div>
       <div class="friend-list" id="mpFriendList"></div>
       <div class="mp-add-friend-row">
         <input class="mp-field" id="mpFriendIdInput" placeholder="ألصق معرّف صديقك هنا" maxlength="20" style="font-size:.8rem;padding:7px 10px">
-        <button class="friend-btn-sm" onclick="mpSendFriendRequest()" style="white-space:nowrap">➕ أضف</button>
+        <button class="friend-btn-sm" onclick="mpSendFriendRequest()" style="white-space:nowrap">➕ أضف صديق</button>
       </div>
       <div id="mpIncomingReqs"></div>
     </div>
-    <!-- CREATE TAB (default hidden) -->
-    <div id="mpCreateBox" style="display:none">
+    <!-- CREATE TAB -->
+    <div id="mpCreateBox">
       <button class="mp-btn" onclick="mpCreateRoom()" data-t="createRoomBtn">🎮 إنشاء غرفة جديدة</button>
       <div class="mp-status" id="mpCreateStatus"></div>
     </div>
@@ -619,7 +623,11 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
     <div style="text-align:center;margin:14px 0">
       <div style="color:var(--text-d);font-size:.85rem;margin-bottom:6px" data-t="roomCode">رمز الغرفة — شاركه مع صديقك</div>
       <div class="mp-code-display" id="mpLobbyCode">------</div>
-      <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;margin-top:6px" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
+        <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
+        <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;background:linear-gradient(135deg,#3b82f6,#2563eb)" onclick="mpShareLink()">🔗 مشاركة رابط دعوة</button>
+      </div>
+      <div style="color:var(--text-d);font-size:.72rem;margin-top:6px;opacity:.7">أرسل الرابط لصديقك — سيحصل على طلب انضمام تلقائي</div>
     </div>
     <div class="mp-status" id="mpLobbyStatus">⏳ <span data-t="waitingOpponent">بانتظار انضمام اللاعب الثاني...</span></div>
     <div style="display:flex;gap:8px;margin-top:14px">
@@ -1657,6 +1665,10 @@ function renderFriendsUI() {
   if (infoEl) {
     infoEl.textContent = '🪪 ' + t('mpYourId') + ': ' + account.userId;
   }
+  var idDisplay = document.getElementById('mpMyIdDisplay');
+  if (idDisplay) {
+    idDisplay.textContent = account.userId;
+  }
 
   // Update name field
   var nameField = document.getElementById('mpName');
@@ -1844,7 +1856,7 @@ function mpDeclinePlayRequest() {
 // ============================================================
 // MULTIPLAYER UI HANDLERS
 // ============================================================
-let mpActiveTab = 'create';
+let mpActiveTab = 'create';  // default tab
 
 function setMpTab(tab) {
   mpActiveTab = tab;
@@ -2018,6 +2030,53 @@ function mpCopyCode() {
     setTimeout(() => { btn.innerHTML = orig; }, 1500);
   }
 }
+
+function mpShareLink() {
+  const code = document.getElementById('mpLobbyCode').textContent;
+  // Build invite URL using current page URL + ?join=CODE
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const inviteUrl = baseUrl + '?join=' + code;
+  if (navigator.share) {
+    // Use native share on mobile
+    navigator.share({
+      title: 'Kanza 15 - دعوة للعب',
+      text: 'العب معي في كانزا 15! رمز الغرفة: ' + code,
+      url: inviteUrl
+    }).catch(function() {
+      // Fallback: just copy
+      navigator.clipboard && navigator.clipboard.writeText(inviteUrl);
+      showFloatingNotif('📋', 'تم نسخ رابط الدعوة!');
+    });
+  } else {
+    navigator.clipboard && navigator.clipboard.writeText(inviteUrl);
+    showFloatingNotif('📋', 'تم نسخ رابط الدعوة!');
+  }
+}
+
+// Auto-join from URL parameter ?join=CODE
+(function checkInviteLink() {
+  var params = new URLSearchParams(window.location.search);
+  var joinCode = params.get('join');
+  if (joinCode && joinCode.length === 6) {
+    // Wait for page to load, then auto-switch to join tab and fill code
+    setTimeout(function() {
+      // Set tab to join
+      setMpTab('join');
+      var codeInput = document.getElementById('mpCode');
+      if (codeInput) {
+        codeInput.value = joinCode.toUpperCase();
+        // Show a hint
+        var statusEl = document.getElementById('mpJoinStatus');
+        if (statusEl) {
+          statusEl.textContent = '🔗 تم استلام دعوة! أدخل اسمك ثم اضغط "انضمام"';
+          statusEl.className = 'mp-status ready';
+        }
+      }
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }, 500);
+  }
+})();
 
 // ============================================================
 // MULTIPLAYER GAME INTEGRATION
@@ -3652,7 +3711,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var accName = FriendSystem.getMyName();
   var nameField = document.getElementById('mpName');
   if (nameField && accName) nameField.value = accName;
-  renderFriendsUI();
+  // Show ID in friends tab
+  var idDisplay = document.getElementById('mpMyIdDisplay');
+  if (idDisplay) idDisplay.textContent = FriendSystem.getMyId();
 });
 </script>
 </body>
