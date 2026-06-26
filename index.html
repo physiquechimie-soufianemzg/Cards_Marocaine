@@ -651,21 +651,25 @@ let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
 
 // ============================================================
-// MULTIPLAYER MODULE — PeerJS (WebRTC P2P)
-// No server needed! Uses PeerJS free signaling server for initial connection,
-// then communicates directly peer-to-peer via WebRTC data channels.
-// Host runs the game engine locally and sends state views to the guest.
+// ============================================================
+// MULTIPLAYER MODULE — MQTT signaling + WebRTC P2P (simple-peer)
+// Uses free public MQTT broker (broker.hivemq.com) for signaling.
+// Game data flows peer-to-peer via WebRTC data channels.
+// Works across any network without needing TURN servers.
 // ============================================================
 const MP = (() => {
-  let peer = null;
-  let conn = null;          // DataConnection to the other peer
+  let sp = null;              // simple-peer instance
+  let mqttClient = null;      // Paho MQTT client
   let isHost = false;
   let connected = false;
-  let myPlayer = null;      // 'p1' | 'p2'
+  let myPlayer = null;        // 'p1' | 'p2'
   let myName = '';
+  let roomCode = null;
+  let gameMode = 'kanza';
+  let scoringMode = 'classic';
+  let totalRounds = 1;
   let p1Name = '';
   let p2Name = '';
-  let roomCode = null;
   let roomState = null;
   let chatHistory = [];
   let unreadChat = 0;
@@ -673,10 +677,14 @@ const MP = (() => {
   let stateCallbacks = [];
   let chatCallbacks = [];
   let pendingReqs = {};
-  let _playAgainRequest = null;  // { from: 'p1'|'p2', timestamp }
+  let _playAgainRequest = null;
   let _playAgainAccepted = false;
   let _reqId = 0;
-  let _hostGS = null;       // Host's internal game state (G)
+  let _hostGS = null;
+
+  // ---------- MQTT Config ----------
+  const MQTT_BROKER = 'wss://broker.hivemq.com:8884/mqtt';
+  const MQTT_CLIENT_ID = 'k15_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now();
 
   // ---------- Utility ----------
   function loadScript(src) {
@@ -684,56 +692,30 @@ const MP = (() => {
       if (document.querySelector('script[src="' + src + '"]')) return resolve();
       const s = document.createElement('script');
       s.src = src; s.async = true;
-      s.onload = () => resolve();
-      s.onerror = () => reject(new Error('Failed to load ' + src));
+      s.onload = resolve; s.onerror = reject;
       document.head.appendChild(s);
     });
   }
 
-  function getPeerConfig() {
-    return {
-      debug: 1,
-      secure: true,
-      config: {
-        iceServers: [
-          // STUN servers (discover public IP)
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' },
-          { urls: 'stun:stun3.l.google.com:19302' },
-          { urls: 'stun:stun4.l.google.com:19302' },
-          // Metered.ca free TURN (relay traffic through NAT/firewall)
-          { urls: 'stun:openrelay.metered.ca:80' },
-          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-          // Twilio free TURN
-          { urls: 'stun:global.stun.twilio.com:3478' },
-          // Xirsys free tier TURN (community credentials)
-          { urls: 'stun:a.relay.metered.ca:80' },
-          { urls: 'turn:a.relay.metered.ca:80', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' },
-          { urls: 'turn:a.relay.metered.ca:443', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' },
-          { urls: 'turn:a.relay.metered.ca:443?transport=tcp', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' }
-        ],
-        iceCandidatePoolSize: 10
-      }
-    };
-  }
-
-  async function ensurePeer() {
-    if (peer) return;
-    if (typeof Peer === 'undefined') {
-      const cdns = [
-        'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
-        'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'
-      ];
-      let loaded = false;
-      for (const src of cdns) {
-        try { await loadScript(src); if (typeof Peer !== 'undefined') { loaded = true; break; } } catch (e) {}
-      }
-      if (!loaded) throw new Error('Could not load PeerJS. Check internet.');
+  async function ensureLibs() {
+    if (typeof SimplePeer !== 'undefined' && typeof Paho !== 'undefined') return;
+    const spCDNs = [
+      'https://unpkg.com/simple-peer@9.11.1/simple-peer.min.js',
+      'https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simple-peer.min.js'
+    ];
+    for (const src of spCDNs) {
+      try { await loadScript(src); if (typeof SimplePeer !== 'undefined') break; } catch(e) {}
     }
+    if (typeof SimplePeer === 'undefined') throw new Error('Could not load simple-peer. Check internet.');
+
+    const mqttCDNs = [
+      'https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js',
+      'https://unpkg.com/paho-mqtt@1.0.1/mqttws31.min.js'
+    ];
+    for (const src of mqttCDNs) {
+      try { await loadScript(src); if (typeof Paho !== 'undefined') break; } catch(e) {}
+    }
+    if (typeof Paho === 'undefined') throw new Error('Could not load MQTT client. Check internet.');
   }
 
   function genCode() {
@@ -742,8 +724,80 @@ const MP = (() => {
     return r;
   }
 
+  function mqttTopic(code, sub) {
+    return 'kanza15/r/' + code + '/' + sub;
+  }
+
+  // ---------- MQTT Connection ----------
+  function connectMQTT() {
+    return new Promise((resolve, reject) => {
+      try {
+        mqttClient = new Paho.MQTT.Client('broker.hivemq.com', 8884, MQTT_CLIENT_ID);
+      } catch(e) {
+        // Fallback constructor format
+        mqttClient = new Paho.MQTT.Client('wss://broker.hivemq.com:8884/mqtt', MQTT_CLIENT_ID);
+      }
+      mqttClient.onConnectionLost = (err) => {
+        console.warn('[MP] MQTT connection lost:', err.errorMessage);
+        connected = false;
+        connCallbacks.forEach(cb => cb({ connected: false }));
+      };
+      mqttClient.onMessageArrived = (msg) => {
+        try { onMQTTMessage(msg.topic, msg.payloadString); } catch(e) { console.warn('[MP] MQTT msg error:', e); }
+      };
+      const opts = {
+        timeout: 15,
+        onSuccess: () => { console.log('[MP] MQTT connected'); resolve(); },
+        onFailure: (err) => { reject(new Error('MQTT connection failed: ' + err.errorMessage)); },
+        useSSL: true
+      };
+      mqttClient.connect(opts);
+    });
+  }
+
+  function mqttSub(topic) {
+    if (mqttClient && mqttClient.isConnected()) {
+      mqttClient.subscribe(topic, { qos: 0 });
+    }
+  }
+
+  function mqttPub(topic, payload) {
+    if (mqttClient && mqttClient.isConnected()) {
+      const msg = new Paho.MQTT.Message(payload);
+      msg.destinationName = topic;
+      mqttClient.send(msg);
+    }
+  }
+
+  // ---------- MQTT message routing ----------
+  function onMQTTMessage(topic, payload) {
+    // Handle WebRTC signaling messages
+    if (topic.indexOf('/signal/') >= 0) {
+      if (!sp) return;
+      try {
+        const data = JSON.parse(payload);
+        sp.signal(data);
+      } catch(e) { console.warn('[MP] Bad signal data:', e); }
+      return;
+    }
+    // Handle data channel messages (fallback in case WebRTC fails, or for initial join)
+    if (topic === mqttTopic(roomCode, 'join')) {
+      const d = JSON.parse(payload);
+      if (isHost) {
+        p2Name = (d.name || 'Player 2').slice(0, 24);
+        const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
+        chatHistory.push(sysMsg);
+        broadcastFullState();
+      }
+      return;
+    }
+  }
+
+  // ---------- Send data via WebRTC ----------
   function sendMsg(data) {
-    if (conn && conn.open) { try { conn.send(data); } catch(e) {} }
+    if (sp && connected) {
+      try { sp.send(typeof data === 'string' ? data : JSON.stringify(data)); } catch(e) {}
+    }
   }
 
   function sendReq(type, data) {
@@ -886,34 +940,36 @@ const MP = (() => {
     const myState = buildPlayerState(myPlayer);
     roomState = myState;
     stateCallbacks.forEach(cb => cb(myState));
-    if (conn && conn.open) {
+    if (sp && connected) {
       const guestPlayer = myPlayer === 'p1' ? 'p2' : 'p1';
       const guestState = buildPlayerState(guestPlayer);
-      conn.send({ type: 'room:state', data: guestState });
+      sendMsg({ type: 'room:state', data: guestState });
     }
   }
 
-  // ---------- Connection handling ----------
-  function setupConnHandlers() {
-    conn.on('open', () => {
+  // ---------- WebRTC setup via simple-peer ----------
+  function setupPeerHandlers() {
+    sp.on('connect', () => {
       connected = true;
-      console.log('[MP] Data connection open, peer:', peer && peer.id);
+      console.log('[MP] WebRTC data channel connected!');
       connCallbacks.forEach(cb => cb({ connected: true }));
       if (isHost) {
         // Send current state to guest
         const guestState = buildPlayerState('p2');
-        conn.send({ type: 'room:state', data: guestState });
+        sendMsg({ type: 'room:state', data: guestState });
         // Update host's own view
         const myState = buildPlayerState('p1');
         roomState = myState;
         stateCallbacks.forEach(cb => cb(myState));
       } else {
         // Tell host our name
-        conn.send({ type: 'room:join', data: { name: myName } });
+        sendMsg({ type: 'room:join', data: { name: myName } });
       }
     });
 
-    conn.on('data', (msg) => {
+    sp.on('data', (raw) => {
+      let msg;
+      try { msg = JSON.parse(raw); } catch(e) { return; }
       if (!msg || typeof msg !== 'object') return;
 
       // --- Both sides: receive room state ---
@@ -931,7 +987,7 @@ const MP = (() => {
         return;
       }
 
-      // --- Chat message (from either side) ---
+      // --- Chat message ---
       if (msg.type === 'chat:message') {
         const m = msg.data;
         if (m && !chatHistory.some(x => x.id === m.id)) {
@@ -958,7 +1014,7 @@ const MP = (() => {
         return;
       }
 
-      // --- Guest's request-response (capture options) ---
+      // --- Capture options response ---
       if (msg.type === 'game:capture-options:resp' && pendingReqs[msg.id]) {
         const req = pendingReqs[msg.id];
         if (msg.data && msg.data.ok) req.resolve(msg.data.options || []);
@@ -966,7 +1022,7 @@ const MP = (() => {
         return;
       }
 
-      // Play Again protocol (guest receives)
+      // --- Play Again protocol (guest side) ---
       if (msg.type === 'game:play-again-request') {
         _playAgainRequest = { from: (msg.data && msg.data.from) || 'p1', timestamp: Date.now() };
         _playAgainAccepted = false;
@@ -982,7 +1038,6 @@ const MP = (() => {
       if (msg.type === 'game:play-again-accept' && _playAgainRequest && _playAgainRequest.from === myPlayer) {
         _playAgainAccepted = true;
         sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
-        // Host will restart and broadcast
         return;
       }
 
@@ -1007,7 +1062,7 @@ const MP = (() => {
           const caps = findCaps(card, _hostGS.table);
           options = caps.map(cap => cap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })));
         }
-        conn.send({ type: 'game:capture-options:resp', id: msg.id, data: { ok: true, options } });
+        sendMsg({ type: 'game:capture-options:resp', id: msg.id, data: { ok: true, options } });
       }
       else if (msg.type === 'game:penalty') {
         hostApplyPenalty(false);
@@ -1018,15 +1073,12 @@ const MP = (() => {
       else if (msg.type === 'game:restart') {
         hostRestart();
       }
-      // Play Again protocol
       else if (msg.type === 'game:play-again-request') {
         _playAgainRequest = { from: (msg.data && msg.data.from) || 'p2', timestamp: Date.now() };
         _playAgainAccepted = false;
-        // Broadcast updated state so UI shows the prompt
         broadcastFullState();
       }
       else if (msg.type === 'game:play-again-accept') {
-        // Guest accepted our request — both agreed, restart
         if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
           _playAgainRequest = null;
           _playAgainAccepted = false;
@@ -1040,15 +1092,15 @@ const MP = (() => {
       }
     });
 
-    conn.on('close', () => {
+    sp.on('close', () => {
       connected = false;
       connCallbacks.forEach(cb => cb({ connected: false }));
     });
 
-    conn.on('error', (err) => {
+    sp.on('error', (err) => {
+      console.warn('[MP] WebRTC error:', err);
       connected = false;
       connCallbacks.forEach(cb => cb({ connected: false, error: true }));
-      console.warn('MP connection error:', err);
     });
   }
 
@@ -1068,161 +1120,181 @@ const MP = (() => {
     async createRoom(name, mode, scoring, tRounds) {
       myName = (name || 'Player').slice(0, 24);
       p1Name = myName;
-      await ensurePeer();
+      await ensureLibs();
 
-      // Try up to 3 times in case of code collision
-      for (let attempt = 0; attempt < 3; attempt++) {
-        try {
-          return await new Promise((resolve, reject) => {
-            roomCode = genCode();
-            const peerId = 'k15-' + roomCode;
-            const cfg = getPeerConfig();
-            // Explicitly use PeerJS free cloud server for reliable signaling
-            cfg.host = '0.peerjs.com';
-            cfg.port = 443;
-            cfg.path = '/';
-            peer = new Peer(peerId, cfg);
+      roomCode = genCode();
+      isHost = true;
+      myPlayer = 'p1';
+      gameMode = mode;
+      scoringMode = scoring;
+      totalRounds = tRounds;
 
-            const timer = setTimeout(() => {
-              if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
-              reject(new Error('TIMEOUT'));
-            }, 20000);
+      // Connect to MQTT
+      await connectMQTT();
 
-            peer.on('open', (id) => {
-              clearTimeout(timer);
-              console.log('[MP] Host peer registered:', id);
-              isHost = true;
-              myPlayer = 'p1';
-              connected = true;
-              gameMode = mode;
-              scoringMode = scoring;
-              totalRounds = tRounds;
+      // Subscribe to answer channel
+      const answerTopic = mqttTopic(roomCode, 'signal/guest');
+      mqttSub(answerTopic);
+      mqttSub(mqttTopic(roomCode, 'join'));
 
-              // Listen for incoming guest connections
-              peer.on('connection', (incoming) => {
-                if (conn) { try { incoming.close(); } catch(e) {} return; }
-                conn = incoming;
-                setupConnHandlers();
-              });
+      // Set initial lobby state
+      roomState = {
+        code: roomCode, mode, scoring, totalRounds: tRounds,
+        gameStarted: false,
+        players: { p1: { name: p1Name, connected: false }, p2: { name: '', connected: false } },
+        chat: [], gameState: null, myPlayer: 'p1'
+      };
 
-              // Set initial lobby state
-              roomState = {
-                code: roomCode, mode, scoring, totalRounds: tRounds,
-                gameStarted: false,
-                players: { p1: { name: p1Name, connected: false }, p2: { name: '', connected: false } },
-                chat: [], gameState: null, myPlayer: 'p1'
-              };
+      connCallbacks.forEach(cb => cb({ connected: true }));
 
-              connCallbacks.forEach(cb => cb({ connected: true }));
-              resolve({ ok: true, code: roomCode, player: 'p1' });
-            });
+      // Create WebRTC peer (initiator) — we wait for guest before creating
+      // Actually, we listen for MQTT join message, then create peer
+      const origOnMQTT = onMQTTMessage;
+      const joinTopic = mqttTopic(roomCode, 'join');
+      // We already subscribed above. The onMessageArrived handler will call onMQTTMessage.
+      // When we get a join, we create the simple-peer and publish the offer.
 
-            peer.on('error', (err) => {
-              clearTimeout(timer);
-              try { peer.destroy(); } catch(e) {}
-              peer = null;
-              if (err.type === 'unavailable-id') {
-                reject(new Error('COLLISION'));
-              } else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed') {
-                reject(new Error('NETWORK'));
-              } else {
-                reject(new Error(err.message || 'PeerJS error'));
-              }
-            });
+      // Override onMQTTMessage temporarily to detect join
+      let guestJoined = false;
+      const originalHandler = mqttClient.onMessageArrived;
+      mqttClient.onMessageArrived = (msg) => {
+        if (msg.topic === joinTopic && !guestJoined) {
+          guestJoined = true;
+          const d = JSON.parse(msg.payloadString);
+          p2Name = (d.name || 'Player 2').slice(0, 24);
+          const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
+          chatHistory.push(sysMsg);
 
-            peer.on('disconnected', () => {
-              // Try to reconnect to signaling server
-              if (peer && !peer.destroyed) {
-                try { peer.reconnect(); } catch(e) {}
-              }
-            });
+          // Now create simple-peer and send offer via MQTT
+          const offerTopic = mqttTopic(roomCode, 'signal/host');
+          sp = new SimplePeer({
+            initiator: true,
+            trickle: false,
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+              ]
+            }
           });
-        } catch (e) {
-          if (e.message === 'COLLISION' && attempt < 2) continue;
-          if (e.message === 'NETWORK') throw new Error('Network error — check your internet connection');
-          if (e.message === 'TIMEOUT') throw new Error('Timeout creating room. Check internet connection.');
-          throw e;
+
+          sp.on('signal', (signalData) => {
+            // Publish the signal (offer) to MQTT
+            mqttPub(offerTopic, JSON.stringify(signalData));
+            console.log('[MP] Host offer published');
+          });
+
+          setupPeerHandlers();
+          // Update room state with p2 joined
+          broadcastFullState();
+          return;
         }
-      }
+        // Handle other messages normally
+        if (msg.topic.indexOf('/signal/') >= 0 && sp) {
+          try { sp.signal(JSON.parse(msg.payloadString)); } catch(e) {}
+          return;
+        }
+        originalHandler.call(mqttClient, msg);
+      };
+
+      console.log('[MP] Host room created, code:', roomCode);
+      return { ok: true, code: roomCode, player: 'p1' };
     },
 
     async joinRoom(name, code) {
       myName = (name || 'Player').slice(0, 24);
       p2Name = myName;
-      await ensurePeer();
+      await ensureLibs();
+
+      roomCode = code;
+      isHost = false;
+      myPlayer = 'p2';
+
+      // Connect to MQTT
+      await connectMQTT();
+
+      // Subscribe to host signals
+      const offerTopic = mqttTopic(code, 'signal/host');
+      mqttSub(offerTopic);
+      console.log('[MP] Guest subscribed to:', offerTopic);
 
       return new Promise((resolve, reject) => {
-        roomCode = code;
-        const cfg = getPeerConfig();
-        // Explicitly use PeerJS free cloud server for reliable signaling
-        cfg.host = '0.peerjs.com';
-        cfg.port = 443;
-        cfg.path = '/';
-        peer = new Peer(undefined, cfg);
-
         let resolved = false;
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
-
-        function tryConnect() {
-          if (resolved || !peer || peer.destroyed) return;
-
-          isHost = false;
-          myPlayer = 'p2';
-
-          const targetId = 'k15-' + code;
-          console.log('[MP] Guest trying to connect to:', targetId);
-          const newConn = peer.connect(targetId, { reliable: true });
-
-          // Clean up old conn if retrying
-          if (conn) { try { conn.close(); } catch(e) {} }
-          conn = newConn;
-          setupConnHandlers();
-
-          // Resolve once we get the first room:state from host
-          const stateHandler = (state) => {
-            if (resolved) return;
-            if (state && state.code === code) {
-              resolved = true;
-              const idx = stateCallbacks.indexOf(stateHandler);
-              if (idx >= 0) stateCallbacks.splice(idx, 1);
-              p1Name = (state.players && state.players.p1 && state.players.p1.name) || '';
-              resolve({ ok: true, code: code, player: 'p2' });
-            }
-          };
-          stateCallbacks.push(stateHandler);
-        }
-
-        peer.on('open', () => {
-          tryConnect();
-        });
-
-        peer.on('error', (err) => {
-          if (resolved) return;
-          if (err.type === 'peer-unavailable') {
-            retryCount++;
-            if (retryCount < MAX_RETRIES) {
-              // Wait 2 seconds and retry (host may not be registered yet)
-              setTimeout(tryConnect, 2000);
-            } else {
-              resolved = true;
-              try { peer.destroy(); } catch(e) {} peer = null;
-              reject(new Error('Room not found'));
-            }
-          } else {
-            resolved = true;
-            try { peer.destroy(); } catch(e) {} peer = null;
-            reject(new Error(err.message || 'Connection failed'));
-          }
-        });
-
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           if (!resolved) {
             resolved = true;
-            try { peer.destroy(); } catch(e) {} peer = null;
-            reject(new Error('Could not find room. Check the code and try again.'));
+            reject(new Error('Room not found'));
           }
-        }, 35000);
+        }, 30000);
+
+        // Listen for host's offer
+        const origHandler = mqttClient.onMessageArrived;
+        mqttClient.onMessageArrived = (msg) => {
+          if (resolved) return;
+
+          if (msg.topic === offerTopic) {
+            // Got the host's offer — create simple-peer and respond
+            console.log('[MP] Guest received offer from host');
+            const signalData = JSON.parse(msg.payloadString);
+
+            sp = new SimplePeer({
+              initiator: false,
+              trickle: false,
+              config: {
+                iceServers: [
+                  { urls: 'stun:stun.l.google.com:19302' },
+                  { urls: 'stun:stun1.l.google.com:19302' },
+                  { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+              }
+            });
+
+            sp.on('signal', (answerData) => {
+              // Publish answer to MQTT
+              const answerTopic = mqttTopic(code, 'signal/guest');
+              mqttPub(answerTopic, JSON.stringify(answerData));
+              console.log('[MP] Guest answer published');
+            });
+
+            setupPeerHandlers();
+
+            // Signal the offer to simple-peer
+            sp.signal(signalData);
+
+            // Also send join message
+            mqttPub(mqttTopic(code, 'join'), JSON.stringify({ name: myName }));
+
+            // Wait for room:state to confirm connection
+            const stateHandler = (state) => {
+              if (resolved) return;
+              if (state && state.code === code) {
+                resolved = true;
+                clearTimeout(timeout);
+                const idx = stateCallbacks.indexOf(stateHandler);
+                if (idx >= 0) stateCallbacks.splice(idx, 1);
+                p1Name = (state.players && state.players.p1 && state.players.p1.name) || '';
+                resolve({ ok: true, code: code, player: 'p2' });
+              }
+            };
+            stateCallbacks.push(stateHandler);
+
+            // Restore normal handler
+            mqttClient.onMessageArrived = (m) => {
+              if (m.topic.indexOf('/signal/') >= 0 && sp) {
+                try { sp.signal(JSON.parse(m.payloadString)); } catch(e) {}
+                return;
+              }
+              origHandler.call(mqttClient, m);
+            };
+          } else {
+            // Pass to original handler
+            origHandler.call(mqttClient, msg);
+          }
+        };
+
+        // Also send join message immediately (in case host is already listening)
+        mqttPub(mqttTopic(code, 'join'), JSON.stringify({ name: myName }));
       });
     },
 
@@ -1285,18 +1357,6 @@ const MP = (() => {
       sendMsg({ type: 'chat:typing', data: { name: myName } });
     },
 
-    leaveRoom() {
-      if (conn) { try { conn.close(); } catch(e) {} conn = null; }
-      if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
-      connected = false;
-      roomCode = null; myPlayer = null; roomState = null;
-      chatHistory = []; _hostGS = null; isHost = false;
-      p1Name = ''; p2Name = '';
-      pendingReqs = {};
-      _playAgainRequest = null;
-      _playAgainAccepted = false;
-    },
-
     // ---- Play Again (both players must agree) ----
     requestPlayAgain() {
       _playAgainRequest = { from: myPlayer, timestamp: Date.now() };
@@ -1306,9 +1366,7 @@ const MP = (() => {
     acceptPlayAgain() {
       _playAgainAccepted = true;
       sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
-      // If we also sent a request, and both accepted, restart
       if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
-        // Both agreed — host restarts
         if (isHost) {
           _playAgainRequest = null;
           _playAgainAccepted = false;
@@ -1323,9 +1381,23 @@ const MP = (() => {
     },
     getPlayAgainRequest() { return _playAgainRequest; },
     isPlayAgainPending() { return !!_playAgainRequest && !_playAgainAccepted; },
-    // Check if OTHER player requested play again (not us)
     didOpponentRequestPlayAgain() {
       return _playAgainRequest && _playAgainRequest.from !== myPlayer;
+    },
+
+    leaveRoom() {
+      if (sp) { try { sp.destroy(); } catch(e) {} sp = null; }
+      if (mqttClient) {
+        try { mqttClient.disconnect(); } catch(e) {}
+        mqttClient = null;
+      }
+      connected = false;
+      roomCode = null; myPlayer = null; roomState = null;
+      chatHistory = []; _hostGS = null; isHost = false;
+      p1Name = ''; p2Name = '';
+      pendingReqs = {};
+      _playAgainRequest = null;
+      _playAgainAccepted = false;
     }
   };
 })();
