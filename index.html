@@ -648,29 +648,35 @@ let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
 
 // ============================================================
-// MULTIPLAYER MODULE — Socket.IO client
-// Works across different networks via the public preview URL.
-// Server is hosted alongside the Next.js app on port 3003, and
-// Caddy forwards the connection based on ?XTransformPort=3003.
+// MULTIPLAYER MODULE — PeerJS (WebRTC P2P)
+// No server needed! Uses PeerJS free signaling server for initial connection,
+// then communicates directly peer-to-peer via WebRTC data channels.
+// Host runs the game engine locally and sends state views to the guest.
 // ============================================================
 const MP = (() => {
-  let socket = null;
+  let peer = null;
+  let conn = null;          // DataConnection to the other peer
+  let isHost = false;
   let connected = false;
-  let myPlayer = null;     // 'p1' | 'p2'
+  let myPlayer = null;      // 'p1' | 'p2'
   let myName = '';
+  let p1Name = '';
+  let p2Name = '';
   let roomCode = null;
-  let roomState = null;    // last received server state (client view)
-  let pendingAck = {};
-  let chatCallbacks = [];
-  let stateCallbacks = [];
-  let connCallbacks = [];
+  let roomState = null;
   let chatHistory = [];
   let unreadChat = 0;
+  let connCallbacks = [];
+  let stateCallbacks = [];
+  let chatCallbacks = [];
+  let pendingReqs = {};
+  let _reqId = 0;
+  let _hostGS = null;       // Host's internal game state (G)
 
-  // Load socket.io client lib dynamically if not present
+  // ---------- Utility ----------
   function loadScript(src) {
     return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`)) return resolve();
+      if (document.querySelector('script[src="' + src + '"]')) return resolve();
       const s = document.createElement('script');
       s.src = src; s.async = true;
       s.onload = () => resolve();
@@ -679,91 +685,296 @@ const MP = (() => {
     });
   }
 
-  async function ensureSocket() {
-    if (socket && connected) return socket;
-    if (socket) return socket;
-    // Try local socket.io first (served by Next.js page itself via <script src="/socket.io/socket.io.js">)
-    // We bundle a minimal socket.io client loader from CDN as fallback.
-    if (typeof io === 'undefined') {
-      // Try several CDNs in order — works across different networks
+  async function ensurePeer() {
+    if (peer) return;
+    if (typeof Peer === 'undefined') {
       const cdns = [
-        'https://cdn.socket.io/4.7.5/socket.io.min.js',
-        'https://cdn.jsdelivr.net/npm/socket.io@4.7.5/client-dist/socket.io.min.js',
-        'https://unpkg.com/socket.io-client@4.7.5/dist/socket.io.min.js'
+        'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js',
+        'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js'
       ];
       let loaded = false;
       for (const src of cdns) {
-        try { await loadScript(src); if (typeof io !== 'undefined') { loaded = true; break; } } catch (e) {}
+        try { await loadScript(src); if (typeof Peer !== 'undefined') { loaded = true; break; } } catch (e) {}
       }
-      if (!loaded) throw new Error('Could not load Socket.IO client library. Check your internet connection.');
+      if (!loaded) throw new Error('Could not load PeerJS. Check internet.');
     }
-    // Connect via the same origin (Caddy will route to port 3003 via XTransformPort)
-    // This works across different networks because the user accesses the page via the
-    // public preview URL, and the WebSocket also goes through that same public URL.
-    const transports = ['websocket', 'polling'];
-    socket = io('/?XTransformPort=3003', {
-      transports,
-      reconnection: true,
-      reconnectionAttempts: 999,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 15000,
-      forceNew: true
-    });
+  }
 
-    socket.on('connect', () => {
-      connected = true;
-      connCallbacks.forEach(cb => cb({ connected: true }));
-    });
-    socket.on('disconnect', () => {
-      connected = false;
-      connCallbacks.forEach(cb => cb({ connected: false }));
-    });
-    socket.on('connect_error', () => {
-      connected = false;
-      connCallbacks.forEach(cb => cb({ connected: false, error: true }));
-    });
-    socket.on('reconnect', () => {
-      connCallbacks.forEach(cb => cb({ connected: true, reconnected: true }));
-      // Try to rejoin if we have a room code
-      if (roomCode && myName) {
-        socket.emit('room:reconnect', { code: roomCode, name: myName });
-      }
-    });
-    socket.on('room:state', (data) => {
-      roomState = data;
-      myPlayer = data.myPlayer;
-      roomCode = data.code;
-      // Update chat history (server sends last 50)
-      chatHistory = data.chat || [];
-      stateCallbacks.forEach(cb => cb(data));
-    });
-    socket.on('chat:message', (msg) => {
-      chatHistory.push(msg);
-      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
-      chatCallbacks.forEach(cb => cb(msg));
-      // Increment unread if chat panel is closed
-      const panel = document.getElementById('chatPanel');
-      if (panel && !panel.classList.contains('open') && msg.from !== myPlayer) {
-        unreadChat++;
-        updateChatBadge();
-      }
-    });
-    socket.on('chat:typing', (data) => {
-      const el = document.getElementById('chatTyping');
-      if (el) {
-        el.textContent = t('mpTyping', { name: data.name });
-        clearTimeout(window._mpTypingTimer);
-        window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
-      }
-    });
+  function genCode() {
+    const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let r = '';
+    for (let i = 0; i < 6; i++) r += c[Math.floor(Math.random() * c.length)];
+    return r;
+  }
 
-    return socket;
+  function sendMsg(data) {
+    if (conn && conn.open) { try { conn.send(data); } catch(e) {} }
+  }
+
+  function sendReq(type, data) {
+    return new Promise((resolve, reject) => {
+      const id = ++_reqId;
+      const timer = setTimeout(() => {
+        if (pendingReqs[id]) { delete pendingReqs[id]; reject(new Error('No response')); }
+      }, 8000);
+      pendingReqs[id] = {
+        resolve: (v) => { clearTimeout(timer); delete pendingReqs[id]; resolve(v); },
+        reject: (e) => { clearTimeout(timer); delete pendingReqs[id]; reject(e); }
+      };
+      sendMsg({ type, id, data });
+    });
   }
 
   function updateChatBadge() {
     const badge = document.getElementById('chatBadge');
     if (badge) badge.textContent = unreadChat > 0 ? (unreadChat > 9 ? '9+' : String(unreadChat)) : '';
+  }
+
+  // ---------- Host Game Engine ----------
+  function hostInitGame() {
+    if (gameMode === 'hazz2') {
+      _hostGS = newGSHazz2();
+    } else {
+      _hostGS = newGS(null);
+    }
+    const who = _hostGS.turn === 'p' ? p1Name : p2Name;
+    const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpGameStarted', { name: who || '...' }), ts: Date.now() };
+    chatHistory.push(sysMsg);
+    broadcastFullState();
+  }
+
+  function hostPlayCard(ci, chosenCap, newSuit, isP) {
+    if (!_hostGS || _hostGS.phase !== 'play') return;
+    if (isP ? _hostGS.turn !== 'p' : _hostGS.turn !== 'c') return;
+    if (gameMode === 'hazz2') {
+      const result = hazz2Play(_hostGS, ci, isP, newSuit);
+      if (!result) return;
+      _hostGS = result;
+    } else {
+      _hostGS = doPlay(_hostGS, ci, isP, chosenCap);
+    }
+    broadcastFullState();
+  }
+
+  function hostApplyPenalty(isP) {
+    if (!_hostGS || gameMode !== 'hazz2') return;
+    const r = hazz2ApplyPenalty(_hostGS, isP);
+    _hostGS = r.state;
+    broadcastFullState();
+  }
+
+  function hostDrawCard(isP) {
+    if (!_hostGS || gameMode !== 'hazz2') return;
+    if (_hostGS.skipCounter > 0 || _hostGS.drawCounter > 0) return;
+    const r = hazz2DrawVoluntary(_hostGS, isP);
+    _hostGS = r.state;
+    broadcastFullState();
+  }
+
+  function hostNextRound() {
+    if (!_hostGS || _hostGS.phase !== 'roundEnd') return;
+    if (gameMode === 'hazz2') {
+      _hostGS = newGSHazz2();
+    } else {
+      _hostGS = newGS(_hostGS);
+    }
+    broadcastFullState();
+  }
+
+  function hostRestart() {
+    _hostGS = null;
+    chatHistory = [];
+    hostInitGame();
+  }
+
+  // ---------- Build state view for a specific player ----------
+  function buildPlayerState(player) {
+    const started = !!_hostGS;
+    const base = {
+      code: roomCode,
+      mode: gameMode,
+      scoring: scoringMode,
+      totalRounds: totalRounds,
+      gameStarted: started,
+      players: {
+        p1: { name: p1Name, connected: started ? true : (isHost ? connected : true) },
+        p2: { name: p2Name, connected: started ? true : (isHost ? connected : true) }
+      },
+      chat: chatHistory.slice(-50),
+      gameState: null,
+      myPlayer: player
+    };
+    if (!started) return base;
+
+    const G = _hostGS;
+    const isP = (player === 'p1');
+    const myHand = isP ? G.pH : G.cH;
+    const oppHand = isP ? G.cH : G.pH;
+    const myCap = isP ? G.pCap : G.cCap;
+    const oppCap = isP ? G.cCap : G.pCap;
+    const myT = isP ? G.pTotal : G.cTotal;
+    const oppT = isP ? G.cTotal : G.pTotal;
+    const myRS = isP ? (G.pRS !== undefined ? G.pRS : 0) : (G.cRS !== undefined ? G.cRS : 0);
+    const oppRS = isP ? (G.cRS !== undefined ? G.cRS : 0) : (G.pRS !== undefined ? G.pRS : 0);
+    const isMyTurn = G.turn === (isP ? 'p' : 'c');
+
+    const gs = {
+      isMyTurn: isMyTurn,
+      phase: G.phase,
+      myHand: myHand.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })),
+      oppHandCount: oppHand.length,
+      myCaptures: myCap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })),
+      oppCaptures: oppCap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })),
+      myTotal: myT,
+      oppTotal: oppT,
+      myRoundScore: myRS,
+      oppRoundScore: oppRS,
+      table: G.table.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })),
+      deckCount: G.deck.length,
+      round: G.round,
+      totalRounds: totalRounds,
+      winner: G.winner || null
+    };
+
+    if (gameMode === 'hazz2') {
+      gs.currentSuit = G.currentSuit;
+      gs.skipCounter = G.skipCounter;
+      gs.drawCounter = G.drawCounter;
+    }
+
+    base.gameState = gs;
+    return base;
+  }
+
+  function broadcastFullState() {
+    if (!isHost) return;
+    const myState = buildPlayerState(myPlayer);
+    roomState = myState;
+    stateCallbacks.forEach(cb => cb(myState));
+    if (conn && conn.open) {
+      const guestPlayer = myPlayer === 'p1' ? 'p2' : 'p1';
+      const guestState = buildPlayerState(guestPlayer);
+      conn.send({ type: 'room:state', data: guestState });
+    }
+  }
+
+  // ---------- Connection handling ----------
+  function setupConnHandlers() {
+    conn.on('open', () => {
+      connected = true;
+      connCallbacks.forEach(cb => cb({ connected: true }));
+      if (isHost) {
+        // Send current state to guest
+        const guestState = buildPlayerState('p2');
+        conn.send({ type: 'room:state', data: guestState });
+        // Update host's own view
+        const myState = buildPlayerState('p1');
+        roomState = myState;
+        stateCallbacks.forEach(cb => cb(myState));
+      } else {
+        // Tell host our name
+        conn.send({ type: 'room:join', data: { name: myName } });
+      }
+    });
+
+    conn.on('data', (msg) => {
+      if (!msg || typeof msg !== 'object') return;
+
+      // --- Both sides: receive room state ---
+      if (msg.type === 'room:state') {
+        roomState = msg.data;
+        if (msg.data) {
+          myPlayer = msg.data.myPlayer;
+          roomCode = msg.data.code;
+          if (msg.data.chat) chatHistory = msg.data.chat;
+          gameMode = msg.data.mode;
+          scoringMode = msg.data.scoring;
+          totalRounds = msg.data.totalRounds;
+        }
+        stateCallbacks.forEach(cb => cb(msg.data));
+        return;
+      }
+
+      // --- Chat message (from either side) ---
+      if (msg.type === 'chat:message') {
+        const m = msg.data;
+        if (m && !chatHistory.some(x => x.id === m.id)) {
+          chatHistory.push(m);
+          if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+          chatCallbacks.forEach(cb => cb(m));
+          const panel = document.getElementById('chatPanel');
+          if (panel && !panel.classList.contains('open') && m.from !== myPlayer) {
+            unreadChat++;
+            updateChatBadge();
+          }
+        }
+        return;
+      }
+
+      // --- Typing indicator ---
+      if (msg.type === 'chat:typing') {
+        const el = document.getElementById('chatTyping');
+        if (el) {
+          el.textContent = t('mpTyping', { name: (msg.data && msg.data.name) || '...' });
+          clearTimeout(window._mpTypingTimer);
+          window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
+        }
+        return;
+      }
+
+      // --- Guest's request-response (capture options) ---
+      if (msg.type === 'game:capture-options:resp' && pendingReqs[msg.id]) {
+        const req = pendingReqs[msg.id];
+        if (msg.data && msg.data.ok) req.resolve(msg.data.options || []);
+        else req.reject(new Error((msg.data && msg.data.error) || 'Failed'));
+        return;
+      }
+
+      // === Host-only message handlers ===
+      if (!isHost) return;
+
+      if (msg.type === 'room:join') {
+        p2Name = ((msg.data && msg.data.name) || 'Player 2').slice(0, 24);
+        const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
+        chatHistory.push(sysMsg);
+        broadcastFullState();
+      }
+      else if (msg.type === 'game:play') {
+        const d = msg.data || {};
+        hostPlayCard(d.ci, d.chosenCap, d.newSuit, false);
+      }
+      else if (msg.type === 'game:capture-options') {
+        const ci = (msg.data && msg.data.ci) || 0;
+        let options = [];
+        if (_hostGS && ci >= 0 && ci < _hostGS.cH.length) {
+          const card = _hostGS.cH[ci];
+          const caps = findCaps(card, _hostGS.table);
+          options = caps.map(cap => cap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })));
+        }
+        conn.send({ type: 'game:capture-options:resp', id: msg.id, data: { ok: true, options } });
+      }
+      else if (msg.type === 'game:penalty') {
+        hostApplyPenalty(false);
+      }
+      else if (msg.type === 'game:draw') {
+        hostDrawCard(false);
+      }
+      else if (msg.type === 'game:restart') {
+        hostRestart();
+      }
+    });
+
+    conn.on('close', () => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false }));
+    });
+
+    conn.on('error', (err) => {
+      connected = false;
+      connCallbacks.forEach(cb => cb({ connected: false, error: true }));
+      console.warn('MP connection error:', err);
+    });
   }
 
   // ============ Public API ============
@@ -779,86 +990,176 @@ const MP = (() => {
     getChatHistory() { return chatHistory; },
     resetUnread() { unreadChat = 0; updateChatBadge(); },
 
-    async createRoom(name, mode, scoring, totalRounds) {
+    async createRoom(name, mode, scoring, tRounds) {
       myName = (name || 'Player').slice(0, 24);
-      await ensureSocket();
+      p1Name = myName;
+      await ensurePeer();
+
       return new Promise((resolve, reject) => {
-        socket.emit('room:create', { name: myName, mode, scoring, totalRounds }, (r) => {
-          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
-          else reject(new Error(r && r.error ? r.error : 'Failed to create room'));
+        roomCode = genCode();
+        const peerId = 'kanza15-' + roomCode;
+        peer = new Peer(peerId);
+
+        peer.on('open', () => {
+          isHost = true;
+          myPlayer = 'p1';
+          connected = true;
+          gameMode = mode;
+          scoringMode = scoring;
+          totalRounds = tRounds;
+
+          // Listen for incoming guest connections
+          peer.on('connection', (incoming) => {
+            if (conn) { try { incoming.close(); } catch(e) {} return; } // only 1 guest
+            conn = incoming;
+            setupConnHandlers();
+          });
+
+          // Set initial lobby state
+          roomState = {
+            code: roomCode, mode, scoring, totalRounds: tRounds,
+            gameStarted: false,
+            players: { p1: { name: p1Name, connected: false }, p2: { name: '', connected: false } },
+            chat: [], gameState: null, myPlayer: 'p1'
+          };
+
+          connCallbacks.forEach(cb => cb({ connected: true }));
+          resolve({ ok: true, code: roomCode, player: 'p1' });
         });
-        // Timeout fallback
-        setTimeout(() => reject(new Error('Server did not respond')), 12000);
+
+        peer.on('error', (err) => {
+          try { peer.destroy(); } catch(e) {}
+          peer = null;
+          if (err.type === 'unavailable-id') {
+            reject(new Error('Room code collision — try again'));
+          } else if (err.type === 'network' || err.type === 'server-error') {
+            reject(new Error('Network error — check your internet connection'));
+          } else {
+            reject(new Error(err.message || 'PeerJS error'));
+          }
+        });
+
+        setTimeout(() => {
+          if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+          reject(new Error('Timeout creating room. Check internet connection.'));
+        }, 20000);
       });
     },
 
     async joinRoom(name, code) {
       myName = (name || 'Player').slice(0, 24);
-      await ensureSocket();
+      p2Name = myName;
+      await ensurePeer();
+
       return new Promise((resolve, reject) => {
-        socket.emit('room:join', { code, name: myName }, (r) => {
-          if (r && r.ok) { myPlayer = r.player; roomCode = r.code; resolve(r); }
-          else reject(new Error(r && r.error ? r.error : 'Failed to join room'));
+        roomCode = code;
+        peer = new Peer();
+
+        peer.on('open', () => {
+          isHost = false;
+          myPlayer = 'p2';
+
+          conn = peer.connect('kanza15-' + code, { reliable: true });
+          setupConnHandlers();
+
+          // Resolve once we get the first room:state from host
+          const stateHandler = (state) => {
+            if (state && state.code === code) {
+              const idx = stateCallbacks.indexOf(stateHandler);
+              if (idx >= 0) stateCallbacks.splice(idx, 1);
+              p1Name = (state.players && state.players.p1 && state.players.p1.name) || '';
+              resolve({ ok: true, code: code, player: 'p2' });
+            }
+          };
+          stateCallbacks.push(stateHandler);
         });
-        setTimeout(() => reject(new Error('Server did not respond')), 12000);
+
+        peer.on('error', (err) => {
+          try { peer.destroy(); } catch(e) {}
+          peer = null;
+          if (err.type === 'peer-unavailable') {
+            reject(new Error('Room not found'));
+          } else {
+            reject(new Error(err.message || 'Connection failed'));
+          }
+        });
+
+        setTimeout(() => {
+          if (peer && !connected) {
+            try { peer.destroy(); } catch(e) {} peer = null;
+            reject(new Error('Could not find room. Check the code and try again.'));
+          }
+        }, 20000);
       });
     },
 
     startGame() {
-      if (!socket) return;
-      socket.emit('game:start', {}, () => {});
+      if (isHost) hostInitGame();
     },
 
     playCard(ci, chosenCap, newSuit) {
-      if (!socket) return;
-      socket.emit('game:play', { ci, chosenCap, newSuit }, () => {});
+      if (isHost) {
+        hostPlayCard(ci, chosenCap, newSuit, true);
+      } else {
+        sendMsg({ type: 'game:play', data: { ci, chosenCap, newSuit } });
+      }
     },
 
     requestCaptureOptions(ci) {
-      return new Promise((resolve, reject) => {
-        if (!socket) return reject(new Error('Not connected'));
-        socket.emit('game:capture-options', { ci }, (r) => {
-          if (r && r.ok) resolve(r.options || []);
-          else reject(new Error(r && r.error ? r.error : 'Failed'));
-        });
-        setTimeout(() => reject(new Error('No response')), 8000);
-      });
+      if (isHost) {
+        if (!_hostGS || ci < 0 || ci >= _hostGS.pH.length) return Promise.resolve([]);
+        const card = _hostGS.pH[ci];
+        const caps = findCaps(card, _hostGS.table);
+        return Promise.resolve(caps.map(cap => cap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img }))));
+      } else {
+        return sendReq('game:capture-options', { ci });
+      }
     },
 
     applyPenalty() {
-      if (!socket) return;
-      socket.emit('game:penalty', {}, () => {});
+      if (isHost) hostApplyPenalty(true);
+      else sendMsg({ type: 'game:penalty', data: {} });
     },
 
     drawCard() {
-      if (!socket) return;
-      socket.emit('game:draw', {}, () => {});
+      if (isHost) hostDrawCard(true);
+      else sendMsg({ type: 'game:draw', data: {} });
     },
 
     nextRound() {
-      if (!socket) return;
-      socket.emit('game:next-round', {}, () => {});
+      if (isHost) hostNextRound();
     },
 
     restart() {
-      if (!socket) return;
-      socket.emit('game:restart', {}, () => {});
+      if (isHost) hostRestart();
+      else sendMsg({ type: 'game:restart', data: {} });
     },
 
     sendChat(text) {
-      if (!socket || !text.trim()) return;
-      socket.emit('chat:send', { text: text.slice(0, 500) }, () => {});
+      if (!text || !text.trim()) return;
+      const msg = {
+        id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+        from: myPlayer, name: myName,
+        text: text.slice(0, 500), ts: Date.now()
+      };
+      chatHistory.push(msg);
+      if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+      chatCallbacks.forEach(cb => cb(msg));
+      sendMsg({ type: 'chat:message', data: msg });
     },
 
     sendTyping() {
-      if (!socket) return;
-      socket.emit('chat:typing', {});
+      sendMsg({ type: 'chat:typing', data: { name: myName } });
     },
 
     leaveRoom() {
-      if (!socket) return;
-      socket.emit('room:leave', {}, () => {});
-      roomCode = null; myPlayer = null; roomState = null; chatHistory = [];
+      if (conn) { try { conn.close(); } catch(e) {} conn = null; }
+      if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+      connected = false;
+      roomCode = null; myPlayer = null; roomState = null;
+      chatHistory = []; _hostGS = null; isHost = false;
+      p1Name = ''; p2Name = '';
+      pendingReqs = {};
     }
   };
 })();
