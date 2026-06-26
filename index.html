@@ -522,7 +522,7 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
     </div>
     <div id="mpJoinBox" style="display:none">
       <div class="mp-row">
-        <input class="mp-field" id="mpCode" placeholder="رمز الغرفة (6 أحرف)" maxlength="6" style="text-transform:uppercase;letter-spacing:2px">
+        <input class="mp-field" id="mpCode" placeholder="رمز الغرفة (4 أرقام)" maxlength="4" style="letter-spacing:6px;font-size:1.3rem;text-align:center" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
       </div>
       <button class="mp-btn" onclick="mpJoinRoom()" data-t="joinRoomBtn">🚪 انضمام للغرفة</button>
       <div class="mp-status" id="mpJoinStatus"></div>
@@ -640,9 +640,9 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 <script>
 // ============ I18N ============
 const TR={
-  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (6 chars)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting to server...',mpDisconnected:'⚠️ Disconnected from server. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 6-character code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
-  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (6 caractères)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion au serveur...',mpDisconnected:'⚠️ Déconnecté. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (6 caractères)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
-  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (6 أحرف)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال بالخادم...',mpDisconnected:'⚠️ انقطع الاتصال. إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'من فضلك أدخل رمز صحيح من 6 أحرف',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
+  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (4 digits)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting...',mpDisconnected:'⚠️ Connection lost. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 4-digit code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
+  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (4 chiffres)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion...',mpDisconnected:'⚠️ Connexion perdue. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (4 chiffres)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
+  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (4 أرقام)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال...',mpDisconnected:'⚠️ انقطع الاتصال. جاري إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'أدخل رمزاً من 4 أرقام',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
 };
 let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
@@ -685,6 +685,28 @@ const MP = (() => {
     });
   }
 
+  // PeerJS signaling servers (tried in order)
+  const SIGNAL_SERVERS = [
+    { host: '0.peerjs.com', port: 443, path: '/myapp' },
+    { host: 'peerjs-server.herokuapp.com', port: 443, path: '/' },
+  ];
+  let _serverIdx = 0;
+
+  function getPeerConfig() {
+    return {
+      debug: 0,
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' }
+        ]
+      }
+    };
+  }
+
   async function ensurePeer() {
     if (peer) return;
     if (typeof Peer === 'undefined') {
@@ -702,9 +724,8 @@ const MP = (() => {
   }
 
   function genCode() {
-    const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let r = '';
-    for (let i = 0; i < 6; i++) r += c[Math.floor(Math.random() * c.length)];
+    for (let i = 0; i < 4; i++) r += Math.floor(Math.random() * 10);
     return r;
   }
 
@@ -995,55 +1016,75 @@ const MP = (() => {
       p1Name = myName;
       await ensurePeer();
 
-      return new Promise((resolve, reject) => {
-        roomCode = genCode();
-        const peerId = 'kanza15-' + roomCode;
-        peer = new Peer(peerId);
+      // Try up to 3 times in case of code collision
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          return await new Promise((resolve, reject) => {
+            roomCode = genCode();
+            const peerId = 'k15-' + roomCode;
+            const cfg = getPeerConfig();
+            peer = new Peer(peerId, cfg);
 
-        peer.on('open', () => {
-          isHost = true;
-          myPlayer = 'p1';
-          connected = true;
-          gameMode = mode;
-          scoringMode = scoring;
-          totalRounds = tRounds;
+            const timer = setTimeout(() => {
+              if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
+              reject(new Error('TIMEOUT'));
+            }, 15000);
 
-          // Listen for incoming guest connections
-          peer.on('connection', (incoming) => {
-            if (conn) { try { incoming.close(); } catch(e) {} return; } // only 1 guest
-            conn = incoming;
-            setupConnHandlers();
+            peer.on('open', (id) => {
+              clearTimeout(timer);
+              isHost = true;
+              myPlayer = 'p1';
+              connected = true;
+              gameMode = mode;
+              scoringMode = scoring;
+              totalRounds = tRounds;
+
+              // Listen for incoming guest connections
+              peer.on('connection', (incoming) => {
+                if (conn) { try { incoming.close(); } catch(e) {} return; }
+                conn = incoming;
+                setupConnHandlers();
+              });
+
+              // Set initial lobby state
+              roomState = {
+                code: roomCode, mode, scoring, totalRounds: tRounds,
+                gameStarted: false,
+                players: { p1: { name: p1Name, connected: false }, p2: { name: '', connected: false } },
+                chat: [], gameState: null, myPlayer: 'p1'
+              };
+
+              connCallbacks.forEach(cb => cb({ connected: true }));
+              resolve({ ok: true, code: roomCode, player: 'p1' });
+            });
+
+            peer.on('error', (err) => {
+              clearTimeout(timer);
+              try { peer.destroy(); } catch(e) {}
+              peer = null;
+              if (err.type === 'unavailable-id') {
+                reject(new Error('COLLISION'));
+              } else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed') {
+                reject(new Error('NETWORK'));
+              } else {
+                reject(new Error(err.message || 'PeerJS error'));
+              }
+            });
+
+            peer.on('disconnected', () => {
+              // Try to reconnect to signaling server
+              if (peer && !peer.destroyed) {
+                try { peer.reconnect(); } catch(e) {}
+              }
+            });
           });
-
-          // Set initial lobby state
-          roomState = {
-            code: roomCode, mode, scoring, totalRounds: tRounds,
-            gameStarted: false,
-            players: { p1: { name: p1Name, connected: false }, p2: { name: '', connected: false } },
-            chat: [], gameState: null, myPlayer: 'p1'
-          };
-
-          connCallbacks.forEach(cb => cb({ connected: true }));
-          resolve({ ok: true, code: roomCode, player: 'p1' });
-        });
-
-        peer.on('error', (err) => {
-          try { peer.destroy(); } catch(e) {}
-          peer = null;
-          if (err.type === 'unavailable-id') {
-            reject(new Error('Room code collision — try again'));
-          } else if (err.type === 'network' || err.type === 'server-error') {
-            reject(new Error('Network error — check your internet connection'));
-          } else {
-            reject(new Error(err.message || 'PeerJS error'));
-          }
-        });
-
-        setTimeout(() => {
-          if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
-          reject(new Error('Timeout creating room. Check internet connection.'));
-        }, 20000);
-      });
+        } catch (e) {
+          if (e.message === 'COLLISION' && attempt < 2) continue;
+          if (e.message === 'NETWORK') throw new Error('Network error — check your internet connection');
+          if (e.message === 'TIMEOUT') throw new Error('Timeout creating room. Check internet connection.');
+          throw e;
+        }
+      }
     },
 
     async joinRoom(name, code) {
@@ -1053,18 +1094,32 @@ const MP = (() => {
 
       return new Promise((resolve, reject) => {
         roomCode = code;
-        peer = new Peer();
+        const cfg = getPeerConfig();
+        peer = new Peer(undefined, cfg);
 
-        peer.on('open', () => {
+        let resolved = false;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+
+        function tryConnect() {
+          if (resolved || !peer || peer.destroyed) return;
+
           isHost = false;
           myPlayer = 'p2';
 
-          conn = peer.connect('kanza15-' + code, { reliable: true });
+          const targetId = 'k15-' + code;
+          const newConn = peer.connect(targetId, { reliable: true });
+
+          // Clean up old conn if retrying
+          if (conn) { try { conn.close(); } catch(e) {} }
+          conn = newConn;
           setupConnHandlers();
 
           // Resolve once we get the first room:state from host
           const stateHandler = (state) => {
+            if (resolved) return;
             if (state && state.code === code) {
+              resolved = true;
               const idx = stateCallbacks.indexOf(stateHandler);
               if (idx >= 0) stateCallbacks.splice(idx, 1);
               p1Name = (state.players && state.players.p1 && state.players.p1.name) || '';
@@ -1072,24 +1127,38 @@ const MP = (() => {
             }
           };
           stateCallbacks.push(stateHandler);
+        }
+
+        peer.on('open', () => {
+          tryConnect();
         });
 
         peer.on('error', (err) => {
-          try { peer.destroy(); } catch(e) {}
-          peer = null;
+          if (resolved) return;
           if (err.type === 'peer-unavailable') {
-            reject(new Error('Room not found'));
+            retryCount++;
+            if (retryCount < MAX_RETRIES) {
+              // Wait 2 seconds and retry (host may not be registered yet)
+              setTimeout(tryConnect, 2000);
+            } else {
+              resolved = true;
+              try { peer.destroy(); } catch(e) {} peer = null;
+              reject(new Error('Room not found'));
+            }
           } else {
+            resolved = true;
+            try { peer.destroy(); } catch(e) {} peer = null;
             reject(new Error(err.message || 'Connection failed'));
           }
         });
 
         setTimeout(() => {
-          if (peer && !connected) {
+          if (!resolved) {
+            resolved = true;
             try { peer.destroy(); } catch(e) {} peer = null;
             reject(new Error('Could not find room. Check the code and try again.'));
           }
-        }, 20000);
+        }, 25000);
       });
     },
 
@@ -1201,10 +1270,10 @@ async function mpCreateRoom() {
 
 async function mpJoinRoom() {
   const name = document.getElementById('mpName').value.trim();
-  const code = document.getElementById('mpCode').value.trim().toUpperCase();
+  const code = document.getElementById('mpCode').value.trim().replace(/\D/g, '');
   const statusEl = document.getElementById('mpJoinStatus');
   if (!name) { statusEl.textContent = t('mpEnterName'); statusEl.className = 'mp-status waiting'; return; }
-  if (code.length !== 6) { statusEl.textContent = t('mpInvalidCode'); statusEl.className = 'mp-status waiting'; return; }
+  if (code.length !== 4) { statusEl.textContent = t('mpInvalidCode'); statusEl.className = 'mp-status waiting'; return; }
   statusEl.textContent = t('mpConnecting');
   statusEl.className = 'mp-status waiting';
   try {
