@@ -692,7 +692,7 @@ const MP = (() => {
 
   function getPeerConfig() {
     return {
-      debug: 0,
+      debug: 1,
       secure: true,
       config: {
         iceServers: [
@@ -700,15 +700,22 @@ const MP = (() => {
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
           { urls: 'stun:stun2.l.google.com:19302' },
-          // Free TURN servers (relay traffic through NAT/firewall)
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' },
+          // Metered.ca free TURN (relay traffic through NAT/firewall)
           { urls: 'stun:openrelay.metered.ca:80' },
           { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'stun:openrelay.metered.ca:443' },
           { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
           { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-          // Additional free TURN
-          { urls: 'stun:global.stun.twilio.com:3478' }
-        ]
+          // Twilio free TURN
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          // Xirsys free tier TURN (community credentials)
+          { urls: 'stun:a.relay.metered.ca:80' },
+          { urls: 'turn:a.relay.metered.ca:80', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' },
+          { urls: 'turn:a.relay.metered.ca:443', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' },
+          { urls: 'turn:a.relay.metered.ca:443?transport=tcp', username: 'e74a8c7b7e7b00e1b5e4de64', credential: 'MQ5dTbUwP/JLi3Gc' }
+        ],
+        iceCandidatePoolSize: 10
       }
     };
   }
@@ -890,6 +897,7 @@ const MP = (() => {
   function setupConnHandlers() {
     conn.on('open', () => {
       connected = true;
+      console.log('[MP] Data connection open, peer:', peer && peer.id);
       connCallbacks.forEach(cb => cb({ connected: true }));
       if (isHost) {
         // Send current state to guest
@@ -1078,10 +1086,11 @@ const MP = (() => {
             const timer = setTimeout(() => {
               if (peer) { try { peer.destroy(); } catch(e) {} peer = null; }
               reject(new Error('TIMEOUT'));
-            }, 15000);
+            }, 20000);
 
             peer.on('open', (id) => {
               clearTimeout(timer);
+              console.log('[MP] Host peer registered:', id);
               isHost = true;
               myPlayer = 'p1';
               connected = true;
@@ -1162,6 +1171,7 @@ const MP = (() => {
           myPlayer = 'p2';
 
           const targetId = 'k15-' + code;
+          console.log('[MP] Guest trying to connect to:', targetId);
           const newConn = peer.connect(targetId, { reliable: true });
 
           // Clean up old conn if retrying
@@ -1212,7 +1222,7 @@ const MP = (() => {
             try { peer.destroy(); } catch(e) {} peer = null;
             reject(new Error('Could not find room. Check the code and try again.'));
           }
-        }, 25000);
+        }, 35000);
       });
     },
 
@@ -2256,11 +2266,13 @@ function hazz2Play(s,ci,isP,newSuit){
   // Handle card effects
   if(card.value===1){
     ns.skipCounter=s.skipCounter+1;
-    ns.drawCounter=0; // 1 cancels 2 chain? No — they are separate. Keep separate.
+    ns.drawCounter=0;
+    ns.currentSuit=card.suit; // suit follows the played card
     actionType='skip';
   } else if(card.value===2){
     ns.drawCounter=s.drawCounter+1;
     ns.skipCounter=0;
+    ns.currentSuit=card.suit; // suit follows the played card
     actionType='draw';
   } else if(card.value===7){
     if(newSuit)ns.currentSuit=newSuit;
