@@ -7,6 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Cinzel:wght@500;700;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<!-- مكتبات الاتصال الآمن واللعب أونلاين مثبتة مباشرة لتفادي الحظر الأمني للمتصفحات -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js" type="text/javascript"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -96,174 +99,6 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 .hazz-pill.suit{background:rgba(212,175,55,0.18);border-color:rgba(212,175,55,0.55);color:var(--gold-l)}
 .hazz-pill .pill-ico{font-size:1rem;line-height:1}
 .suit-dot{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:middle;border:1px solid rgba(255,255,255,0.4);box-shadow:0 0 6px currentColor}
-
-/* ===== SUIT CHOOSER ===== */
-.suit-opts{display:flex;justify-content:center;gap:14px;margin:18px 0;flex-wrap:wrap}
-.suit-opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 18px;border:2px solid rgba(212,175,55,0.3);border-radius:14px;cursor:pointer;transition:all .2s;background:rgba(0,0,0,0.25);min-width:80px}
-.suit-opt:hover{border-color:var(--gold);background:rgba(212,175,55,0.12);transform:translateY(-3px)}
-.suit-opt .suit-circle{width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);box-shadow:0 0 12px currentColor}
-.suit-opt .suit-nm{font-size:.85rem;font-weight:700;color:var(--text);font-family:'Cairo',sans-serif}
-
-/* ===== DRAW BUTTON (HAZZ 2 — prominent call-to-action) ===== */
-#drawBtnWrap{padding:2px 0;flex-shrink:0;text-align:center}
-.draw-btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  margin:0 auto;padding:7px 22px;
-  background:linear-gradient(135deg,#4c566a,#5e81ac);
-  color:#fff;border:2px solid rgba(212,175,55,0.5);
-  border-radius:24px;font-size:clamp(.82rem,2vw,.98rem);font-weight:700;
-  cursor:pointer;transition:all .25s;
-  font-family:'Cairo',sans-serif;
-  box-shadow:0 3px 10px rgba(0,0,0,0.3);
-}
-.draw-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(94,129,172,0.5);background:linear-gradient(135deg,#5e81ac,#4c566a)}
-.draw-btn:active{transform:translateY(0)}
-
-/* ===== TURN ARROW (HAZZ 2) ===== */
-.turn-arrow{display:inline-block;font-size:.95rem;margin:0 6px;opacity:.7}
-
-/* ===== GAME AREA ===== */
-.garea{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:5px 8px;gap:4px}
-/* Safety fallback: if content doesn't fit, allow scrolling inside game area */
-.garea.scrollable{overflow-y:auto;overflow-x:hidden}
-
-/* COMPUTER HAND */
-.chand{display:flex;justify-content:center;gap:4px;padding:3px;min-height:50px;flex-shrink:0;flex-wrap:wrap}
-.chand .cd{width:44px;height:66px}
-
-/* SCORE BAR */
-.sbar{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.15));border:1px solid rgba(212,175,55,0.2);border-radius:12px;margin:2px 0;flex-shrink:0;font-size:.85rem;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
-.sitem{display:flex;align-items:center;gap:6px;flex-direction:column;gap:2px}
-.sitem-top{display:flex;align-items:center;gap:6px}
-.slbl{color:#8899aa;font-size:.75rem;font-weight:600}
-.sval{font-weight:900;color:var(--gold);font-size:1.1rem;font-family:'Cinzel',serif}
-.rbadge{background:linear-gradient(135deg,rgba(212,175,55,0.2),rgba(212,175,55,0.1));padding:4px 12px;border-radius:12px;color:var(--gold);font-weight:700;font-size:.85rem;border:1px solid rgba(212,175,55,0.3);font-family:'Cairo',sans-serif}
-.capinfo{font-size:.7rem;color:#6b7a8a;font-weight:600}
-
-/* TABLE - FELT */
-.tarea{
-  flex:1;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:8px;padding:12px;min-height:110px;position:relative;
-  border-radius:18px;
-  background:radial-gradient(ellipse at center,var(--felt2) 0%,var(--felt1) 50%,var(--felt-d) 100%);
-  border:3px solid rgba(212,175,55,0.35);
-  box-shadow:inset 0 4px 20px rgba(0,0,0,0.5),0 4px 20px rgba(0,0,0,0.4),0 0 30px rgba(212,175,55,0.1);
-  margin:3px 0;overflow-y:auto;
-}
-.tarea::before{content:'';position:absolute;inset:0;border-radius:15px;background:url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 2L23 10L31 10L25 15L27 23L20 18L13 23L15 15L9 10L17 10Z' fill='none' stroke='rgba(212,175,55,0.08)' stroke-width='0.4'/%3E%3C/svg%3E");pointer-events:none}
-.tempty{color:rgba(212,175,55,0.4);font-size:1rem;text-align:center;width:100%;font-style:italic;font-weight:600}
-
-/* MESSAGE */
-.msg{text-align:center;padding:6px 10px;font-size:clamp(.8rem,2vw,1rem);color:var(--text-d);min-height:30px;flex-shrink:0;transition:all .3s;font-weight:600;font-family:'Cairo',sans-serif}
-.msg.cap{color:var(--green);font-weight:700;text-shadow:0 0 10px rgba(74,222,128,0.4)}
-.msg.nocap{color:#f87171}
-.msg.turn{color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(212,175,55,0.3)}
-.msg.think{color:#9ca3af;font-style:italic}
-
-/* PLAYER HAND */
-.phand{display:flex;justify-content:center;gap:6px;padding:6px;min-height:90px;flex-shrink:0;flex-wrap:wrap;align-items:flex-end}
-/* When 8+ cards (Kanza/Ronda), switch to single-row overlap layout (avoids wrapping) */
-.phand:has(> .cd:nth-child(8)){flex-wrap:nowrap;gap:0;overflow-x:auto;scrollbar-width:thin}
-.phand:has(> .cd:nth-child(8)) .cd{margin-left:-25px}
-.phand:has(> .cd:nth-child(8)) .cd:first-child{margin-left:0}
-.phand .cd.playable:hover{z-index:10}
-
-/* HAZZ 2 PLAYER HAND: always use overlap so 7+ cards fit on mobile.
-   Uses negative margin between cards but keeps centering via inline-block trick.
-   flex-wrap:nowrap prevents cards from wrapping to second row. */
-.hazz2-mode .phand{flex-wrap:nowrap;gap:0;overflow-x:auto;scrollbar-width:thin;padding:8px 4px;justify-content:center;min-height:95px;-webkit-overflow-scrolling:touch}
-.hazz2-mode .phand .cd{margin-left:-20px;flex-shrink:0}
-.hazz2-mode .phand .cd:first-child{margin-left:0}
-.hazz2-mode .phand .cd.playable:hover{z-index:10;transform:translateY(-15px) scale(1.05);margin-left:0;margin-right:-20px}
-
-/* CARD */
-.cd{
-  position:relative;border-radius:8px;overflow:hidden;flex-shrink:0;
-  box-shadow:0 3px 10px rgba(0,0,0,0.4),0 1px 3px rgba(0,0,0,0.3);
-  border:2px solid rgba(255,255,255,0.1);
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;
-  background:#1a2a4a;
-}
-.cd img{width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none;user-select:none;display:block}
-.cd.playable{cursor:pointer;border-color:rgba(212,175,55,0.3)}
-.cd.playable:hover{transform:translateY(-15px) scale(1.05);box-shadow:0 12px 25px rgba(212,175,55,0.35),0 4px 12px rgba(0,0,0,0.5);border-color:var(--gold)}
-.cd.playable:active{transform:translateY(-8px) scale(1.02)}
-.cd.playable::after{content:'';position:absolute;inset:0;border-radius:6px;animation:pg 2s infinite;pointer-events:none}
-@keyframes pg{0%,100%{box-shadow:inset 0 0 10px rgba(212,175,55,0.15)}50%{box-shadow:inset 0 0 18px rgba(212,175,55,0.4)}}
-
-/* Card animations */
-.cd.deal{animation:dealCard .5s cubic-bezier(.34,1.56,.64,1) backwards}
-@keyframes dealCard{0%{opacity:0;transform:translateY(-100px) rotateZ(180deg) scale(.5)}100%{opacity:1;transform:translateY(0) rotateZ(0) scale(1)}}
-.cd.deal-table{animation:dealTable .4s cubic-bezier(.34,1.56,.64,1) backwards}
-@keyframes dealTable{0%{opacity:0;transform:translateY(-80px) scale(.5)}100%{opacity:1;transform:translateY(0) scale(1)}}
-.cd.play-out{animation:playOut .4s ease-in forwards}
-@keyframes playOut{0%{transform:translateY(0)}50%{transform:translateY(-30px) scale(1.1)}100%{transform:translateY(0);opacity:1}}
-.cd.capture-flash{animation:capFlash .6s ease-out}
-@keyframes capFlash{0%{box-shadow:0 0 0 rgba(74,222,128,0)}50%{box-shadow:0 0 30px rgba(74,222,128,0.8),0 0 60px rgba(74,222,128,0.4)}100%{box-shadow:0 3px 10px rgba(0,0,0,0.4)}}
-
-/* DECK INFO */
-.dinfo{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.72rem;color:#6b7a8a;padding:2px 0;flex-shrink:0;font-weight:600}
-.dicon{width:18px;height:26px;background:linear-gradient(135deg,#2a1a4a,#1a2a4a);border:1px solid rgba(212,175,55,0.3);border-radius:3px;display:inline-block;position:relative}
-.dicon::after{content:'';position:absolute;inset:2px;border:1px solid rgba(212,175,55,0.2);border-radius:2px}
-
-/* ===== MODAL ===== */
-.mover{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(5px);animation:fadeIn .3s}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.mover.hidden{display:none}
-.modal{background:linear-gradient(135deg,var(--bg3),var(--bg2));border:2px solid rgba(212,175,55,0.4);border-radius:22px;padding:25px;max-width:450px;width:92%;max-height:85vh;overflow-y:auto;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 40px rgba(212,175,55,0.15);animation:modalIn .4s cubic-bezier(.34,1.56,.64,1)}
-@keyframes modalIn{from{opacity:0;transform:translateY(40px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
-.modal h2{text-align:center;color:var(--gold);margin-bottom:14px;font-size:1.5rem;font-family:'Cinzel',serif;font-weight:700;text-shadow:0 2px 8px rgba(212,175,55,0.3)}
-.modal h3{color:var(--gold);margin:12px 0 5px;font-size:1.05rem;font-family:'Cairo',sans-serif;font-weight:700}
-.modal p,.modal li{font-size:.88rem;line-height:1.6;color:var(--text-d);font-family:'Cairo',sans-serif}
-.modal ul{padding-right:20px;padding-left:0}
-[dir="ltr"] .modal ul{padding-left:20px;padding-right:0}
-.mbtn{display:block;margin:20px auto 0;padding:12px 35px;background:linear-gradient(135deg,var(--gold-d),var(--gold) 50%,var(--gold-l));color:var(--bg1);border:none;border-radius:28px;font-size:1.1rem;font-weight:900;cursor:pointer;transition:all .3s;font-family:'Cairo',sans-serif;letter-spacing:.5px;box-shadow:0 4px 15px rgba(212,175,55,0.3)}
-.mbtn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 6px 22px rgba(212,175,55,0.5)}
-.ctags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.ctag{background:rgba(212,175,55,0.12);border:1px solid rgba(212,175,55,0.35);padding:3px 9px;border-radius:10px;font-size:.82rem;color:var(--gold);font-weight:600;font-family:'Cairo',sans-serif}
-
-/* CAPTURE CHOICE */
-.copts{display:flex;flex-direction:column;gap:10px;margin:14px 0}
-.copt{display:flex;align-items:center;gap:8px;padding:10px;border:2px solid rgba(212,175,55,0.25);border-radius:12px;cursor:pointer;transition:all .2s;background:rgba(0,0,0,0.25);flex-wrap:wrap}
-.copt:hover{border-color:var(--gold);background:rgba(212,175,55,0.1);transform:translateX(3px)}
-.mcd{width:42px;height:62px;border-radius:5px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
-.mcd img{width:100%;height:100%;object-fit:cover}
-
-/* RESULT */
-.rsec{text-align:center;margin:14px 0}
-.rscores{display:flex;justify-content:center;gap:30px;margin:14px 0}
-.rpl{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 15px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(212,175,55,0.2)}
-.rpl.win{background:rgba(74,222,128,0.15);border-color:rgba(74,222,128,0.4);box-shadow:0 0 20px rgba(74,222,128,0.2)}
-.rpl .nm{font-size:.85rem;color:#8899aa;font-weight:600}
-.rpl .sc{font-size:2.2rem;font-weight:900;color:var(--gold);font-family:'Cinzel',serif}
-.rpl.win .sc{color:var(--green);text-shadow:0 0 15px rgba(74,222,128,0.5)}
-.rhist{margin:10px 0}
-.rrow{display:flex;justify-content:center;gap:15px;padding:4px;font-size:.85rem;border-bottom:1px solid rgba(212,175,55,0.1);font-weight:600}
-.wtxt{font-size:1.6rem;font-weight:900;margin:10px 0;font-family:'Cinzel',serif;letter-spacing:1px}
-.wtxt.pw{color:var(--green);text-shadow:0 0 20px rgba(74,222,128,0.4)}
-.wtxt.cw{color:#f87171;text-shadow:0 0 20px rgba(248,113,113,0.4)}
-.wtxt.dw{color:var(--gold);text-shadow:0 0 20px rgba(212,175,55,0.4)}
-
-/* ===== CAPTURE PREVIEW OVERLAY ===== */
-.cap-preview{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:25px;backdrop-filter:blur(8px);animation:fadeIn .3s}
-.cap-preview.hidden{display:none}
-.cap-title{font-size:1.8rem;font-weight:900;color:var(--gold);font-family:'Cinzel',serif;text-shadow:0 0 25px rgba(212,175,55,0.6);animation:pulseT 1.5s infinite}
-.cap-title.player{color:var(--green);text-shadow:0 0 25px rgba(74,222,128,0.6)}
-.cap-title.computer{color:#f87171;text-shadow:0 0 25px rgba(248,113,113,0.6)}
-@keyframes pulseT{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.cap-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:90vw}
-.cap-cards .cd{width:80px;height:120px;animation:capCardIn .5s cubic-bezier(.34,1.56,.64,1) backwards}
-@keyframes capCardIn{0%{opacity:0;transform:translateY(-50px) rotateZ(180deg) scale(.3)}100%{opacity:1;transform:translateY(0) rotateZ(0) scale(1)}}
-.cap-info{font-size:1.1rem;color:var(--text-d);font-weight:600}
-.cap-pts{color:var(--gold);font-weight:900;font-size:1.4rem;font-family:'Cinzel',serif}
-
-/* ===== TURN INDICATOR ===== */
-.turn-ind{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);color:var(--gold);padding:12px 28px;border-radius:18px;font-size:1.1rem;font-weight:700;z-index:150;pointer-events:none;opacity:0;transition:opacity .4s;border:1px solid rgba(212,175,55,0.4);box-shadow:0 0 30px rgba(212,175,55,0.3)}
-.turn-ind.show{opacity:1;animation:tiPulse 1.5s}
-@keyframes tiPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)}}
-
-/* ===== CONFETTI ===== */
-.confetti{position:fixed;width:10px;height:10px;pointer-events:none;z-index:250}
-@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 
 /* ===== RESPONSIVE: MOBILE (≤480px) ===== */
 @media(max-width:480px){
@@ -644,9 +479,9 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 <script>
 // ============ I18N ============
 const TR={
-  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (4 digits)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting...',mpDisconnected:'⚠️ Connection lost. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 4-digit code',mpCreateFailed:'Failed to create room. Is the server running?',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
-  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrawBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (4 chiffres)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion...',mpDisconnected:'⚠️ Connexion perdue. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (4 chiffres)',mpCreateFailed:'Échec de création de salle',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
-  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عندها أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (4 أرقام)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال...',mpDisconnected:'⚠️ انقطع الاتصال. جاري إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'أدخل رمزاً من 4 أرقام',mpCreateFailed:'فشل إنشاء الغرفة. هل الخادم يعمل؟',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
+  en:{welcomeSubtitle:'Moroccan Card Game',startGame:'Start Game',vsComputer:'vs Computer (Hard)',rules:'Rules',newGame:'New Game',leaveGame:'Leave',you:'You',computer:'Computer',tableEmpty:'Table is empty',yourTurn:'Your turn! Tap a card to play',computerThinking:'Computer is thinking...',youCaptured:'You captured {n} cards!',computerCaptured:'Computer captured {n} cards!',noCapture:'No capture - card stays on table',computerNoCapture:'Computer played - no capture',round:'Round',roundEnd:'Round Over',matchEnd:'Match Over',roundResult:'Round {n} Result',yourScore:'Your score',computerScore:'Computer score',nextRound:'Next Round',playAgain:'Play Again',youWin:'You Win!',computerWins:'Computer Wins!',draw:"It's a Draw!",finalScore:'Final Score',roundScores:'Round Scores',rulesTitle:'Kanza 15 - Rules',rulesCards:'Cards',rulesCardsText:'40 cards: 4 suits (Gold, Zrawat, Swords, Dish) with values 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objective',rulesObjectiveText:'Capture table cards by forming valid combinations totaling 15.',rulesValidCombos:'Valid Combinations',rulesValidCombosText:'Only these combinations total 15:',rulesScoring:'Scoring',rulesScoringText:'Gold: face value (1=10 pts, 5=5 pts). Others: 1 pt each. Highest after all rounds wins.',rulesRemaining:'Remaining Cards',rulesRemainingText:'Cards left on table go to the last player who captured.',gotIt:'Got it!',chooseCapture:'Choose which cards to capture',captureWith:'Capture',deck:'Deck',roundChoice:'Number of Rounds',oneRound:'1 Round',threeRounds:'3 Rounds',quick:'Quick',full:'Full',points:'pts',cards:'cards',youTook:'You captured',computerTook:'Computer captured',continue:'Continue',modeChoice:'Game Mode',modeKanza:'Kanza 15',modeKanzaSub:'Sum to 15',modeRonda:'Ronda',modeRondaSub:'Match same value',rondaTitle:'Ronda - Rules',rondaObjective:'Objective',rondaObjectiveText:'Capture table cards by playing a card of the same value. (1 takes 1, 2 takes 2, etc.)',rondaScoring:'Scoring',rondaScoringText:'Each captured card = 1 point. Highest total after all rounds wins.',rondaHint:'Hint',rondaHintText:'If multiple matching cards are on the table, you take them all at once!',scoringChoice:'Scoring System',scoringClassic:'Classic',scoringClassicSub:'Default points',scoringUltra:'Ultra',scoringUltraSub:'Innovative multipliers',ultraTitle:'Ultra Scoring',ultraIntro:'In Ultra mode, each card has a unique point value based on its suit and value:',ultraRule:'Rules',ultraFormula:'Gold: value × 5 (except 1 Gold = 50 pts) · Zrawat: value × 3 · Swords: value × 4 · Dish: value × 2',ultraTableCard:'Card',ultraTableSuit:'Suit',ultraTablePts:'Points',ultraNote:'Ultra mode applies to both Kanza 15 and Ronda — only scoring changes, capture rules stay the same.',modeHazz2:'Hazz 2',modeHazz2Sub:'Empty your hand to win',hazz2Title:'Hazz 2 - Rules',hazz2Objective:'Objective',hazz2ObjectiveText:'Get rid of all the cards in your hand to win. The first player with no cards left is the winner.',hazz2Mechanic:'How to Play',hazz2MechanicText:'On your turn, you must play a card that matches the SUIT or the VALUE of the top card on the table. If you have no valid card, draw one from the deck.',hazz2Card1:'Card 1 — Skip (Cumulative)',hazz2Card1Text:'Playing a 1 makes the next player skip their turn. The next player can counter with another 1 — each 1 played adds +1 to the skip counter. Whoever cannot counter skips that many turns. Example: A plays 1 → B plays 1 → A plays 1 = B skips 3 turns.',hazz2Card2:'Card 2 — Draw (Cumulative)',hazz2Card2Text:'Playing a 2 forces the next player to draw 2 cards. They can counter with another 2 — each 2 played multiplies the draw. Whoever cannot counter draws 2 × (number of 2s played). Example: A plays 2 → B plays 2 → A plays 2 = B draws 6 cards.',hazz2Card7:'Card 7 — Change Suit',hazz2Card7Text:'Card 7 follows the same play rules (same suit or same value). After playing it, you choose the new suit that suits you. No penalty or accumulation — just pick the suit that helps you most.',hazz2Note:'Important',hazz2NoteText:'All cards (including 1, 2, 7) must match the SUIT or VALUE of the top card. Card 1 activates the cumulative skip, Card 2 activates the cumulative draw, and Card 7 lets you change the suit after playing. If the deck runs out, the table pile (except the top card) is reshuffled into a new deck. If you have no valid card, you can draw a card from the deck.',chooseSuit:'Choose the new suit',suitChoiceHint:'Card 7 changes the suit — pick the one that suits you',suitFlouss:'Gold',suitZrawat:'Zrawat',suitSyofa:'Swords',suitCompass:'Dish',hazz2YourTurn:'Your turn! Play a matching card or draw',hazz2ComputerTurn:'Computer is thinking...',hazz2Drew:'You drew a card',hazz2ComputerDrew:'Computer drew a card',hazz2SkipYou:'You skipped {n} turn(s)!',hazz2SkipComputer:'Computer skipped {n} turn(s)!',hazz2DrawYou:'You drew {n} cards!',hazz2DrawComputer:'Computer drew {n} cards!',hazz2SuitChanged:'Suit changed to {s}',hazz2NoMatch:'No valid card — you must draw',hazz2DrawBtn:'Draw a card',hazz2PassBtn:'Pass turn',hazz2SkipPill:'Skip: {n}',hazz2DrawPill:'Draw: {n}',hazz2SuitPill:'Suit: {s}',hazz2Win:'You won! Hand empty!',hazz2Lose:'Computer won! Its hand is empty!',hazz2TopCard:'Top card',hazz2CurrentSuit:'Current suit',hazz2CardsLeft:'{n} cards left',hazz2CardsLeftOne:'1 card left',onlinePlay:'Online play with a friend',createRoom:'Create Room',joinRoom:'Join by Code',createRoomBtn:'🎮 Create New Room',joinRoomBtn:'🚪 Join Room',onlineRoom:'Online Game Room',roomCode:'Room code — share it with your friend',copyCode:'Copy Code',waitingOpponent:'Waiting for opponent to join...',startMatch:'Start Match',leave:'Leave',chat:'Chat',mpYourName:'Your name',mpCodePlaceholder:'Room code (4 digits)',mpWaitingP2:'⏳ Waiting for Player 2 to join...',mpP2Joined:'✅ Player 2 joined! Ready to start.',mpHostWaiting:'Waiting for host to start the game...',mpConnecting:'Connecting...',mpDisconnected:'⚠️ Connection lost. Reconnecting...',mpReconnected:'✅ Reconnected!',mpOppLeft:'⚠️ Opponent left the room.',mpOppRejoined:'✅ Opponent rejoined.',mpNotYourTurn:"Not your turn — wait for opponent.",mpYouWin:'🎉 You won!',mpYouLose:'😭 You lost!',mpDraw:'🤝 Draw!',mpRoundResult:'Round {n} Result',mpFinalScore:'Final Score',mpNextRound:'Next Round',mpPlayAgain:'Play Again',mpConnectionLost:'Connection lost. Trying to reconnect...',mpEnterName:'Please enter your name first',mpInvalidCode:'Please enter a valid 4-digit code',mpCreateFailed:'Failed to create room. Please check your connection',mpJoinFailed:'Failed to join room',mpRoomFull:'Room is full',mpRoomNotFound:'Room not found',mpTyping:'{name} is typing...',mpCapturePrompt:'Choose which cards to capture',mpCaptureWith:'Capture',mpGameStarted:'Game started! {name} goes first.',mpNameJoined:'{name} joined the game.',mpMustCounter:'You must counter or take the penalty',mpPenaltyApplied:'Penalty applied',mpYouDrew:'You drew a card',mpOppDrew:'Opponent drew a card',mpYouSkipped:'You skipped {n} turn(s)',mpOppSkipped:'Opponent skipped {n} turn(s)',mpYouDrewN:'You drew {n} cards',mpOppDrewN:'Opponent drew {n} cards',mpSuitChanged:'Suit changed to {s}',mpTopCard:'Top card',mpCurrentSuit:'Current suit',mpCardsLeft:'{n} cards left'},
+  fr:{welcomeSubtitle:'Jeu de Cartes Marocain',startGame:'Commencer',vsComputer:'vs Ordinateur (Difficile)',rules:'Règles',newGame:'Nouvelle Partie',leaveGame:'Quitter',you:'Vous',computer:'Ordinateur',tableEmpty:'La table est vide',yourTurn:'À vous! Cliquez une carte',computerThinking:"L'ordinateur réfléchit...",youCaptured:'Vous avez capturé {n} cartes!',computerCaptured:"L'ordinateur a capturé {n} cartes!",noCapture:'Pas de capture - carte sur la table',computerNoCapture:"L'ordinateur a joué - pas de capture",round:'Manche',roundEnd:'Fin de Manche',matchEnd:'Fin de Partie',roundResult:'Résultat Manche {n}',yourScore:'Votre score',computerScore:"Score ordinateur",nextRound:'Manche Suivante',playAgain:'Rejouer',youWin:'Vous Gagnez!',computerWins:"L'ordinateur Gagne!",draw:'Égalité!',finalScore:'Score Final',roundScores:'Scores par Manche',rulesTitle:'Kanza 15 - Règles',rulesCards:'Cartes',rulesCardsText:'40 cartes: 4 couleurs (Or, Zrawat, Épées, Plat) valeurs 1,2,3,4,5,6,7,10,11,12.',rulesObjective:'Objectif',rulesObjectiveText:'Capturer les cartes en formant des combinaisons valides totalisant 15.',rulesValidCombos:'Combinaisons Valides',rulesValidCombosText:'Seules ces combinaisons totalisent 15:',rulesScoring:'Comptage',rulesScoringText:'Or: valeur faciale (1=10 pts, 5=5 pts). Autres: 1 pt. Score le plus élevé après toutes les manches gagne.',rulesRemaining:'Cartes Restantes',rulesRemainingText:'Les cartes restantes vont au dernier joueur ayant capturé.',gotIt:'Compris!',chooseCapture:'Choisissez les cartes à capturer',captureWith:'Capturer',deck:'Pioche',roundChoice:'Nombre de Manches',oneRound:'1 Manche',threeRounds:'3 Manches',quick:'Rapide',full:'Complet',points:'pts',cards:'cartes',youTook:'Vous avez capturé',computerTook:"L'ordinateur a capturé",continue:'Continuer',modeChoice:'Mode de Jeu',modeKanza:'Kanza 15',modeKanzaSub:'Somme à 15',modeRonda:'Ronda',modeRondaSub:'Même valeur',rondaTitle:'Ronda - Règles',rondaObjective:'Objectif',rondaObjectiveText:'Capturer les cartes de la table en jouant une carte de même valeur. (1 prend 1, 2 prend 2, etc.)',rondaScoring:'Comptage',rondaScoringText:'Chaque carte capturée = 1 point. Total le plus élevé après toutes les manches gagne.',rondaHint:'Astuce',rondaHintText:'Si plusieurs cartes de même valeur sont sur la table, vous les prenez toutes en une fois!',scoringChoice:'Système de Points',scoringClassic:'Classique',scoringClassicSub:'Points par défaut',scoringUltra:'Ultra',scoringUltraSub:'Multiplicateurs innovants',ultraTitle:'Comptage Ultra',ultraIntro:'En mode Ultra, chaque carte a une valeur unique selon sa couleur et sa valeur:',ultraRule:'Règles',ultraFormula:'Or: valeur × 5 (sauf 1 Or = 50 pts) · Zrawat: valeur × 3 · Épées: valeur × 4 · Plat: valeur × 2',ultraTableCard:'Carte',ultraTableSuit:'Couleur',ultraTablePts:'Points',ultraNote:'Le mode Ultra s\'applique à Kanza 15 et Ronda — seul le comptage change, les règles de capture restent les mêmes.',modeHazz2:'Hazz 2',modeHazz2Sub:'Videz votre main pour gagner',hazz2Title:'Hazz 2 - Règles',hazz2Objective:'Objectif',hazz2ObjectiveText:'Se débarrasser de toutes les cartes de votre main pour gagner. Le premier joueur sans cartes remporte la partie.',hazz2Mechanic:'Comment Jouer',hazz2MechanicText:'À votre tour, vous devez jouer une carte qui correspond à la COULEUR ou à la VALEUR de la carte sur la table. Si vous n\'avez pas de carte valide, piochez une carte.',hazz2Card1:'Carte 1 — Saut (Cumulatif)',hazz2Card1Text:'Jouer un 1 fait sauter le tour du joueur suivant. Le joueur suivant peut contrer avec un autre 1 — chaque 1 joué ajoute +1 au compteur. Celui qui ne peut pas contrer saute autant de tours. Exemple : A joue 1 → B joue 1 → A joue 1 = B saute 3 tours.',hazz2Card2:'Carte 2 — Pioche (Cumulative)',hazz2Card2Text:'Jouer un 2 force le joueur suivant à piocher 2 cartes. Il peut contrer avec un autre 2 — chaque 2 joué multiplie la pioche. Celui qui ne peut pas contrer pioche 2 × (nombre de 2 joués). Exemple : A joue 2 → B joue 2 → A joue 2 = B pioche 6 cartes.',hazz2Card7:'Carte 7 — Changer de Couleur',hazz2Card7Text:'La carte 7 suit les mêmes règles de jeu (même couleur ou même valeur). Après l\'avoir jouée, vous choisissez la nouvelle couleur qui vous convient. Pas de pénalité ni d\'accumulation — choisissez simplement la couleur qui vous aide le plus.',hazz2Note:'Important',hazz2NoteText:'Toutes les cartes (y compris 1, 2, 7) doivent correspondre à la COULEUR ou à la VALEUR de la carte du dessus. La carte 1 active le saut cumulatif, la carte 2 active la pioche cumulative, et la carte 7 vous permet de changer la couleur après l\'avoir jouée. Si la pioche est vide, la pile de la table (sauf la carte du dessus) est mélangée pour former une nouvelle pioche. Si vous n\'avez pas de carte valide, vous pouvez piocher une carte.',chooseSuit:'Choisissez la nouvelle couleur',suitChoiceHint:'La carte 7 change la couleur — choisissez celle qui vous convient',suitFlouss:'Or',suitZrawat:'Zrawat',suitSyofa:'Épées',suitCompass:'Plat',hazz2YourTurn:'À vous! Jouez une carte correspondante ou piochez',hazz2ComputerTurn:"L'ordinateur réfléchit...",hazz2Drew:'Vous avez pioché une carte',hazz2ComputerDrew:"L'ordinateur a pioché une carte",hazz2SkipYou:'Vous avez sauté {n} tour(s)!',hazz2SkipComputer:"L'ordinateur a sauté {n} tour(s)!",hazz2DrawYou:'Vous avez pioché {n} cartes!',hazz2DrawComputer:"L'ordinateur a pioché {n} cartes!",hazz2SuitChanged:'Couleur changée en {s}',hazz2NoMatch:'Pas de carte valide — vous devez piocher',hazz2DrewBtn:'Piocher une carte',hazz2PassBtn:'Passer le tour',hazz2SkipPill:'Saut: {n}',hazz2DrawPill:'Pioche: {n}',hazz2SuitPill:'Couleur: {s}',hazz2Win:'Vous avez gagné! Main vide!',hazz2Lose:"L'ordinateur a gagné! Sa main est vide!",hazz2TopCard:'Carte du dessus',hazz2CurrentSuit:'Couleur actuelle',hazz2CardsLeft:'{n} cartes restantes',hazz2CardsLeftOne:'1 carte restante',onlinePlay:'Jouer en ligne avec un ami',createRoom:'Créer une salle',joinRoom:'Rejoindre par code',createRoomBtn:'🎮 Créer une nouvelle salle',joinRoomBtn:'🚪 Rejoindre la salle',onlineRoom:'Salle de jeu en ligne',roomCode:'Code de la salle — partagez-le avec votre ami',copyCode:'Copier le code',waitingOpponent:'En attente de l\'adversaire...',startMatch:'Démarrer le match',leave:'Quitter',chat:'Chat',mpYourName:'Votre nom',mpCodePlaceholder:'Code de la salle (4 chiffres)',mpWaitingP2:'⏳ En attente du Joueur 2...',mpP2Joined:'✅ Joueur 2 a rejoint ! Prêt à commencer.',mpHostWaiting:'En attente du démarrage par l\'hôte...',mpConnecting:'Connexion...',mpDisconnected:'⚠️ Connexion perdue. Reconnexion...',mpReconnected:'✅ Reconnecté !',mpOppLeft:'⚠️ Adversaire a quitté.',mpOppRejoined:'✅ Adversaire a rejoint.',mpNotYourTurn:'Pas votre tour.',mpYouWin:'🎉 Vous avez gagné !',mpYouLose:'😭 Vous avez perdu !',mpDraw:'🤝 Égalité !',mpRoundResult:'Résultat Manche {n}',mpFinalScore:'Score Final',mpNextRound:'Manche Suivante',mpPlayAgain:'Rejouer',mpConnectionLost:'Connexion perdue. Reconnexion...',mpEnterName:'Veuillez entrer votre nom',mpInvalidCode:'Code invalide (4 chiffres)',mpCreateFailed:'Échec de création de la salle. Veuillez vérifier votre connexion',mpJoinFailed:'Échec de connexion',mpRoomFull:'Salle pleine',mpRoomNotFound:'Salle introuvable',mpTyping:'{name} écrit...',mpCapturePrompt:'Choisissez les cartes à capturer',mpCaptureWith:'Capturer',mpGameStarted:'Partie commencée ! {name} commence.',mpNameJoined:'{name} a rejoint.',mpMustCounter:'Vous devez contrer ou prendre la pénalité',mpPenaltyApplied:'Pénalité appliquée',mpYouDrew:'Vous avez pioché',mpOppDrew:'Adversaire a pioché',mpYouSkipped:'Vous avez sauté {n} tour(s)',mpOppSkipped:'Adversaire a sauté {n} tour(s)',mpYouDrewN:'Vous avez pioché {n} cartes',mpOppDrewN:'Adversaire a pioché {n} cartes',mpSuitChanged:'Couleur changée en {s}',mpTopCard:'Carte du dessus',mpCurrentSuit:'Couleur actuelle',mpCardsLeft:'{n} cartes restantes'},
+  ar:{welcomeSubtitle:'لعبة الكارطة المغربية',startGame:'ابدأ اللعبة',vsComputer:'ضد الحاسوب (صعب)',rules:'القواعد',newGame:'لعبة جديدة',leaveGame:'مغادرة',you:'أنت',computer:'الحاسوب',tableEmpty:'الطاولة فارغة',yourTurn:'دورك! اضغط على ورقة للعب',computerThinking:'الحاسوب يفكر...',youCaptured:'أخذت {n} ورقة!',computerCaptured:'الحاسوب أخذ {n} ورقة!',noCapture:'لم تأخذ - الورقة على الطاولة',computerNoCapture:'الحاسوب لعب - لم يأخذ',round:'الجولة',roundEnd:'انتهت الجولة',matchEnd:'انتهت الماتش',roundResult:'نتيجة الجولة {n}',yourScore:'نتيجتك',computerScore:'نتيجة الحاسوب',nextRound:'الجولة التالية',playAgain:'العب مرة أخرى',youWin:'!فزت',computerWins:'الحاسوب فاز!',draw:'!تعادل',finalScore:'النتيجة النهائية',roundScores:'نتائج الجولات',rulesTitle:'كانزا 15 - القواعد',rulesCards:'الأوراق',rulesCardsText:'40 ورقة: 4 أنواع (ذهب، زراوط، سيوف، طبق) بقيم 1،2،3،4،5،6،7،10،11،12.',rulesObjective:'الهدف',rulesObjectiveText:'خذ أوراق الطاولة بتكوين مجموعات صحيحة مجموعها 15 مع ورقتك.',rulesValidCombos:'المجموعات المسموحة',rulesValidCombosText:'هاد المجموعات فقط اللي مجموعهم 15:',rulesScoring:'حساب النقاط',rulesScoringText:'أوراق الذهب: قيمتها (1 الذهب = 10 نقاط، 5 الذهب = 5 نقاط). الباقي: نقطة وحدة. أعلى مجموع بعد كل الجولات يربح.',rulesRemaining:'الأوراق المتبقية',rulesRemainingText:'الأوراق اللي بقات على الطاولة يخدهم آخر لاعب ربح.',gotIt:'فهمت!',chooseCapture:'اختر الأوراق التي تريد أخذها',captureWith:'أخذ',deck:'الكومة',roundChoice:'عدد الجولات',oneRound:'جولة واحدة',threeRounds:'3 جولات',quick:'سريعة',full:'كاملة',points:'نقطة',cards:'ورقة',youTook:'أخذت',computerTook:'الحاسوب أخذ',continue:'متابعة',modeChoice:'اختر نوع اللعبة',modeKanza:'كانزا 15',modeKanzaSub:'مجموع 15',modeRonda:'الروندا',modeRondaSub:'كل رقم يأخذ مثيله',rondaTitle:'الروندا - القواعد',rondaObjective:'الهدف',rondaObjectiveText:'خذ أوراق الطاولة بمطابقة رقم ورقتك. (1 يأخذ 1، 2 يأخذ 2، ... الخ)',rondaScoring:'حساب النقاط',rondaScoringText:'كل ورقة تأخذها = نقطة واحدة. أعلى مجموع بعد كل الجولات يربح.',rondaHint:'ملاحظة',rondaHintText:'إذا كان هناك أكثر من ورقة بنفس الرقم على الطاولة، تأخذهم كلهم مرة واحدة!',scoringChoice:'نظام التنقيط',scoringClassic:'عادي',scoringClassicSub:'النقاط الافتراضية',scoringUltra:'Ultra',scoringUltraSub:'نقاط مضاعفة مبتكرة',ultraTitle:'التنقيط Ultra',ultraIntro:'في مود Ultra، كل ورقة لها قيمة فريدة حسب نوعها ورقمها:',ultraRule:'القاعدة',ultraFormula:'الذهب: الرقم × 5 (ما عدا 1 الذهب = 50 نقطة) · زراوط: الرقم × 3 · سيوف: الرقم × 4 · طبق: الرقم × 2',ultraTableCard:'البطاقة',ultraTableSuit:'النوع',ultraTablePts:'النقاط',ultraNote:'مود Ultra يطبق على كانزا 15 والروندا — التغيير فقط في التنقيط، قواعد الأخذ تبقى كما هي.',modeHazz2:'هز 2',modeHazz2Sub:'خلص يدك وربح',hazz2Title:'هز 2 - القواعد',hazz2Objective:'الهدف',hazz2ObjectiveText:'تتخلص من جميع الأوراق في يدك لتصبح الفائز. أول لاعب يخلص يده من الأوراق يربح.',hazz2Mechanic:'طريقة اللعب',hazz2MechanicText:'في دورك، يجب أن تلعب ورقة تطابق النوع أو الرقم للورقة اللي فوق الطاولة. إذا ما عندك ورقة صالحة، اسحب ورقة من الكومة.',hazz2Card1:'الورقة 1 — التخطي (التراكمي)',hazz2Card1Text:'إذا حطيت 1، اللي بعدك يضيع دوره. اللي بعدك يقدر يرد بـ 1 — كل 1 تزيد المدة بواحد. اللي ما يقدر يرد، يضيع عليه بعدد الـ 1ات اللي تراكمت. مثال: أنت تحط 1 → صاحبك يحط 1 → ترجع تحط 1 = صاحبك يضيع عليه 3 أدوار.',hazz2Card2:'الورقة 2 — السحب (التراكمي)',hazz2Card2Text:'إذا حطيت 2، اللي بعدك يسحب ورقتين. يقدر يرد بـ 2 — كل 2 تضاعف السحب. اللي ما يقدر يرد، يسحب 2 × (عدد الـ 2ات اللي تراكمت). مثال: أنت تحط 2 → صاحبك يحط 2 → ترجع تحط 2 = صاحبك يسحب 6 أوراق.',hazz2Card7:'الورقة 7 — تغيير النوع',hazz2Card7Text:'الورقة 7 تخضع لنفس قوانين اللعب (نفس النوع أو نفس الرقم). بعد لعبها، تختار النوع الجديد اللي يناسبك. ما عنده أي عقاب أو تراكم — فقط اختر النوع اللي يساعدك.',hazz2Note:'مهم',hazz2NoteText:'جميع الأوراق (بما فيها 1، 2، 7) لازم تطابق النوع أو الرقم للورقة اللي فوق. الورقة 1 تُفعّل التخطي التراكمي، الورقة 2 تُفعّل السحب التراكمي، والورقة 7 تخليك تبدل النوع بعد لعبها. إذا خلصات الكومة، أوراق الطاولة (ما عدا الورقة اللي فوق) تتخلط لتكوين كومة جديدة، وإذا ما عندك ورقة صالحة تسحب ورقة من الكومة.',chooseSuit:'اختر النوع الجديد',suitChoiceHint:'الورقة 7 تبدل النوع — اختر اللي يناسبك',suitFlouss:'ذهب',suitZrawat:'زراوط',suitSyofa:'سيوف',suitCompass:'طبق',hazz2YourTurn:'دورك! العب ورقة مطابقة أو اسحب',hazz2ComputerTurn:'الحاسوب يفكر...',hazz2Drew:'سحبت ورقة',hazz2ComputerDrew:'الحاسوب سحب ورقة',hazz2SkipYou:'ضيعت {n} دور!',hazz2SkipComputer:'الحاسوب ضيع {n} دور!',hazz2DrawYou:'سحبت {n} أوراق!',hazz2DrawComputer:'الحاسوب سحب {n} أوراق!',hazz2SuitChanged:'النوع تبدل إلى {s}',hazz2NoMatch:'ما عندك ورقة صالحة — لازم تسحب',hazz2DrawBtn:'اسحب ورقة',hazz2PassBtn:'مرر الدور',hazz2SkipPill:'تخطي: {n}',hazz2DrawPill:'سحب: {n}',hazz2SuitPill:'النوع: {s}',hazz2Win:'ربحت! خلصتي اليد!',hazz2Lose:'الحاسوب ربح! خلصات يده!',hazz2TopCard:'الورقة اللي فوق',hazz2CurrentSuit:'النوع الحالي',hazz2CardsLeft:'باقي {n} أوراق',hazz2CardsLeftOne:'باقي ورقة وحدة',onlinePlay:'لعب أون لاين مع صديق',createRoom:'إنشاء غرفة',joinRoom:'انضمام برمز',createRoomBtn:'🎮 إنشاء غرفة جديدة',joinRoomBtn:'🚪 انضمام للغرفة',onlineRoom:'غرفة اللعب أون لاين',roomCode:'رمز الغرفة — شاركه مع صديقك',copyCode:'نسخ الرمز',waitingOpponent:'بانتظار انضمام اللاعب الثاني...',startMatch:'ابدأ المباراة',leave:'مغادرة',chat:'دردشة',mpYourName:'اسمك',mpCodePlaceholder:'رمز الغرفة (4 أرقام)',mpWaitingP2:'⏳ بانتظار انضمام اللاعب الثاني...',mpP2Joined:'✅ اللاعب الثاني انضم! جاهز للبدء.',mpHostWaiting:'بانتظار بدء المضيف اللعبة...',mpConnecting:'جاري الاتصال...',mpDisconnected:'⚠️ انقطع الاتصال. جاري إعادة الاتصال...',mpReconnected:'✅ تم إعادة الاتصال!',mpOppLeft:'⚠️ الخصم غادر الغرفة.',mpOppRejoined:'✅ عاد الخصم للغرفة.',mpNotYourTurn:'ليس دورك — انتظر الخصم.',mpYouWin:'🎉 ربحت!',mpYouLose:'😭 خسرت!',mpDraw:'🤝 تعادل!',mpRoundResult:'نتيجة الجولة {n}',mpFinalScore:'النتيجة النهائية',mpNextRound:'الجولة التالية',mpPlayAgain:'العب مرة أخرى',mpConnectionLost:'انقطع الاتصال. جاري إعادة الاتصال...',mpEnterName:'من فضلك أدخل اسمك أولاً',mpInvalidCode:'أدخل رمزاً من 4 أرقام',mpCreateFailed:'فشل إنشاء الغرفة. يرجى التحقق من الاتصال بالإنترنت والمحاولة مجدداً.',mpJoinFailed:'فشل الانضمام للغرفة',mpRoomFull:'الغرفة ممتلئة',mpRoomNotFound:'الغرفة غير موجودة',mpTyping:'{name} يكتب...',mpCapturePrompt:'اختر الأوراق التي تريد أخذها',mpCaptureWith:'أخذ',mpGameStarted:'بدأت اللعبة! {name} يبدأ أولاً.',mpNameJoined:'{name} انضم لللعبة.',mpMustCounter:'لازم ترد أو تاخد العقاب',mpPenaltyApplied:'تم تطبيق العقاب',mpYouDrew:'سحبت ورقة',mpOppDrew:'الخصم سحب ورقة',mpYouSkipped:'ضيعت {n} دور',mpOppSkipped:'الخصم ضيع {n} دور',mpYouDrewN:'سحبت {n} أوراق',mpOppDrewN:'الخصم سحب {n} أوراق',mpSuitChanged:'النوع تبدل إلى {s}',mpTopCard:'الورقة اللي فوق',mpCurrentSuit:'النوع الحالي',mpCardsLeft:'باقي {n} أوراق'}
 };
 let lang='ar';
 function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Object.entries(p))s=s.replace('{'+x+'}',v);return s}
@@ -654,7 +489,7 @@ function t(k,p){let s=(TR[lang]||TR.en)[k]||TR.en[k]||k;if(p)for(const[x,v]of Ob
 // ============================================================
 // ============================================================
 // MULTIPLAYER MODULE — MQTT signaling + WebRTC P2P (simple-peer)
-// Uses free public MQTT broker (broker.hivemq.com) for signaling.
+// Uses free public MQTT broker for signaling.
 // Game data flows peer-to-peer via WebRTC data channels.
 // Works across any network without needing TURN servers.
 // ============================================================
@@ -684,21 +519,20 @@ const MP = (() => {
   let _hostGS = null;
 
   // ---------- MQTT Config ----------
-  // Multiple free public brokers — try each in turn until one connects.
-  // Different regions / ISPs block different brokers, so having fallbacks is essential
-  // for cross-city / cross-network play.
+  // ترتيب خوادم الإشارة بشكل مرن - المنافذ 443 و 8084 هي الأكثر موثوقية وتجاوزاً للـ Firewalls في المغرب
   const MQTT_BROKERS = [
-    { host: 'broker.hivemq.com',   port: 8884, path: '/mqtt' },
-    { host: 'broker.emqx.io',      port: 8084, path: '/mqtt' },
-    { host: 'public.mqtthq.com',   port: 8884, path: '/mqtt' },
-    { host: 'test.mosquitto.org',  port: 8081, path: '/mqtt' }
+    { host: 'mqtt.eclipseprojects.io', port: 443, path: '/mqtt' },
+    { host: 'broker.emqx.io',          port: 8084, path: '/mqtt' },
+    { host: 'test.mosquitto.org',      port: 443, path: '/mqtt' },
+    { host: 'public.mqtthq.com',       port: 8084, path: '/mqtt' },
+    { host: 'test.mosquitto.org',      port: 8081, path: '/mqtt' },
+    { host: 'broker.hivemq.com',       port: 8884, path: '/mqtt' }
   ];
   let mqttBrokerIndex = 0;
   const MQTT_CLIENT_ID = 'k15_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now();
 
   // Relay-mode fallback: when WebRTC P2P fails (common across cities / ISPs / mobile networks
   // due to symmetric NAT or CGNAT), game messages are relayed through MQTT topics.
-  // Slower than P2P but works through any NAT.
   let relayMode = false;
   let webrtcFallbackTimer = null;
 
@@ -715,9 +549,12 @@ const MP = (() => {
 
   async function ensureLibs() {
     if (typeof SimplePeer !== 'undefined' && typeof Paho !== 'undefined') return;
+    
+    // محاولات جلب احتياطية للمكتبات بالمسارات الصحيحة في حال فشل تحميل الرأس (Head)
     const spCDNs = [
-      'https://unpkg.com/simple-peer@9.11.1/simple-peer.min.js',
-      'https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simple-peer.min.js'
+      'https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js',
+      'https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js',
+      'https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js'
     ];
     for (const src of spCDNs) {
       try { await loadScript(src); if (typeof SimplePeer !== 'undefined') break; } catch(e) {}
@@ -759,11 +596,9 @@ const MP = (() => {
         console.log('[MP] Trying broker #' + tryIndex + ':', b.host + ':' + b.port);
         let client;
         try {
-          // Newer Paho API: Client(host, port, path, clientId)
           client = new Paho.MQTT.Client(b.host, b.port, b.path, MQTT_CLIENT_ID);
         } catch(e) {
           try {
-            // Older Paho API: Client(endpoint, clientId)
             const endpoint = 'wss://' + b.host + ':' + b.port + b.path;
             client = new Paho.MQTT.Client(endpoint, MQTT_CLIENT_ID);
           } catch(e2) {
@@ -829,7 +664,6 @@ const MP = (() => {
 
   // ---------- MQTT message routing ----------
   function onMQTTMessage(topic, payload) {
-    // Handle WebRTC signaling messages (only when not yet in relay mode)
     if (!relayMode && topic.indexOf('/signal/') >= 0) {
       if (!sp) return;
       try {
@@ -838,7 +672,6 @@ const MP = (() => {
       } catch(e) { console.warn('[MP] Bad signal data:', e); }
       return;
     }
-    // Handle relay-mode data messages (when WebRTC failed and we fell back to MQTT relay)
     if (relayMode && topic.indexOf('/data/') >= 0) {
       try {
         const msg = JSON.parse(payload);
@@ -846,16 +679,12 @@ const MP = (() => {
       } catch(e) { console.warn('[MP] Bad relay data:', e); }
       return;
     }
-    // Handle initial join announcement (used by host to detect a guest is here)
     if (topic === mqttTopic(roomCode, 'join')) {
       const d = JSON.parse(payload);
       if (isHost) {
         p2Name = (d.name || 'Player 2').slice(0, 24);
         const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
         chatHistory.push(sysMsg);
-        // If we're already in relay mode (WebRTC failed earlier), broadcast immediately.
-        // Otherwise, broadcastFullState() will be called by setupPeerHandlers once the
-        // WebRTC data channel opens.
         if (relayMode) broadcastFullState();
       }
       return;
@@ -866,7 +695,6 @@ const MP = (() => {
   function sendMsg(data) {
     const str = typeof data === 'string' ? data : JSON.stringify(data);
     if (relayMode && mqttClient && mqttClient.isConnected()) {
-      // Relay mode: publish to the peer's data topic
       const topic = mqttTopic(roomCode, 'data/' + (isHost ? 'host' : 'guest'));
       try { mqttPub(topic, str); } catch(e) { console.warn('[MP] relay send failed:', e); }
       return;
@@ -936,22 +764,6 @@ const MP = (() => {
     broadcastFullState();
   }
 
-  function hostNextRound() {
-    if (!_hostGS || _hostGS.phase !== 'roundEnd') return;
-    if (gameMode === 'hazz2') {
-      _hostGS = newGSHazz2();
-    } else {
-      _hostGS = newGS(_hostGS);
-    }
-    broadcastFullState();
-  }
-
-  function hostRestart() {
-    _hostGS = null;
-    chatHistory = [];
-    hostInitGame();
-  }
-
   // ---------- Build state view for a specific player ----------
   function buildPlayerState(player) {
     const started = !!_hostGS;
@@ -1016,8 +828,6 @@ const MP = (() => {
     const myState = buildPlayerState(myPlayer);
     roomState = myState;
     stateCallbacks.forEach(cb => cb(myState));
-    // In relay mode, mqttClient is the transport. In P2P mode, sp is the transport.
-    // sendMsg() handles both cases.
     if ((sp && connected) || relayMode) {
       const guestPlayer = myPlayer === 'p1' ? 'p2' : 'p1';
       const guestState = buildPlayerState(guestPlayer);
@@ -1025,11 +835,10 @@ const MP = (() => {
     }
   }
 
-  // ---------- Inbound game-message handler (shared by WebRTC data channel and MQTT relay) ----------
+  // ---------- Inbound game-message handler ----------
   function handleDataMessage(msg) {
     if (!msg || typeof msg !== 'object') return;
 
-    // --- Both sides: receive room state ---
     if (msg.type === 'room:state') {
       roomState = msg.data;
       if (msg.data) {
@@ -1044,7 +853,6 @@ const MP = (() => {
       return;
     }
 
-    // --- Chat message ---
     if (msg.type === 'chat:message') {
       const m = msg.data;
       if (m && !chatHistory.some(x => x.id === m.id)) {
@@ -1060,7 +868,6 @@ const MP = (() => {
       return;
     }
 
-    // --- Typing indicator ---
     if (msg.type === 'chat:typing') {
       const el = document.getElementById('chatTyping');
       if (el) {
@@ -1071,7 +878,6 @@ const MP = (() => {
       return;
     }
 
-    // --- Capture options response ---
     if (msg.type === 'game:capture-options:resp' && pendingReqs[msg.id]) {
       const req = pendingReqs[msg.id];
       if (msg.data && msg.data.ok) req.resolve(msg.data.options || []);
@@ -1079,7 +885,6 @@ const MP = (() => {
       return;
     }
 
-    // --- Play Again protocol (guest side) ---
     if (msg.type === 'game:play-again-request') {
       _playAgainRequest = { from: (msg.data && msg.data.from) || 'p1', timestamp: Date.now() };
       _playAgainAccepted = false;
@@ -1098,7 +903,6 @@ const MP = (() => {
       return;
     }
 
-    // === Host-only message handlers ===
     if (!isHost) return;
 
     if (msg.type === 'room:join') {
@@ -1152,21 +956,17 @@ const MP = (() => {
   // ---------- WebRTC setup via simple-peer ----------
   function setupPeerHandlers() {
     sp.on('connect', () => {
-      // WebRTC succeeded — cancel the relay-fallback timer
       if (webrtcFallbackTimer) { clearTimeout(webrtcFallbackTimer); webrtcFallbackTimer = null; }
       connected = true;
       console.log('[MP] WebRTC data channel connected!');
       connCallbacks.forEach(cb => cb({ connected: true, relay: false }));
       if (isHost) {
-        // Send current state to guest
         const guestState = buildPlayerState('p2');
         sendMsg({ type: 'room:state', data: guestState });
-        // Update host's own view
         const myState = buildPlayerState('p1');
         roomState = myState;
         stateCallbacks.forEach(cb => cb(myState));
       } else {
-        // Tell host our name
         sendMsg({ type: 'room:join', data: { name: myName } });
       }
     });
@@ -1184,8 +984,6 @@ const MP = (() => {
 
     sp.on('error', (err) => {
       console.warn('[MP] WebRTC error:', err);
-      // Don't immediately fail — let the fallback timer kick in if it hasn't fired yet.
-      // If we were already connected, notify of disconnection.
       if (connected) {
         connected = false;
         connCallbacks.forEach(cb => cb({ connected: false, error: true }));
@@ -1194,27 +992,19 @@ const MP = (() => {
   }
 
   // ---------- Relay-mode fallback ----------
-  // Called when WebRTC P2P fails to establish within a timeout (25s).
-  // Switches to MQTT-relayed game messages so the game still works across
-  // symmetric NAT / CGNAT / mobile networks where direct P2P is impossible.
   function activateRelayMode() {
     if (relayMode) return;
     relayMode = true;
     connected = true;
     console.warn('[MP] Activating MQTT relay fallback (P2P failed).');
-    // Tear down any half-open WebRTC peer
     if (sp) { try { sp.destroy(); } catch(e) {} sp = null; }
-    // Subscribe to the peer's relay topic
     const relayTopic = mqttTopic(roomCode, 'data/' + (isHost ? 'guest' : 'host'));
     mqttSub(relayTopic);
     console.log('[MP] Subscribed to relay topic:', relayTopic);
     connCallbacks.forEach(cb => cb({ connected: true, relay: true }));
     if (isHost) {
-      // If guest already sent a join via MQTT earlier, broadcast state now.
-      // Otherwise this will be triggered by the join handler when guest arrives.
       broadcastFullState();
     } else {
-      // Guest: re-announce join via relay so the host knows we're here
       sendMsg({ type: 'room:join', data: { name: myName } });
     }
   }
@@ -1244,15 +1034,12 @@ const MP = (() => {
       scoringMode = scoring;
       totalRounds = tRounds;
 
-      // Connect to MQTT
       await connectMQTT();
 
-      // Subscribe to answer channel + join announcements
       const answerTopic = mqttTopic(roomCode, 'signal/guest');
       mqttSub(answerTopic);
       mqttSub(mqttTopic(roomCode, 'join'));
 
-      // Set initial lobby state
       roomState = {
         code: roomCode, mode, scoring, totalRounds: tRounds,
         gameStarted: false,
@@ -1262,7 +1049,6 @@ const MP = (() => {
 
       connCallbacks.forEach(cb => cb({ connected: true }));
 
-      // When a guest joins via MQTT, create the WebRTC peer (initiator) and publish the offer.
       const joinTopic = mqttTopic(roomCode, 'join');
       let guestJoined = false;
       const originalHandler = mqttClient.onMessageArrived;
@@ -1274,22 +1060,16 @@ const MP = (() => {
           const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
           chatHistory.push(sysMsg);
 
-          // Now create simple-peer (initiator) and send offer via MQTT.
-          // ICE config includes TURN servers — required for cross-city / cross-ISP /
-          // mobile-network / CGNAT scenarios where STUN-only fails.
           const offerTopic = mqttTopic(roomCode, 'signal/host');
           sp = new SimplePeer({
             initiator: true,
             trickle: true,
             config: {
               iceServers: [
-                // STUN — for peers that can be reached directly (same ISP, simple NAT)
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
                 { urls: 'stun:global.stun.twilio.com:3478' },
-                // TURN — relay traffic through a public server when direct P2P fails.
-                // OpenRelay provides free public TURN credentials.
                 { urls: 'turn:openrelay.metered.ca:80',   username: 'openrelayproject', credential: 'openrelayproject' },
                 { urls: 'turn:openrelay.metered.ca:443',  username: 'openrelayproject', credential: 'openrelayproject' },
                 { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
@@ -1299,15 +1079,11 @@ const MP = (() => {
           });
 
           sp.on('signal', (signalData) => {
-            // Publish each signal (offer + trickle ICE candidates) to MQTT
             mqttPub(offerTopic, JSON.stringify(signalData));
           });
 
           setupPeerHandlers();
 
-          // Safety net: if WebRTC doesn't connect within 25s, switch to MQTT relay mode.
-          // This handles the case where TURN also fails (rare, but possible on very
-          // restrictive networks) — game still works, just with higher latency.
           if (webrtcFallbackTimer) clearTimeout(webrtcFallbackTimer);
           webrtcFallbackTimer = setTimeout(() => {
             if (!connected && !relayMode) {
@@ -1316,11 +1092,9 @@ const MP = (() => {
             }
           }, 25000);
 
-          // Update room state with p2 joined
           broadcastFullState();
           return;
         }
-        // Subsequent signal messages (trickle ICE candidates, answer)
         if (msg.topic.indexOf('/signal/') >= 0 && sp && !relayMode) {
           try { sp.signal(JSON.parse(msg.payloadString)); } catch(e) {}
           return;
@@ -1341,10 +1115,8 @@ const MP = (() => {
       isHost = false;
       myPlayer = 'p2';
 
-      // Connect to MQTT
       await connectMQTT();
 
-      // Subscribe to host signals
       const offerTopic = mqttTopic(code, 'signal/host');
       mqttSub(offerTopic);
       console.log('[MP] Guest subscribed to:', offerTopic);
@@ -1355,20 +1127,16 @@ const MP = (() => {
         const timeout = setTimeout(() => {
           if (!resolved) {
             resolved = true;
-            // Distinguish "no host" from "host exists but WebRTC failed"
             if (!offerReceived) {
               reject(new Error('Room not found'));
             } else {
-              // Offer was received but connection never established — fall back to relay.
               console.warn('[MP] Guest: WebRTC never completed — activating relay mode.');
               activateRelayMode();
-              // Resolve as joined (relay mode is still a valid connection)
               resolve({ ok: true, code: code, player: 'p2', relay: true });
             }
           }
         }, 30000);
 
-        // Listen for host's offer
         const origHandler = mqttClient.onMessageArrived;
         mqttClient.onMessageArrived = (msg) => {
           if (resolved) return;
@@ -1376,11 +1144,9 @@ const MP = (() => {
           if (msg.topic === offerTopic) {
             if (!offerReceived) {
               offerReceived = true;
-              // Got the host's first signal (offer) — create simple-peer and respond.
               console.log('[MP] Guest received offer from host');
             }
 
-            // If we haven't created the peer yet, create it now.
             if (!sp && !relayMode) {
               sp = new SimplePeer({
                 initiator: false,
@@ -1406,7 +1172,6 @@ const MP = (() => {
 
               setupPeerHandlers();
 
-              // Safety net: if WebRTC doesn't connect within 25s, switch to MQTT relay.
               if (webrtcFallbackTimer) clearTimeout(webrtcFallbackTimer);
               webrtcFallbackTimer = setTimeout(() => {
                 if (!connected && !relayMode) {
@@ -1421,15 +1186,12 @@ const MP = (() => {
               }, 25000);
             }
 
-            // Feed the signal into the peer (handles both initial offer and trickle candidates)
             try {
               if (sp && !relayMode) sp.signal(JSON.parse(msg.payloadString));
             } catch(e) { console.warn('[MP] Guest signal parse error:', e); }
 
-            // Send join message (also serves as relay-mode announcement)
             mqttPub(mqttTopic(code, 'join'), JSON.stringify({ name: myName }));
 
-            // Wait for room:state to confirm connection
             const stateHandler = (state) => {
               if (resolved) return;
               if (state && state.code === code) {
@@ -1443,7 +1205,6 @@ const MP = (() => {
             };
             stateCallbacks.push(stateHandler);
 
-            // Replace this handler so subsequent signal messages go straight to sp.signal
             mqttClient.onMessageArrived = (m) => {
               if (m.topic.indexOf('/signal/') >= 0 && sp && !relayMode) {
                 try { sp.signal(JSON.parse(m.payloadString)); } catch(e) {}
@@ -1452,12 +1213,10 @@ const MP = (() => {
               origHandler.call(mqttClient, m);
             };
           } else {
-            // Pass to original handler
             origHandler.call(mqttClient, msg);
           }
         };
 
-        // Also send join message immediately (in case host is already listening)
         mqttPub(mqttTopic(code, 'join'), JSON.stringify({ name: myName }));
       });
     },
@@ -1521,7 +1280,6 @@ const MP = (() => {
       sendMsg({ type: 'chat:typing', data: { name: myName } });
     },
 
-    // ---- Play Again (both players must agree) ----
     requestPlayAgain() {
       _playAgainRequest = { from: myPlayer, timestamp: Date.now() };
       _playAgainAccepted = false;
@@ -1578,7 +1336,6 @@ function setMpTab(tab) {
   mpActiveTab = tab;
   document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('on'));
   event && event.currentTarget && event.currentTarget.classList.add('on');
-  // Just toggle by data-t since event may not be available
   document.querySelectorAll('.mp-tab').forEach(b => {
     const k = b.getAttribute('data-t');
     const on = (tab === 'create' && k === 'createRoom') || (tab === 'join' && k === 'joinRoom');
@@ -1600,10 +1357,6 @@ async function mpCreateRoom() {
     showMpLobby(r.code);
   } catch (e) {
     console.error('[MP] createRoom failed:', e);
-    // Provide a more accurate error message — the original translation says "Is the server running?"
-    // which is misleading because there is no server. The real cause is almost always:
-    //   (1) no internet, or
-    //   (2) all public MQTT brokers are blocked on this network.
     let hint = '';
     const m = (e.message || '').toLowerCase();
     if (m.indexOf('mqtt') >= 0 || m.indexOf('broker') >= 0) {
@@ -1631,8 +1384,7 @@ async function mpJoinRoom() {
   try {
     const r = await MP.joinRoom(name, code);
     statusEl.textContent = '';
-    // Joining player goes straight into game (host starts). Show lobby view.
-    showMpLobby(r.code, /*isGuest=*/true);
+    showMpLobby(r.code, true);
   } catch (e) {
     console.error('[MP] joinRoom failed:', e);
     let msg = e.message;
@@ -1660,7 +1412,6 @@ function showMpLobby(code, isGuest) {
   } else {
     statusEl.textContent = t('mpWaitingP2');
   }
-  // Set up connection listener if not already
   if (!window._mpConnListener) {
     window._mpConnListener = true;
     MP.onConnection(({ connected, reconnected, error, relay }) => {
@@ -1674,7 +1425,6 @@ function showMpLobby(code, isGuest) {
       } else if (reconnected) {
         el.textContent = t('mpReconnected');
       }
-      // Show connection mode (P2P direct vs relay)
       if (modeEl && connected) {
         if (relay === true) {
           modeEl.textContent = lang === 'ar' ? '📡 وضع الترحيل (الاتصال المباشر غير متاح)'
@@ -1699,14 +1449,12 @@ function showMpLobby(code, isGuest) {
 }
 
 function mpHandleRoomState(state) {
-  // Update lobby UI if still in lobby
   const lobby = document.getElementById('mpLobby');
   if (lobby && !lobby.classList.contains('hidden')) {
     const p2Connected = state.players.p2.connected;
     const startBtn = document.getElementById('mpStartBtn');
     const statusEl = document.getElementById('mpLobbyStatus');
     if (MP.getMyPlayer() === 'p1') {
-      // Host view
       if (p2Connected) {
         statusEl.textContent = t('mpP2Joined');
         statusEl.className = 'mp-status ready';
@@ -1717,9 +1465,7 @@ function mpHandleRoomState(state) {
         startBtn.disabled = true;
       }
     } else {
-      // Guest view — wait for host
       if (state.gameStarted) {
-        // Game has started — hide lobby, enter game
         lobby.classList.add('hidden');
         enterMultiplayerGame(state);
       } else {
@@ -1728,7 +1474,6 @@ function mpHandleRoomState(state) {
     }
     return;
   }
-  // If we're in game, update game UI
   if (state.gameStarted && state.gameState) {
     if (!window._mpInGame) {
       enterMultiplayerGame(state);
@@ -1736,16 +1481,14 @@ function mpHandleRoomState(state) {
       mpRenderGameState(state);
     }
   }
-  // Re-render chat history on initial state
   if (state.chat && state.chat.length && document.getElementById('chatBody').children.length === 0) {
-    state.chat.forEach(m => mpAppendChatMsg(m, /*skipScroll=*/true));
+    state.chat.forEach(m => mpAppendChatMsg(m, true));
     mpScrollChatToBottom();
   }
 }
 
 function mpStartGame() {
   MP.startGame();
-  // Hide lobby and enter game immediately for host
   const state = MP.getRoomState();
   if (state && state.gameStarted) {
     document.getElementById('mpLobby').classList.add('hidden');
@@ -1757,16 +1500,13 @@ function mpLeaveLobby() {
   MP.leaveRoom();
   document.getElementById('mpLobby').classList.add('hidden');
   document.getElementById('welcome').classList.remove('hidden');
-  // Reset chat UI
   document.getElementById('chatBody').innerHTML = '';
   document.getElementById('chatToggle').style.display = 'none';
   window._mpInGame = false;
   window._mpConnListener = false;
-  // Reset local game state
   G = null; busy = false; rHist = [];
   document.getElementById('app').style.display = 'none';
   document.body.classList.remove('hazz2-mode');
-  // Restore player labels to defaults
   const plbl = document.getElementById('plbl');
   const clbl = document.getElementById('clbl');
   if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
@@ -1776,7 +1516,6 @@ function mpLeaveLobby() {
 function mpCopyCode() {
   const code = document.getElementById('mpLobbyCode').textContent;
   navigator.clipboard && navigator.clipboard.writeText(code);
-  // Visual feedback
   const btn = event && event.currentTarget;
   if (btn) {
     const orig = btn.innerHTML;
@@ -1799,12 +1538,9 @@ function enterMultiplayerGame(state) {
   document.getElementById('mpLobby').classList.add('hidden');
   document.getElementById('app').style.display = 'flex';
   document.body.classList.toggle('hazz2-mode', state.mode === 'hazz2');
-  // Show chat toggle
   document.getElementById('chatToggle').style.display = 'flex';
-  // Update opponent name in chat header
   const oppName = MP.getMyPlayer() === 'p1' ? state.players.p2.name : state.players.p1.name;
   document.getElementById('chatOppName').textContent = oppName ? ('• ' + oppName) : '';
-  // Set game mode + scoring from server (in case host changed it after join)
   gameMode = state.mode;
   scoringMode = state.scoring;
   totalRounds = state.totalRounds;
@@ -1819,10 +1555,8 @@ function mpRenderGameState(state) {
   const myP = MP.getMyPlayer();
   const isMyTurn = gs.isMyTurn && gs.phase === 'play';
 
-  // Hide Hazz 2 draw button if not hazz2
   document.getElementById('drawBtnWrap').style.display = 'none';
 
-  // Score bar — update names for multiplayer
   const myName = MP.getMyName();
   const state2 = MP.getRoomState();
   const oppKey = MP.getMyPlayer() === 'p1' ? 'p2' : 'p1';
@@ -1833,7 +1567,6 @@ function mpRenderGameState(state) {
   if (clbl) clbl.textContent = oppName || t('computer');
   document.getElementById('pscore').textContent = gs.myTotal + (gs.phase === 'play' ? gs.myRoundScore : 0);
   document.getElementById('cscore').textContent = gs.oppTotal + (gs.phase === 'play' ? gs.oppRoundScore : 0);
-  // Capture info / cards left
   if (state.mode === 'hazz2') {
     document.getElementById('pcapI').textContent = t('mpCardsLeft', { n: gs.myHand.length });
     document.getElementById('ccapI').textContent = t('mpCardsLeft', { n: gs.oppHandCount });
@@ -1845,7 +1578,6 @@ function mpRenderGameState(state) {
   }
   document.getElementById('deckC').textContent = t('deck') + ': ' + gs.deckCount;
 
-  // Computer hand (face down — opponent)
   const ch = document.getElementById('chand'); ch.innerHTML = '';
   const oppCardCount = state.mode === 'hazz2' ? gs.oppHandCount : gs.oppHandCount;
   for (let i = 0; i < oppCardCount; i++) {
@@ -1854,7 +1586,6 @@ function mpRenderGameState(state) {
     ch.appendChild(d);
   }
 
-  // Table area
   const ta = document.getElementById('tarea');
   const ti = document.getElementById('turnInd');
   ta.innerHTML = '';
@@ -1862,13 +1593,11 @@ function mpRenderGameState(state) {
   if (gs.table.length === 0) {
     const e = document.createElement('div'); e.className = 'tempty'; e.textContent = t('tableEmpty'); ta.appendChild(e);
   } else if (state.mode === 'hazz2') {
-    // Hazz 2: show only top card prominently
     const top = gs.table[gs.table.length - 1];
     const d = document.createElement('div');
     d.className = 'cd deal-table' + (top.suit !== gs.currentSuit ? ' suit-changed' : '');
     d.innerHTML = '<img src="' + top.img + '" alt="" draggable="false">';
     ta.appendChild(d);
-    // Suit indicator
     const indicator = document.createElement('div');
     indicator.className = 'hazz-suit-badge';
     indicator.style.color = HAZZ_SUIT_COLORS[gs.currentSuit];
@@ -1878,7 +1607,6 @@ function mpRenderGameState(state) {
     indicator.innerHTML = badgeHTML;
     ta.appendChild(indicator);
   } else {
-    // Kanza/Ronda: show all table cards
     for (const c of gs.table) {
       const d = document.createElement('div'); d.className = 'cd deal-table';
       d.innerHTML = '<img src="' + c.img + '" alt="" draggable="false">';
@@ -1886,14 +1614,12 @@ function mpRenderGameState(state) {
     }
   }
 
-  // Player hand
   const ph = document.getElementById('phand'); ph.innerHTML = '';
   const drawBtnWrap = document.getElementById('drawBtnWrap');
 
   if (state.mode === 'hazz2') {
     if (isMyTurn) {
       const counterActive = gs.skipCounter > 0 || gs.drawCounter > 0;
-      // For hazz2 we need to determine which cards are playable client-side
       const playableIdx = [];
       for (let i = 0; i < gs.myHand.length; i++) {
         if (mpHazz2CanPlay(gs.myHand[i], gs)) playableIdx.push(i);
@@ -1901,7 +1627,6 @@ function mpRenderGameState(state) {
       if (counterActive) {
         if (playableIdx.length === 0) {
           drawBtnWrap.style.display = 'none';
-          // Auto-apply penalty
           if (!window._mpPenaltyPending) {
             window._mpPenaltyPending = true;
             setTimeout(() => { MP.applyPenalty(); window._mpPenaltyPending = false; }, 600);
@@ -1932,7 +1657,6 @@ function mpRenderGameState(state) {
       }
     }
   } else {
-    // Kanza/Ronda — all cards playable on your turn
     drawBtnWrap.style.display = 'none';
     for (let i = 0; i < gs.myHand.length; i++) {
       const c = gs.myHand[i], d = document.createElement('div');
@@ -1943,7 +1667,6 @@ function mpRenderGameState(state) {
     }
   }
 
-  // Message
   if (gs.phase === 'end') {
     const won = gs.winner === myP;
     setMsg(won ? t('mpYouWin') : t('mpYouLose'), won ? 'cap' : 'nocap');
@@ -1960,11 +1683,9 @@ function mpRenderGameState(state) {
     setMsg(state.mode === 'hazz2' ? t('hazz2ComputerTurn').replace('الحاسوب', state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') : (state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') + '...', 'think');
   }
 
-  // Run safety check
   if (typeof ensurePlayerHandVisible === 'function') ensurePlayerHandVisible();
 }
 
-// Hazz 2 client-side playability check (mirror of server logic)
 function mpHazz2CanPlay(card, gs) {
   if (gs.drawCounter > 0) return card.value === 2;
   if (gs.skipCounter > 0) return card.value === 1;
@@ -1978,7 +1699,6 @@ async function onMpPlayCard(ci) {
   const card = gs.myHand[ci];
   if (!card) return;
   sCard();
-  // Check if there are multiple capture options (Kanza 15)
   try {
     const options = await MP.requestCaptureOptions(ci);
     if (options.length > 1) {
@@ -1987,7 +1707,6 @@ async function onMpPlayCard(ci) {
     }
     MP.playCard(ci, options.length === 1 ? options[0] : null);
   } catch (e) {
-    // Fallback: just play without chosen cap
     MP.playCard(ci, null);
   }
 }
@@ -2016,7 +1735,6 @@ async function onMpHazz2PlayCard(ci) {
   if (!card || !mpHazz2CanPlay(card, gs)) return;
   sCard();
   if (card.value === 7) {
-    // Prompt for suit choice
     hazz2Choice = { ci };
     showSuitChooserMp();
     return;
@@ -2043,7 +1761,6 @@ function showSuitChooserMp() {
   m.classList.remove('hidden');
 }
 
-// Override onDrawCard for multiplayer
 function onMpDrawCard() {
   if (!mpGameState || !mpGameState.isMyTurn) return;
   if (gameMode !== 'hazz2') return;
@@ -2062,12 +1779,11 @@ function mpShowEndModal(gs, state) {
   const oppName = (state2 && state2.players && state2.players[oppKey]) ? state2.players[oppKey].name : t('computer');
   let h = '';
   if (gs.phase === 'end' || gs.phase === 'match') {
-    // Final game end (hazz2 end OR kanza/ronda match end)
     const isHazz2 = gs.phase === 'end';
     let won, myTotal, oppTotal;
     if (isHazz2) {
       won = gs.winner === myP;
-      myTotal = myP === 'p1' ? gs.oppHandCount : gs.myHand.length; // cards left for opponent
+      myTotal = myP === 'p1' ? gs.oppHandCount : gs.myHand.length;
       oppTotal = myP === 'p1' ? gs.myHand.length : gs.oppHandCount;
     } else {
       myTotal = gs.myTotal;
@@ -2092,7 +1808,6 @@ function mpShowEndModal(gs, state) {
     h += '<div class="rpl' + (!won ? ' win' : '') + '"><div class="nm">' + oppName + '</div><div class="sc">' + oppTotal + '</div></div></div>';
     h += '</div>';
 
-    // Play Again section — with both-players agreement
     h += '<div id="mpPlayAgainArea" style="margin-top:14px;text-align:center">';
     h += '<button class="mbtn" id="mpPlayAgainBtn" onclick="mpRequestPlayAgain()" style="background:linear-gradient(135deg,#4ade80,#22c55e)">' + t('mpPlayAgain') + '</button>';
     h += '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:8px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
@@ -2108,7 +1823,6 @@ function mpShowEndModal(gs, state) {
     } else {
       h += '<p style="text-align:center;color:var(--text-d);font-size:.85rem;margin-top:10px">' + t('mpHostWaiting') + '</p>';
     }
-    // Leave button for roundEnd too
     h += '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:10px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
   }
   endC.innerHTML = h;
@@ -2120,7 +1834,6 @@ function mpShowEndModal(gs, state) {
 // ============================================================
 function mpRequestPlayAgain() {
   MP.requestPlayAgain();
-  // Update button to show waiting state
   const btn = document.getElementById('mpPlayAgainBtn');
   if (btn) {
     btn.disabled = true;
@@ -2130,10 +1843,8 @@ function mpRequestPlayAgain() {
 }
 
 function mpLeaveGame() {
-  // Close end modal
   const endM = document.getElementById('endM');
   if (endM) endM.classList.add('hidden');
-  // Leave the room entirely and go back to welcome
   MP.leaveRoom();
   document.getElementById('app').style.display = 'none';
   document.getElementById('welcome').classList.remove('hidden');
@@ -2144,20 +1855,16 @@ function mpLeaveGame() {
   window._mpConnListener = false;
   G = null; busy = false; rHist = [];
   document.body.classList.remove('hazz2-mode');
-  // Restore player labels to defaults
   const plbl = document.getElementById('plbl');
   const clbl = document.getElementById('clbl');
   if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
   if (clbl) { clbl.textContent = t('computer'); clbl.setAttribute('data-t', 'computer'); }
 }
 
-// Handle play-again state changes in the state callback
-// We hook into mpHandleRoomState to detect when opponent requests play again
 (function() {
   const origHandleState = mpHandleRoomState;
   window.mpHandleRoomState = function(state) {
     origHandleState(state);
-    // Check if opponent sent a play-again request
     if (MP.didOpponentRequestPlayAgain()) {
       const area = document.getElementById('mpPlayAgainArea');
       if (area) {
@@ -2169,11 +1876,9 @@ function mpLeaveGame() {
           '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:8px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
       }
     }
-    // If play-again request was cleared (declined), restore the normal button
     if (!MP.isPlayAgainPending() && !MP.didOpponentRequestPlayAgain()) {
       const area = document.getElementById('mpPlayAgainArea');
       if (area && !area.querySelector('#mpPlayAgainBtn')) {
-        // Check if we're still showing end screen
         const endM = document.getElementById('endM');
         if (endM && !endM.classList.contains('hidden')) {
           area.innerHTML = '<button class="mbtn" id="mpPlayAgainBtn" onclick="mpRequestPlayAgain()" style="background:linear-gradient(135deg,#4ade80,#22c55e)">' + t('mpPlayAgain') + '</button>' +
@@ -2200,7 +1905,6 @@ function toggleChat() {
 function toggleEmojiBar() {
   const bar = document.getElementById('chatEmojiBar');
   if (bar.classList.contains('hidden')) {
-    // Populate emojis on first open
     if (bar.children.length === 0) {
       const emojis = ['😀','😂','😍','🤣','😊','😉','😎','🤔','😅','😁','🙂','😉','😇','🥰','😘','😜','🤩','🥳','😢','😭','😡','🤯','😱','🥺','😤','🙄','😴','🤐','👍','👎','👏','🙌','🙏','💪','🤝','✌️','👌','👋','🤙','💪','❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','❣️','💕','💞','💓','💗','💖','💘','💝','🏆','🥇','🥈','🥉','🏅','🎖️','🎉','🎊','🎈','🎁','✨','⭐','🌟','💫','🔥','💯','♠️','♥️','♦️','♣️','🃏','🎴','🀄','🎲','🤞','✋','👊','💪','🎯','💎','💰','🪙','⚡','💥','💫',];
       emojis.forEach(em => {
@@ -2226,14 +1930,12 @@ function sendChat() {
   const text = input.value.trim();
   if (!text) return;
   MP.sendChat(text);
-  // Show my own message immediately
   input.value = '';
 }
 
 function mpAppendChatMsg(msg, skipScroll) {
   const body = document.getElementById('chatBody');
   if (!body) return;
-  // Deduplicate by id
   if (body.querySelector('[data-msg-id="' + msg.id + '"]')) return;
   const div = document.createElement('div');
   div.className = 'chat-msg ' + (msg.name === 'System' ? 'system' : (msg.from === MP.getMyPlayer() ? 'me' : 'opp'));
@@ -2258,7 +1960,6 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Typing indicator
 let _mpTypingTimer = null;
 function mpOnChatInput() {
   if (_mpTypingTimer) return;
@@ -2266,14 +1967,12 @@ function mpOnChatInput() {
   MP.sendTyping();
 }
 
-// Hook into onDrawCard — override the global function when in multiplayer mode
 const _origOnDrawCard = onDrawCard;
 onDrawCard = function () {
   if (window._mpInGame) return onMpDrawCard();
   return _origOnDrawCard.apply(this, arguments);
 };
 
-// Hook into leaveGame — disconnect from multiplayer if active
 const _origLeaveGame = leaveGame;
 leaveGame = function () {
   if (window._mpInGame || MP.getRoomCode()) {
@@ -2283,7 +1982,6 @@ leaveGame = function () {
     document.getElementById('chatPanel').classList.remove('open');
     document.getElementById('chatBody').innerHTML = '';
   }
-  // Restore player labels to defaults
   const plbl = document.getElementById('plbl');
   const clbl = document.getElementById('clbl');
   if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
@@ -2302,7 +2000,6 @@ function setLang(l){
 function setMode(m){
   gameMode=m;
   document.querySelectorAll('.mbtn-opt').forEach(b=>{const k=b.getAttribute('data-t');const on=(m==='kanza'&&k==='modeKanza')||(m==='ronda'&&k==='modeRonda')||(m==='hazz2'&&k==='modeHazz2');b.classList.toggle('on',on)});
-  // Hazz 2 has no rounds or ultra scoring — hide those choices
   const isHazz2=m==='hazz2';
   document.querySelector('.round-choice').style.display=isHazz2?'none':'';
   document.querySelector('.scoring-choice').style.display=isHazz2?'none':'';
@@ -2378,11 +2075,9 @@ function findTbl(req,tbl){
 }
 function findCaps(card,tbl){
   if(gameMode==='ronda'){
-    // Ronda: capture ALL cards with same value as the played card
     const matches=tbl.filter(c=>c.value===card.value);
     return matches.length>0?[matches]:[];
   }
-  // Kanza 15 mode: original combination logic
   const res=[];
   for(const cb of COMBOS){
     if(!cb.includes(card.value))continue;
@@ -2395,7 +2090,7 @@ function findCaps(card,tbl){
 
 // ============ STATE ============
 let G=null,busy=false,rHist=[],totalRounds=1,gameMode='kanza',scoringMode='classic';
-let hazz2Choice=null; // pending suit choice for card 7
+let hazz2Choice=null;
 
 function deepClone(s){
   return{deck:s.deck.map(c=>({...c})),table:s.table.map(c=>({...c})),pH:s.pH.map(c=>({...c})),cH:s.cH.map(c=>({...c})),pCap:s.pCap.map(c=>({...c})),cCap:s.cCap.map(c=>({...c})),pTotal:s.pTotal,cTotal:s.cTotal,turn:s.turn,round:s.round,lastCap:s.lastCap,phase:s.phase,pRS:s.pRS,cRS:s.cRS};
@@ -2462,18 +2157,17 @@ const HAZZ_SUIT_LABELS={flouss:'suitFlouss',zrawat:'suitZrawat',syofa:'suitSyofa
 function newGSHazz2(){
   const dk=shuf(mkDeck());
   const pH=dk.splice(0,7),cH=dk.splice(0,7);
-  // First table card cannot be 1, 2, or 7 (avoid starting with action cards)
   let starter=null;
   while(dk.length>0){
     const c=dk.shift();
     if(c.value===1||c.value===2||c.value===7){
-      dk.push(c); // put it back at the end
+      dk.push(c);
     } else {
       starter=c;
       break;
     }
   }
-  if(!starter){ // fallback: use any card
+  if(!starter){
     starter=dk.shift();
   }
   const ft=Math.random()<.5?'p':'c';
@@ -2484,7 +2178,7 @@ function newGSHazz2(){
     turn:ft,phase:'play',
     pTotal:0,cTotal:0,pRS:0,cRS:0,
     round:1,lastCap:null,
-    lastAction:null // for messaging
+    lastAction:null
   };
 }
 
@@ -2505,22 +2199,17 @@ function hazz2DeepClone(s){
   };
 }
 
-// Check if a card can be played on the current state
 function hazz2CanPlay(card,s){
-  // If there's an active draw counter, only 2 can be played (counter)
   if(s.drawCounter>0){
     return card.value===2;
   }
-  // If there's an active skip counter, only 1 can be played (counter)
   if(s.skipCounter>0){
     return card.value===1;
   }
-  // Normal play: ALL cards (including 1, 2, 7) must match suit or value of top card
   const top=s.table[s.table.length-1];
   return card.suit===s.currentSuit||card.value===top.value;
 }
 
-// Get all playable indices for a hand
 function hazz2PlayableIndices(hand,s){
   const idx=[];
   for(let i=0;i<hand.length;i++){
@@ -2529,7 +2218,6 @@ function hazz2PlayableIndices(hand,s){
   return idx;
 }
 
-// Apply a card play (no suit choice here for 7 - handled separately)
 function hazz2Play(s,ci,isP,newSuit){
   const ns=hazz2DeepClone(s);
   const hand=isP?[...ns.pH]:[...ns.cH];
@@ -2539,16 +2227,15 @@ function hazz2Play(s,ci,isP,newSuit){
   if(isP)ns.pH=hand;else ns.cH=hand;
   ns.table=[...ns.table,card];
   let actionType='play';
-  // Handle card effects
   if(card.value===1){
     ns.skipCounter=s.skipCounter+1;
     ns.drawCounter=0;
-    ns.currentSuit=card.suit; // suit follows the played card
+    ns.currentSuit=card.suit;
     actionType='skip';
   } else if(card.value===2){
     ns.drawCounter=s.drawCounter+1;
     ns.skipCounter=0;
-    ns.currentSuit=card.suit; // suit follows the played card
+    ns.currentSuit=card.suit;
     actionType='draw';
   } else if(card.value===7){
     if(newSuit)ns.currentSuit=newSuit;
@@ -2557,54 +2244,36 @@ function hazz2Play(s,ci,isP,newSuit){
     ns.drawCounter=0;
     actionType='suit';
   } else {
-    // Normal card - suit follows card
     ns.currentSuit=card.suit;
     ns.skipCounter=0;
     ns.drawCounter=0;
     actionType='play';
   }
-  // Wait — 1 and 2 are separate accumulators. Each can only be countered by same value.
-  // Actually re-reading the rules: 1 chain and 2 chain are independent.
-  // But when a non-1 non-2 card is played, the chain resets to 0 (since the player chose not to counter).
-  // The "counter" only happens if the player under attack decides to play a 1 or 2.
-  // Let me reconsider: if A plays 1, B can either skip (skipCounter) turns OR play 1 (bounce back, skipCounter++).
-  // If B decides to play a non-1 card (which is not allowed if skipCounter>0), they must skip first.
-  // Actually the rule is: when skipCounter>0, the ONLY valid play is a 1 (to counter). Otherwise the player MUST skip.
-  // Same for drawCounter>0: only a 2 can be played (counter). Otherwise player MUST draw 2*drawCounter cards.
-  // So in hazz2CanPlay, when skipCounter>0, only 1 is playable. ✓ (already implemented)
-  // When drawCounter>0, only 2 is playable. ✓
-  // After playing a non-1/non-2 card normally, both counters reset. ✓ (already implemented)
   ns.lastAction={type:actionType,by:isP?'p':'c',card,skipCounter:ns.skipCounter,drawCounter:ns.drawCounter,suit:ns.currentSuit};
-  // Check win
   if((isP&&ns.pH.length===0)||(!isP&&ns.cH.length===0)){
     ns.phase='end';
     ns.winner=isP?'p':'c';
-    ns.turn=isP?'p':'p'; // game over
+    ns.turn=isP?'p':'p';
     return ns;
   }
-  // Pass turn
   ns.turn=isP?'c':'p';
   return ns;
 }
 
-// Player cannot/will not counter — apply skip penalty or draw penalty
 function hazz2ApplyPenalty(s,isP){
   const ns=hazz2DeepClone(s);
   let drawnCards=[];
   if(s.skipCounter>0){
-    // Player skips s.skipCounter turns (which means turn passes back to other player)
     const skipped=s.skipCounter;
     ns.skipCounter=0;
     ns.lastAction={type:'skipApplied',by:isP?'p':'c',count:skipped};
-    ns.turn=isP?'c':'p'; // other player's turn (this player skipped)
+    ns.turn=isP?'c':'p';
     return {state:ns,skipped,drawn:0};
   }
   if(s.drawCounter>0){
-    // Player draws 2*drawCounter cards
     const toDraw=2*s.drawCounter;
     for(let i=0;i<toDraw;i++){
       if(ns.deck.length===0){
-        // Reshuffle table (except top) into deck
         if(ns.table.length>1){
           const top=ns.table[ns.table.length-1];
           const rest=ns.table.slice(0,-1);
@@ -2625,7 +2294,6 @@ function hazz2ApplyPenalty(s,isP){
   return {state:ns,skipped:0,drawn:0};
 }
 
-// Player draws a card voluntarily (no counter active, player chooses to draw instead of playing)
 function hazz2DrawVoluntary(s,isP){
   const ns=hazz2DeepClone(s);
   if(ns.deck.length===0){
@@ -2640,7 +2308,6 @@ function hazz2DrawVoluntary(s,isP){
   const c=ns.deck.shift();
   if(isP)ns.pH=[...ns.pH,c];else ns.cH=[...ns.cH,c];
   ns.lastAction={type:'voluntaryDraw',by:isP?'p':'c',card:c};
-  // After voluntary draw, turn passes to the other player
   ns.turn=isP?'c':'p';
   return {state:ns,drawn:c};
 }
@@ -2650,42 +2317,29 @@ function aiMoveHazz2(s){
   const hand=s.cH;
   if(!hand.length)return {action:'pass'};
   const playable=hazz2PlayableIndices(hand,s);
-  // If no playable cards and no counter active, must draw
   if(playable.length===0){
-    // If counter active, we're forced to take penalty
     if(s.skipCounter>0||s.drawCounter>0){
       return {action:'penalty'};
     }
     return {action:'draw'};
   }
-  // Evaluate each playable card
   const ev=[];
   for(const i of playable){
     const card=hand[i];
     let sc=0;
-    // Strategic priorities:
-    // 1. If we can win this turn (last card), do it!
     if(hand.length===1)sc+=10000;
-    // 2. If we have very few cards, prefer to play them
     if(hand.length<=3)sc+=50;
-    // 3. Card 1 (skip): good to keep if opponent has many cards (forces them to skip)
     if(card.value===1){
-      // If opponent has few cards, skip is very valuable
       if(s.pH.length<=3)sc+=80;
       else sc+=30;
-      // Don't waste 1 if opponent has many cards and chain is 0
       if(s.skipCounter===0&&s.pH.length>5)sc-=10;
     }
-    // 4. Card 2 (draw): very valuable when opponent has few cards
     if(card.value===2){
       if(s.pH.length<=3)sc+=90;
       else sc+=40;
-      // If chain already at 2+, opponent will draw lots
       if(s.drawCounter>=2)sc+=30;
     }
-    // 5. Card 7 (suit change): great if we have many cards of one suit
     if(card.value===7){
-      // Count our suits
       const suitCount={};
       for(const c of hand)if(c.value!==7&&c.value!==1&&c.value!==2)suitCount[c.suit]=(suitCount[c.suit]||0)+1;
       const bestSuit=Object.entries(suitCount).sort((a,b)=>b[1]-a[1])[0];
@@ -2693,27 +2347,20 @@ function aiMoveHazz2(s){
         sc+=20+bestSuit[1]*10;
       } else sc+=5;
     }
-    // 6. Normal cards: prefer to play cards that match opponent's likely weak suit
     if(card.value!==1&&card.value!==2&&card.value!==7){
-      // Play high-value cards first (10,11,12) to reduce hand size
       if(card.value>=10)sc+=15;
       else sc+=card.value;
-      // Slight preference for matching current suit (frees up hand)
       sc+=2;
     }
-    // 7. Penalty for not playing when opponent has few cards (they'll win)
     if(s.pH.length<=2){
-      // Prefer cards that disrupt: 1 and 2
       if(card.value===1||card.value===2)sc+=100;
     }
     ev.push({i,card,sc});
   }
   ev.sort((a,b)=>b.sc-a.sc);
   const best=ev[0];
-  // If best card is a 7, decide the suit to choose
   let chosenSuit=null;
   if(best.card.value===7){
-    // Choose suit we have most of (excluding action cards)
     const suitCount={};
     for(const c of hand)if(c.id!==best.card.id&&c.value!==7&&c.value!==1&&c.value!==2)suitCount[c.suit]=(suitCount[c.suit]||0)+1;
     const entries=Object.entries(suitCount);
@@ -2721,7 +2368,6 @@ function aiMoveHazz2(s){
       entries.sort((a,b)=>b[1]-a[1]);
       chosenSuit=entries[0][0];
     } else {
-      // No normal cards in hand — pick any suit randomly
       chosenSuit=HAZZ_SUITS[Math.floor(Math.random()*4)];
     }
   }
@@ -2740,7 +2386,6 @@ function tblDanger(tbl){
 }
 function aiMove(s){
   if(gameMode==='ronda')return aiMoveRonda(s);
-  // Kanza 15 mode
   const hand=s.cH,tbl=s.table;
   if(!hand.length)return{ci:-1,cap:null};
   const ev=[];
@@ -2751,18 +2396,13 @@ function aiMove(s){
       for(const cap of caps){
         let sc;
         if(ultra){
-          // Ultra: value = sum of ultra points of all cards gained (cap + our played card)
           sc = (capVal(cap) + ultraCardPts(card)) * 2;
-          // Bonus: clearing the table
           const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
           if(nt.length===0)sc+=25;
-          // Penalty: leaving high-value cards on table for opponent
           for(const c of nt)sc -= ultraCardPts(c) * 0.3;
-          // Slight penalty: spending a high-value card to capture low-value cards is bad trade
           const tradeOff = ultraCardPts(card) - capVal(cap);
           if(tradeOff > 0) sc -= tradeOff * 0.5;
         } else {
-          // Classic Kanza
           sc=capVal(cap)*3;sc+=cap.filter(c=>c.suit==='flouss').length*5;
           if(cap.some(c=>c.suit==='flouss'&&c.value===1))sc+=15;
           for(const c of cap)if(c.suit==='flouss')sc+=c.value===1?10:c.value*2;
@@ -2774,22 +2414,18 @@ function aiMove(s){
     }else{
       let sc;
       if(ultra){
-        // Ultra non-capture: big penalty for leaving a high-value card on the table
         sc = -ultraCardPts(card) * 0.5;
         const nt=[...tbl,card];
-        // Penalty: this play creates a capture opportunity that includes our high-value card
         for(const cb of COMBOS){
           if(!cb.includes(card.value))continue;
           const rm=[...cb];rm.splice(rm.indexOf(card.value),1);
           if(rm.every(r=>nt.some(x=>x.value===r&&x.id!==card.id))){
-            sc -= ultraCardPts(card) * 1.2; // opponent could capture our card
+            sc -= ultraCardPts(card) * 1.2;
             break;
           }
         }
-        // Penalty: leaving high-value cards on table for opponent's future captures
         for(const c of nt)sc -= ultraCardPts(c) * 0.05;
       } else {
-        // Classic Kanza
         sc=0;if(card.suit==='flouss')sc-=card.value===1?20:card.value*3;else sc-=2;
         const nt=[...tbl,card];sc-=tblDanger(nt)*2;
         if(COMBOS.some(cb=>{if(!cb.includes(card.value))return false;const rm=[...cb];rm.splice(rm.indexOf(card.value),1);return rm.every(r=>nt.some(x=>x.value===r&&x.id!==card.id))}))sc-=10;
@@ -2807,27 +2443,21 @@ function aiMoveRonda(s){
   if(!hand.length)return{ci:-1,cap:null};
   const ev=[];
   const ultra=scoringMode==='ultra';
-  // Count occurrences of each value on table
   const tblValCount={};
   for(const c of tbl)tblValCount[c.value]=(tblValCount[c.value]||0)+1;
-  // Count occurrences of each value in our hand
   const handValCount={};
   for(const c of hand)handValCount[c.value]=(handValCount[c.value]||0)+1;
   for(let i=0;i<hand.length;i++){
     const card=hand[i],caps=findCaps(card,tbl);
     if(caps.length>0){
-      const cap=caps[0]; // single option in Ronda (all matches)
+      const cap=caps[0];
       let sc;
       if(ultra){
-        // Ultra: value = sum of ultra points of captured cards + our played card
         sc = (capVal(cap) + ultraCardPts(card)) * 2;
-        // Bonus: clearing the table
         const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
         if(nt.length===0)sc+=25;
-        // Penalty: leaving high-value cards on table for opponent
         for(const c of nt)sc -= ultraCardPts(c) * 0.3;
       } else {
-        // Classic Ronda
         sc=cap.length*15+5;
         const nt=tbl.filter(c=>!cap.some(x=>x.id===c.id));
         if(nt.length===0)sc+=8;
@@ -2838,16 +2468,11 @@ function aiMoveRonda(s){
       let sc=0;
       const newValCount=(tblValCount[card.value]||0)+1;
       if(ultra){
-        // Ultra non-capture: penalty for leaving a high-value card on the table
         sc -= ultraCardPts(card) * 0.5;
-        // Big penalty: creating a pair/triple on table (opponent captures our high-value card)
         if(newValCount>=2)sc -= ultraCardPts(card) * 1.5;
-        // Penalty: our card matches an existing table value (vulnerable)
         if(tblValCount[card.value]>0)sc -= ultraCardPts(card) * 0.4;
-        // Hold pairs in hand for guaranteed capture next time
         if(handValCount[card.value]>=2)sc -= ultraCardPts(card) * 0.2;
       } else {
-        // Classic Ronda
         if(newValCount>=2)sc-=newValCount*8;
         if(tblValCount[card.value]>0)sc-=5;
         if(handValCount[card.value]>=2)sc-=3;
@@ -2859,18 +2484,13 @@ function aiMoveRonda(s){
 }
 
 // ============ RENDER ============
-// Safety check: ensure player hand is visible after every render. If the layout
-// doesn't fit in the viewport (e.g. very short browser window), enable scrolling
-// on .garea as a fallback so the player can still see and play their cards.
 function ensurePlayerHandVisible(){
   const garea=document.querySelector('.garea');
   const phand=document.getElementById('phand');
   if(!garea||!phand)return;
-  // Use rAF so layout has settled before measuring
   requestAnimationFrame(()=>{
     const gRect=garea.getBoundingClientRect();
     const pRect=phand.getBoundingClientRect();
-    // If bottom of phand is below bottom of garea + 5px tolerance, switch to scrollable
     if(pRect.bottom>gRect.bottom+5){
       garea.classList.add('scrollable');
     } else {
@@ -2882,7 +2502,6 @@ function ensurePlayerHandVisible(){
 function render(){
   if(!G)return;
   if(gameMode==='hazz2'){renderHazz2();ensurePlayerHandVisible();return;}
-  // Hide Hazz 2 UI elements
   document.getElementById('drawBtnWrap').style.display='none';
   const pCS=calcSc(G.pCap),cCS=calcSc(G.cCap);
   document.getElementById('pscore').textContent=G.pTotal+(G.phase==='play'?pCS:0);
@@ -2896,7 +2515,6 @@ function render(){
   for(let i=0;i<G.cH.length;i++){const d=document.createElement('div');d.className='cd';d.innerHTML='<img src="cards/back.png" alt="" draggable="false">';ch.appendChild(d)}
 
   const ta=document.getElementById('tarea');
-  // Keep turn indicator
   const ti=document.getElementById('turnInd');
   ta.innerHTML='';
   ta.appendChild(ti);
@@ -2918,19 +2536,16 @@ function render(){
 
 // ============ HAZZ 2 RENDER ============
 function renderHazz2(){
-  // Score bar — show card counts instead
   document.getElementById('pscore').textContent=G.pH.length;
   document.getElementById('cscore').textContent=G.cH.length;
   document.getElementById('pcapI').textContent=G.pH.length===1?t('hazz2CardsLeftOne'):t('hazz2CardsLeft',{n:G.pH.length});
   document.getElementById('ccapI').textContent=G.cH.length===1?t('hazz2CardsLeftOne'):t('hazz2CardsLeft',{n:G.cH.length});
-  document.getElementById('rbadge').textContent=t('hazz2TopCard');
+  document.getElementById('rbadge').textContent=t('mpTopCard');
   document.getElementById('deckC').textContent=t('deck')+': '+G.deck.length;
 
-  // Computer hand (face down)
   const ch=document.getElementById('chand');ch.innerHTML='';
   for(let i=0;i<G.cH.length;i++){const d=document.createElement('div');d.className='cd';d.innerHTML='<img src="cards/back.png" alt="" draggable="false">';ch.appendChild(d)}
 
-  // Table area — show only top card prominently
   const ta=document.getElementById('tarea');
   const ti=document.getElementById('turnInd');
   ta.innerHTML='';
@@ -2941,18 +2556,16 @@ function renderHazz2(){
     d.className='cd deal-table'+(top.suit!==G.currentSuit?' suit-changed':'');
     d.innerHTML='<img src="'+top.img+'" alt="" draggable="false">';
     ta.appendChild(d);
-    // Suit indicator badge below the card
     const indicator=document.createElement('div');
     indicator.className='hazz-suit-badge';
     indicator.style.color=HAZZ_SUIT_COLORS[G.currentSuit];
-    let badgeHTML='<span class="suit-dot" style="background:'+HAZZ_SUIT_COLORS[G.currentSuit]+'"></span><span>'+t('hazz2CurrentSuit')+': '+t(HAZZ_SUIT_LABELS[G.currentSuit])+'</span>';
-    if(G.skipCounter>0)badgeHTML+='<span class="badge-skip">⊘ '+t('hazz2SkipPill',{n:G.skipCounter})+'</span>';
-    if(G.drawCounter>0)badgeHTML+='<span class="badge-draw">✎ '+t('hazz2DrawPill',{n:2*G.drawCounter})+'</span>';
-    indicator.innerHTML=badgeHTML;
+    let badgeHTML = '<span class="suit-dot" style="background:' + HAZZ_SUIT_COLORS[G.currentSuit] + '"></span><span>' + t('mpCurrentSuit') + ': ' + t(HAZZ_SUIT_LABELS[G.currentSuit]) + '</span>';
+    if (G.skipCounter > 0) badgeHTML += '<span class="badge-skip">⊘ ' + t('hazz2SkipPill', { n: G.skipCounter }) + '</span>';
+    if (G.drawCounter > 0) badgeHTML += '<span class="badge-draw">✎ ' + t('hazz2DrawPill', { n: 2 * G.drawCounter }) + '</span>';
+    indicator.innerHTML = badgeHTML;
     ta.appendChild(indicator);
   }
 
-  // Player hand
   const ph=document.getElementById('phand');ph.innerHTML='';
   const myTurn=G.turn==='p'&&G.phase==='play'&&!busy;
   const drawBtnWrap=document.getElementById('drawBtnWrap');
@@ -2960,21 +2573,16 @@ function renderHazz2(){
     const playableIdx=hazz2PlayableIndices(G.pH,G);
     const counterActive=G.skipCounter>0||G.drawCounter>0;
     if(counterActive){
-      // Counter is active — player must counter (if can't, auto-penalty)
       if(playableIdx.length===0){
-        // Cannot counter, auto-apply penalty
         drawBtnWrap.style.display='none';
         setTimeout(()=>{onHazz2Penalty();},600);
       } else {
-        // Can counter, must play (no draw button)
         drawBtnWrap.style.display='none';
       }
     } else {
-      // No counter active — always show draw button
-      // (player can choose to draw even if they have playable cards)
       drawBtnWrap.style.display='block';
       const btn=document.getElementById('drawBtn');
-      btn.textContent=t('hazz2DrawBtn');
+      btn.textContent=t('hazz2DrewBtn');
     }
     for(let i=0;i<G.pH.length;i++){
       const c=G.pH[i],d=document.createElement('div');
@@ -3051,7 +2659,7 @@ function showCapChoice(ci,caps){
   caps.forEach(cap=>{
     const opt=document.createElement('div');opt.className='copt';
     let h='<span style="color:#D4AF37;font-weight:bold">'+t('captureWith')+':</span> ';
-    for(const c of cap)h+='<div class="mcd"><img src="'+c.img+'" alt=""></div>';
+    for(const c of cap)h+='<div class="mcd"><img src="' + c.img + '" alt=""></div>';
     h+=' <span style="color:#8899aa;font-size:.8rem">('+capVal(cap)+' '+t('points')+')</span>';
     opt.innerHTML=h;
     opt.addEventListener('click',function(){m.classList.add('hidden');doPlayerPlay(ci,cap)});
@@ -3113,7 +2721,6 @@ function onHazz2PlayCard(i){
   const card=G.pH[i];
   if(!hazz2CanPlay(card,G))return;
   sCard();
-  // If card is 7, prompt for suit choice
   if(card.value===7){
     hazz2Choice={ci:i};
     showSuitChooser();
@@ -3149,10 +2756,7 @@ function cancelSuitChoice(){
 function doHazz2PlayerPlay(ci,newSuit){
   busy=true;
   const card=G.pH[ci];
-  const wasSkipChain=G.skipCounter>0;
-  const wasDrawChain=G.drawCounter>0;
   G=hazz2Play(G,ci,true,newSuit);
-  // Determine message
   if(card.value===1){
     setMsg(t('hazz2SkipPill',{n:G.skipCounter})+' ⚡','turn');
   } else if(card.value===2){
@@ -3171,7 +2775,6 @@ function doHazz2PlayerPlay(ci,newSuit){
 function onDrawCard(){
   if(busy||G.turn!=='p'||G.phase!=='play')return;
   if(gameMode!=='hazz2')return;
-  // Player voluntarily draws a card — turn passes to computer after drawing
   busy=true;
   sCard();
   const result=hazz2DrawVoluntary(G,true);
@@ -3184,7 +2787,6 @@ function onDrawCard(){
   }
   setMsg(t('hazz2Drew'),'think');
   render();
-  // Turn has been passed to computer by hazz2DrawVoluntary
   setTimeout(()=>{
     if(G.phase==='play'){
       setMsg(t('hazz2ComputerTurn'),'think');
@@ -3198,9 +2800,6 @@ function onDrawCard(){
 function onHazz2Penalty(){
   if(busy)return;
   busy=true;
-  // Player must take penalty (skip or draw)
-  const wasSkip=G.skipCounter>0;
-  const wasDraw=G.drawCounter>0;
   const result=hazz2ApplyPenalty(G,true);
   G=result.state;
   if(result.skipped>0){
@@ -3224,9 +2823,6 @@ function compTurnHazz2(){
   setTimeout(()=>{
     const mv=aiMoveHazz2(G);
     if(mv.action==='penalty'){
-      // Computer takes penalty
-      const wasSkip=G.skipCounter>0;
-      const wasDraw=G.drawCounter>0;
       const result=hazz2ApplyPenalty(G,false);
       G=result.state;
       if(result.skipped>0){
@@ -3245,14 +2841,12 @@ function compTurnHazz2(){
       return;
     }
     if(mv.action==='draw'){
-      // Computer draws voluntarily
       sCard();
       const result=hazz2DrawVoluntary(G,false);
       G=result.state;
       setMsg(t('hazz2ComputerDrew'),'think');
       render();
       if(G.phase==='end'){setTimeout(showEnd,800);return}
-      // After drawing, computer turn ends (no auto-play)
       setTimeout(()=>{
         setMsg(t('hazz2YourTurn'),'turn');
         busy=false;render();
@@ -3274,15 +2868,12 @@ function compTurnHazz2(){
       }
       render();
       if(G.phase==='end'){setTimeout(showEnd,800);return}
-      // If after computer's play, player has a counter to apply or skip/draw counter active
-      // Player's turn
       setTimeout(()=>{
         setMsg(t('hazz2YourTurn'),'turn');
         busy=false;render();
       },900);
       return;
     }
-    // pass
     busy=false;render();
   },900);
 }
@@ -3292,11 +2883,11 @@ function showEnd(){
   if(gameMode==='hazz2')return showEndHazz2();
   if(G.phase==='roundEnd'){
     rHist.push({p:G.pRS,c:G.cRS});
-    const pw=G.pRS>G.cRS,cw=G.cRS>G.pRS;
+    const pw=G.pRS>G.cRS;
     if(pw)sWin();else sLose();
     let h='<h2>'+t('roundResult',{n:G.round})+'</h2><div class="rsec"><div class="rscores">';
     h+='<div class="rpl'+(pw?' win':'')+'"><div class="nm">'+t('yourScore')+'</div><div class="sc">'+G.pRS+'</div></div>';
-    h+='<div class="rpl'+(cw?' win':'')+'"><div class="nm">'+t('computerScore')+'</div><div class="sc">'+G.cRS+'</div></div></div>';
+    h+='<div class="rpl'+(!pw?' win':'')+'"><div class="nm">'+t('computerScore')+'</div><div class="sc">'+G.cRS+'</div></div></div>';
     if(rHist.length){h+='<div class="rhist"><h3>'+t('roundScores')+'</h3>';rHist.forEach((r,i)=>{h+='<div class="rrow">'+t('round')+' '+(i+1)+': '+r.p+' - '+r.c+'</div>'});h+='</div>'}
     h+='</div><button class="mbtn" onclick="nextRound()">'+t('nextRound')+'</button>';
     document.getElementById('endC').innerHTML=h;document.getElementById('endM').classList.remove('hidden');
@@ -3355,19 +2946,14 @@ function newGame(){
   if(G.turn==='c'){busy=true;setMsg(t('computerThinking'),'think');setTimeout(compTurn,600)}
 }
 function leaveGame(){
-  // Stop any pending computer turns
   busy=true;
-  // Hide all modals
   document.getElementById('endM').classList.add('hidden');
   document.getElementById('rulesM').classList.add('hidden');
   document.getElementById('capM').classList.add('hidden');
   document.getElementById('suitM').classList.add('hidden');
   document.getElementById('capPreview').classList.add('hidden');
-  // Reset state
   G=null;rHist=[];hazz2Choice=null;busy=false;
-  // Remove Hazz 2 mode class
   document.body.classList.remove('hazz2-mode');
-  // Show welcome screen, hide game
   document.getElementById('app').style.display='none';
   document.getElementById('welcome').classList.remove('hidden');
 }
@@ -3410,7 +2996,6 @@ function buildRules(){
       '<p>'+t('rulesRemainingText')+'</p>'+
       '<button class="mbtn" onclick="closeRules()">'+t('gotIt')+'</button>';
   }
-  // Kanza 15
   return '<h2>'+t('rulesTitle')+'</h2>'+
     '<h3>'+t('rulesCards')+'</h3>'+
     '<p>'+t('rulesCardsText')+'</p>'+
@@ -3434,24 +3019,23 @@ function buildRules(){
 }
 function buildUltraTable(){
   const suits=[['flouss',t('suitFlouss'),'×5'],['zrawat',t('suitZrawat'),'×3'],['syofa',t('suitSyofa'),'×4'],['compass',t('suitCompass'),'×2']];
-  const vals=[1,2,3,4,5,6,7,10,11,12];
+  const vals=VALS;
   let h='<table class="ultra-table"><thead><tr><th>'+t('ultraTableCard')+'</th>';
-  for(const [sn,slabel,mult] of suits)h+='<th>'+slabel+'<br><span style="font-size:.7rem;opacity:.7">'+mult+'</span></th>';
+  suits.forEach(s=>h+='<th>'+t(s[2])+'</th>');
   h+='</tr></thead><tbody>';
-  for(const v of vals){
+  vals.forEach(v=>{
     h+='<tr><td class="v">'+v+'</td>';
-    for(const [sn] of suits){
-      const card={value:v,suit:sn};
-      const pts=ultraCardPts(card);
+    suits.forEach(s=>{
+      let pts=v*(s[0]==='flouss'?5:s[0]==='zrawat'?3:s[0]==='syofa'?4:2);
+      if(v===1&&s[0]==='flouss')pts=50;
       h+='<td class="pts">'+pts+'</td>';
-    }
+    });
     h+='</tr>';
-  }
+  });
   h+='</tbody></table>';
   return h;
 }
 
-// Re-check layout on resize / orientation change so player hand always stays visible
 window.addEventListener('resize',()=>{if(G)ensurePlayerHandVisible();});
 window.addEventListener('orientationchange',()=>{setTimeout(()=>{if(G)ensurePlayerHandVisible();},200);});
 </script>
