@@ -546,6 +546,7 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
       <button class="mp-btn" style="width:auto;padding:6px 16px;font-size:.85rem;margin-top:6px" onclick="mpCopyCode()">📋 <span data-t="copyCode">نسخ الرمز</span></button>
     </div>
     <div class="mp-status" id="mpLobbyStatus">⏳ <span data-t="waitingOpponent">بانتظار انضمام اللاعب الثاني...</span></div>
+    <div id="mpConnMode" style="text-align:center;font-size:.75rem;color:var(--text-d);margin-top:6px;min-height:1em"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="mp-btn" id="mpStartBtn" onclick="mpStartGame()" disabled style="background:linear-gradient(135deg,#4ade80,#22c55e)">▶ <span data-t="startMatch">ابدأ المباراة</span></button>
       <button class="mp-btn" style="background:linear-gradient(135deg,#ef4444,#dc2626);width:auto;padding:11px 18px" onclick="mpLeaveLobby()"><span data-t="leave">مغادرة</span></button>
@@ -683,8 +684,23 @@ const MP = (() => {
   let _hostGS = null;
 
   // ---------- MQTT Config ----------
-  const MQTT_BROKER = 'wss://broker.hivemq.com:8884/mqtt';
+  // Multiple free public brokers — try each in turn until one connects.
+  // Different regions / ISPs block different brokers, so having fallbacks is essential
+  // for cross-city / cross-network play.
+  const MQTT_BROKERS = [
+    { host: 'broker.hivemq.com',   port: 8884, path: '/mqtt' },
+    { host: 'broker.emqx.io',      port: 8084, path: '/mqtt' },
+    { host: 'public.mqtthq.com',   port: 8884, path: '/mqtt' },
+    { host: 'test.mosquitto.org',  port: 8081, path: '/mqtt' }
+  ];
+  let mqttBrokerIndex = 0;
   const MQTT_CLIENT_ID = 'k15_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now();
+
+  // Relay-mode fallback: when WebRTC P2P fails (common across cities / ISPs / mobile networks
+  // due to symmetric NAT or CGNAT), game messages are relayed through MQTT topics.
+  // Slower than P2P but works through any NAT.
+  let relayMode = false;
+  let webrtcFallbackTimer = null;
 
   // ---------- Utility ----------
   function loadScript(src) {
@@ -731,27 +747,69 @@ const MP = (() => {
   // ---------- MQTT Connection ----------
   function connectMQTT() {
     return new Promise((resolve, reject) => {
-      try {
-        mqttClient = new Paho.MQTT.Client('broker.hivemq.com', 8884, MQTT_CLIENT_ID);
-      } catch(e) {
-        // Fallback constructor format
-        mqttClient = new Paho.MQTT.Client('wss://broker.hivemq.com:8884/mqtt', MQTT_CLIENT_ID);
+      let lastErr = null;
+      let tryIndex = 0;
+
+      function tryNextBroker() {
+        if (tryIndex >= MQTT_BROKERS.length) {
+          reject(new Error('MQTT connection failed on all brokers' + (lastErr ? ': ' + lastErr : '')));
+          return;
+        }
+        const b = MQTT_BROKERS[tryIndex];
+        console.log('[MP] Trying broker #' + tryIndex + ':', b.host + ':' + b.port);
+        let client;
+        try {
+          // Newer Paho API: Client(host, port, path, clientId)
+          client = new Paho.MQTT.Client(b.host, b.port, b.path, MQTT_CLIENT_ID);
+        } catch(e) {
+          try {
+            // Older Paho API: Client(endpoint, clientId)
+            const endpoint = 'wss://' + b.host + ':' + b.port + b.path;
+            client = new Paho.MQTT.Client(endpoint, MQTT_CLIENT_ID);
+          } catch(e2) {
+            console.warn('[MP] Broker', b.host, 'constructor failed:', e2.message);
+            lastErr = e2.message;
+            tryIndex++;
+            setTimeout(tryNextBroker, 300);
+            return;
+          }
+        }
+        client.onConnectionLost = (err) => {
+          console.warn('[MP] MQTT connection lost on', b.host, ':', err && err.errorMessage);
+          if (!connected) return;
+          connected = false;
+          connCallbacks.forEach(cb => cb({ connected: false }));
+        };
+        client.onMessageArrived = (msg) => {
+          try { onMQTTMessage(msg.topic, msg.payloadString); } catch(e) { console.warn('[MP] MQTT msg error:', e); }
+        };
+        const opts = {
+          timeout: 12,
+          useSSL: true,
+          onSuccess: () => {
+            console.log('[MP] MQTT connected to', b.host);
+            mqttClient = client;
+            mqttBrokerIndex = tryIndex;
+            resolve();
+          },
+          onFailure: (err) => {
+            console.warn('[MP] Broker', b.host, 'failed:', err && err.errorMessage);
+            lastErr = err && err.errorMessage;
+            tryIndex++;
+            setTimeout(tryNextBroker, 400);
+          }
+        };
+        try {
+          client.connect(opts);
+        } catch(e) {
+          console.warn('[MP] Broker', b.host, 'connect() threw:', e.message);
+          lastErr = e.message;
+          tryIndex++;
+          setTimeout(tryNextBroker, 300);
+        }
       }
-      mqttClient.onConnectionLost = (err) => {
-        console.warn('[MP] MQTT connection lost:', err.errorMessage);
-        connected = false;
-        connCallbacks.forEach(cb => cb({ connected: false }));
-      };
-      mqttClient.onMessageArrived = (msg) => {
-        try { onMQTTMessage(msg.topic, msg.payloadString); } catch(e) { console.warn('[MP] MQTT msg error:', e); }
-      };
-      const opts = {
-        timeout: 15,
-        onSuccess: () => { console.log('[MP] MQTT connected'); resolve(); },
-        onFailure: (err) => { reject(new Error('MQTT connection failed: ' + err.errorMessage)); },
-        useSSL: true
-      };
-      mqttClient.connect(opts);
+
+      tryNextBroker();
     });
   }
 
@@ -771,8 +829,8 @@ const MP = (() => {
 
   // ---------- MQTT message routing ----------
   function onMQTTMessage(topic, payload) {
-    // Handle WebRTC signaling messages
-    if (topic.indexOf('/signal/') >= 0) {
+    // Handle WebRTC signaling messages (only when not yet in relay mode)
+    if (!relayMode && topic.indexOf('/signal/') >= 0) {
       if (!sp) return;
       try {
         const data = JSON.parse(payload);
@@ -780,23 +838,41 @@ const MP = (() => {
       } catch(e) { console.warn('[MP] Bad signal data:', e); }
       return;
     }
-    // Handle data channel messages (fallback in case WebRTC fails, or for initial join)
+    // Handle relay-mode data messages (when WebRTC failed and we fell back to MQTT relay)
+    if (relayMode && topic.indexOf('/data/') >= 0) {
+      try {
+        const msg = JSON.parse(payload);
+        handleDataMessage(msg);
+      } catch(e) { console.warn('[MP] Bad relay data:', e); }
+      return;
+    }
+    // Handle initial join announcement (used by host to detect a guest is here)
     if (topic === mqttTopic(roomCode, 'join')) {
       const d = JSON.parse(payload);
       if (isHost) {
         p2Name = (d.name || 'Player 2').slice(0, 24);
         const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
         chatHistory.push(sysMsg);
-        broadcastFullState();
+        // If we're already in relay mode (WebRTC failed earlier), broadcast immediately.
+        // Otherwise, broadcastFullState() will be called by setupPeerHandlers once the
+        // WebRTC data channel opens.
+        if (relayMode) broadcastFullState();
       }
       return;
     }
   }
 
-  // ---------- Send data via WebRTC ----------
+  // ---------- Send data via WebRTC OR MQTT relay ----------
   function sendMsg(data) {
+    const str = typeof data === 'string' ? data : JSON.stringify(data);
+    if (relayMode && mqttClient && mqttClient.isConnected()) {
+      // Relay mode: publish to the peer's data topic
+      const topic = mqttTopic(roomCode, 'data/' + (isHost ? 'host' : 'guest'));
+      try { mqttPub(topic, str); } catch(e) { console.warn('[MP] relay send failed:', e); }
+      return;
+    }
     if (sp && connected) {
-      try { sp.send(typeof data === 'string' ? data : JSON.stringify(data)); } catch(e) {}
+      try { sp.send(str); } catch(e) {}
     }
   }
 
@@ -940,19 +1016,147 @@ const MP = (() => {
     const myState = buildPlayerState(myPlayer);
     roomState = myState;
     stateCallbacks.forEach(cb => cb(myState));
-    if (sp && connected) {
+    // In relay mode, mqttClient is the transport. In P2P mode, sp is the transport.
+    // sendMsg() handles both cases.
+    if ((sp && connected) || relayMode) {
       const guestPlayer = myPlayer === 'p1' ? 'p2' : 'p1';
       const guestState = buildPlayerState(guestPlayer);
       sendMsg({ type: 'room:state', data: guestState });
     }
   }
 
+  // ---------- Inbound game-message handler (shared by WebRTC data channel and MQTT relay) ----------
+  function handleDataMessage(msg) {
+    if (!msg || typeof msg !== 'object') return;
+
+    // --- Both sides: receive room state ---
+    if (msg.type === 'room:state') {
+      roomState = msg.data;
+      if (msg.data) {
+        myPlayer = msg.data.myPlayer;
+        roomCode = msg.data.code;
+        if (msg.data.chat) chatHistory = msg.data.chat;
+        gameMode = msg.data.mode;
+        scoringMode = msg.data.scoring;
+        totalRounds = msg.data.totalRounds;
+      }
+      stateCallbacks.forEach(cb => cb(msg.data));
+      return;
+    }
+
+    // --- Chat message ---
+    if (msg.type === 'chat:message') {
+      const m = msg.data;
+      if (m && !chatHistory.some(x => x.id === m.id)) {
+        chatHistory.push(m);
+        if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
+        chatCallbacks.forEach(cb => cb(m));
+        const panel = document.getElementById('chatPanel');
+        if (panel && !panel.classList.contains('open') && m.from !== myPlayer) {
+          unreadChat++;
+          updateChatBadge();
+        }
+      }
+      return;
+    }
+
+    // --- Typing indicator ---
+    if (msg.type === 'chat:typing') {
+      const el = document.getElementById('chatTyping');
+      if (el) {
+        el.textContent = t('mpTyping', { name: (msg.data && msg.data.name) || '...' });
+        clearTimeout(window._mpTypingTimer);
+        window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
+      }
+      return;
+    }
+
+    // --- Capture options response ---
+    if (msg.type === 'game:capture-options:resp' && pendingReqs[msg.id]) {
+      const req = pendingReqs[msg.id];
+      if (msg.data && msg.data.ok) req.resolve(msg.data.options || []);
+      else req.reject(new Error((msg.data && msg.data.error) || 'Failed'));
+      return;
+    }
+
+    // --- Play Again protocol (guest side) ---
+    if (msg.type === 'game:play-again-request') {
+      _playAgainRequest = { from: (msg.data && msg.data.from) || 'p1', timestamp: Date.now() };
+      _playAgainAccepted = false;
+      stateCallbacks.forEach(cb => cb(roomState));
+      return;
+    }
+    if (msg.type === 'game:play-again-decline') {
+      _playAgainRequest = null;
+      _playAgainAccepted = false;
+      if (roomState) stateCallbacks.forEach(cb => cb(roomState));
+      return;
+    }
+    if (msg.type === 'game:play-again-accept' && _playAgainRequest && _playAgainRequest.from === myPlayer) {
+      _playAgainAccepted = true;
+      sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
+      return;
+    }
+
+    // === Host-only message handlers ===
+    if (!isHost) return;
+
+    if (msg.type === 'room:join') {
+      p2Name = ((msg.data && msg.data.name) || 'Player 2').slice(0, 24);
+      const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
+      chatHistory.push(sysMsg);
+      broadcastFullState();
+    }
+    else if (msg.type === 'game:play') {
+      const d = msg.data || {};
+      hostPlayCard(d.ci, d.chosenCap, d.newSuit, false);
+    }
+    else if (msg.type === 'game:capture-options') {
+      const ci = (msg.data && msg.data.ci) || 0;
+      let options = [];
+      if (_hostGS && ci >= 0 && ci < _hostGS.cH.length) {
+        const card = _hostGS.cH[ci];
+        const caps = findCaps(card, _hostGS.table);
+        options = caps.map(cap => cap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })));
+      }
+      sendMsg({ type: 'game:capture-options:resp', id: msg.id, data: { ok: true, options } });
+    }
+    else if (msg.type === 'game:penalty') {
+      hostApplyPenalty(false);
+    }
+    else if (msg.type === 'game:draw') {
+      hostDrawCard(false);
+    }
+    else if (msg.type === 'game:restart') {
+      hostRestart();
+    }
+    else if (msg.type === 'game:play-again-request') {
+      _playAgainRequest = { from: (msg.data && msg.data.from) || 'p2', timestamp: Date.now() };
+      _playAgainAccepted = false;
+      broadcastFullState();
+    }
+    else if (msg.type === 'game:play-again-accept') {
+      if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
+        _playAgainRequest = null;
+        _playAgainAccepted = false;
+        hostRestart();
+      }
+    }
+    else if (msg.type === 'game:play-again-decline') {
+      _playAgainRequest = null;
+      _playAgainAccepted = false;
+      broadcastFullState();
+    }
+  }
+
   // ---------- WebRTC setup via simple-peer ----------
   function setupPeerHandlers() {
     sp.on('connect', () => {
+      // WebRTC succeeded — cancel the relay-fallback timer
+      if (webrtcFallbackTimer) { clearTimeout(webrtcFallbackTimer); webrtcFallbackTimer = null; }
       connected = true;
       console.log('[MP] WebRTC data channel connected!');
-      connCallbacks.forEach(cb => cb({ connected: true }));
+      connCallbacks.forEach(cb => cb({ connected: true, relay: false }));
       if (isHost) {
         // Send current state to guest
         const guestState = buildPlayerState('p2');
@@ -970,126 +1174,7 @@ const MP = (() => {
     sp.on('data', (raw) => {
       let msg;
       try { msg = JSON.parse(raw); } catch(e) { return; }
-      if (!msg || typeof msg !== 'object') return;
-
-      // --- Both sides: receive room state ---
-      if (msg.type === 'room:state') {
-        roomState = msg.data;
-        if (msg.data) {
-          myPlayer = msg.data.myPlayer;
-          roomCode = msg.data.code;
-          if (msg.data.chat) chatHistory = msg.data.chat;
-          gameMode = msg.data.mode;
-          scoringMode = msg.data.scoring;
-          totalRounds = msg.data.totalRounds;
-        }
-        stateCallbacks.forEach(cb => cb(msg.data));
-        return;
-      }
-
-      // --- Chat message ---
-      if (msg.type === 'chat:message') {
-        const m = msg.data;
-        if (m && !chatHistory.some(x => x.id === m.id)) {
-          chatHistory.push(m);
-          if (chatHistory.length > 200) chatHistory = chatHistory.slice(-200);
-          chatCallbacks.forEach(cb => cb(m));
-          const panel = document.getElementById('chatPanel');
-          if (panel && !panel.classList.contains('open') && m.from !== myPlayer) {
-            unreadChat++;
-            updateChatBadge();
-          }
-        }
-        return;
-      }
-
-      // --- Typing indicator ---
-      if (msg.type === 'chat:typing') {
-        const el = document.getElementById('chatTyping');
-        if (el) {
-          el.textContent = t('mpTyping', { name: (msg.data && msg.data.name) || '...' });
-          clearTimeout(window._mpTypingTimer);
-          window._mpTypingTimer = setTimeout(() => { el.textContent = ''; }, 3000);
-        }
-        return;
-      }
-
-      // --- Capture options response ---
-      if (msg.type === 'game:capture-options:resp' && pendingReqs[msg.id]) {
-        const req = pendingReqs[msg.id];
-        if (msg.data && msg.data.ok) req.resolve(msg.data.options || []);
-        else req.reject(new Error((msg.data && msg.data.error) || 'Failed'));
-        return;
-      }
-
-      // --- Play Again protocol (guest side) ---
-      if (msg.type === 'game:play-again-request') {
-        _playAgainRequest = { from: (msg.data && msg.data.from) || 'p1', timestamp: Date.now() };
-        _playAgainAccepted = false;
-        stateCallbacks.forEach(cb => cb(roomState));
-        return;
-      }
-      if (msg.type === 'game:play-again-decline') {
-        _playAgainRequest = null;
-        _playAgainAccepted = false;
-        if (roomState) stateCallbacks.forEach(cb => cb(roomState));
-        return;
-      }
-      if (msg.type === 'game:play-again-accept' && _playAgainRequest && _playAgainRequest.from === myPlayer) {
-        _playAgainAccepted = true;
-        sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
-        return;
-      }
-
-      // === Host-only message handlers ===
-      if (!isHost) return;
-
-      if (msg.type === 'room:join') {
-        p2Name = ((msg.data && msg.data.name) || 'Player 2').slice(0, 24);
-        const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
-        chatHistory.push(sysMsg);
-        broadcastFullState();
-      }
-      else if (msg.type === 'game:play') {
-        const d = msg.data || {};
-        hostPlayCard(d.ci, d.chosenCap, d.newSuit, false);
-      }
-      else if (msg.type === 'game:capture-options') {
-        const ci = (msg.data && msg.data.ci) || 0;
-        let options = [];
-        if (_hostGS && ci >= 0 && ci < _hostGS.cH.length) {
-          const card = _hostGS.cH[ci];
-          const caps = findCaps(card, _hostGS.table);
-          options = caps.map(cap => cap.map(c => ({ id: c.id, value: c.value, suit: c.suit, img: c.img })));
-        }
-        sendMsg({ type: 'game:capture-options:resp', id: msg.id, data: { ok: true, options } });
-      }
-      else if (msg.type === 'game:penalty') {
-        hostApplyPenalty(false);
-      }
-      else if (msg.type === 'game:draw') {
-        hostDrawCard(false);
-      }
-      else if (msg.type === 'game:restart') {
-        hostRestart();
-      }
-      else if (msg.type === 'game:play-again-request') {
-        _playAgainRequest = { from: (msg.data && msg.data.from) || 'p2', timestamp: Date.now() };
-        _playAgainAccepted = false;
-        broadcastFullState();
-      }
-      else if (msg.type === 'game:play-again-accept') {
-        if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
-          _playAgainRequest = null;
-          _playAgainAccepted = false;
-          hostRestart();
-        }
-      }
-      else if (msg.type === 'game:play-again-decline') {
-        _playAgainRequest = null;
-        _playAgainAccepted = false;
-        broadcastFullState();
-      }
+      handleDataMessage(msg);
     });
 
     sp.on('close', () => {
@@ -1099,9 +1184,39 @@ const MP = (() => {
 
     sp.on('error', (err) => {
       console.warn('[MP] WebRTC error:', err);
-      connected = false;
-      connCallbacks.forEach(cb => cb({ connected: false, error: true }));
+      // Don't immediately fail — let the fallback timer kick in if it hasn't fired yet.
+      // If we were already connected, notify of disconnection.
+      if (connected) {
+        connected = false;
+        connCallbacks.forEach(cb => cb({ connected: false, error: true }));
+      }
     });
+  }
+
+  // ---------- Relay-mode fallback ----------
+  // Called when WebRTC P2P fails to establish within a timeout (25s).
+  // Switches to MQTT-relayed game messages so the game still works across
+  // symmetric NAT / CGNAT / mobile networks where direct P2P is impossible.
+  function activateRelayMode() {
+    if (relayMode) return;
+    relayMode = true;
+    connected = true;
+    console.warn('[MP] Activating MQTT relay fallback (P2P failed).');
+    // Tear down any half-open WebRTC peer
+    if (sp) { try { sp.destroy(); } catch(e) {} sp = null; }
+    // Subscribe to the peer's relay topic
+    const relayTopic = mqttTopic(roomCode, 'data/' + (isHost ? 'guest' : 'host'));
+    mqttSub(relayTopic);
+    console.log('[MP] Subscribed to relay topic:', relayTopic);
+    connCallbacks.forEach(cb => cb({ connected: true, relay: true }));
+    if (isHost) {
+      // If guest already sent a join via MQTT earlier, broadcast state now.
+      // Otherwise this will be triggered by the join handler when guest arrives.
+      broadcastFullState();
+    } else {
+      // Guest: re-announce join via relay so the host knows we're here
+      sendMsg({ type: 'room:join', data: { name: myName } });
+    }
   }
 
   // ============ Public API ============
@@ -1132,7 +1247,7 @@ const MP = (() => {
       // Connect to MQTT
       await connectMQTT();
 
-      // Subscribe to answer channel
+      // Subscribe to answer channel + join announcements
       const answerTopic = mqttTopic(roomCode, 'signal/guest');
       mqttSub(answerTopic);
       mqttSub(mqttTopic(roomCode, 'join'));
@@ -1147,51 +1262,66 @@ const MP = (() => {
 
       connCallbacks.forEach(cb => cb({ connected: true }));
 
-      // Create WebRTC peer (initiator) — we wait for guest before creating
-      // Actually, we listen for MQTT join message, then create peer
-      const origOnMQTT = onMQTTMessage;
+      // When a guest joins via MQTT, create the WebRTC peer (initiator) and publish the offer.
       const joinTopic = mqttTopic(roomCode, 'join');
-      // We already subscribed above. The onMessageArrived handler will call onMQTTMessage.
-      // When we get a join, we create the simple-peer and publish the offer.
-
-      // Override onMQTTMessage temporarily to detect join
       let guestJoined = false;
       const originalHandler = mqttClient.onMessageArrived;
       mqttClient.onMessageArrived = (msg) => {
-        if (msg.topic === joinTopic && !guestJoined) {
+        if (msg.topic === joinTopic && !guestJoined && !relayMode) {
           guestJoined = true;
           const d = JSON.parse(msg.payloadString);
           p2Name = (d.name || 'Player 2').slice(0, 24);
           const sysMsg = { id: Date.now(), from: 'system', name: 'System', text: t('mpNameJoined', { name: p2Name }), ts: Date.now() };
           chatHistory.push(sysMsg);
 
-          // Now create simple-peer and send offer via MQTT
+          // Now create simple-peer (initiator) and send offer via MQTT.
+          // ICE config includes TURN servers — required for cross-city / cross-ISP /
+          // mobile-network / CGNAT scenarios where STUN-only fails.
           const offerTopic = mqttTopic(roomCode, 'signal/host');
           sp = new SimplePeer({
             initiator: true,
-            trickle: false,
+            trickle: true,
             config: {
               iceServers: [
+                // STUN — for peers that can be reached directly (same ISP, simple NAT)
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-              ]
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' },
+                // TURN — relay traffic through a public server when direct P2P fails.
+                // OpenRelay provides free public TURN credentials.
+                { urls: 'turn:openrelay.metered.ca:80',   username: 'openrelayproject', credential: 'openrelayproject' },
+                { urls: 'turn:openrelay.metered.ca:443',  username: 'openrelayproject', credential: 'openrelayproject' },
+                { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+              ],
+              iceTransportPolicy: 'all'
             }
           });
 
           sp.on('signal', (signalData) => {
-            // Publish the signal (offer) to MQTT
+            // Publish each signal (offer + trickle ICE candidates) to MQTT
             mqttPub(offerTopic, JSON.stringify(signalData));
-            console.log('[MP] Host offer published');
           });
 
           setupPeerHandlers();
+
+          // Safety net: if WebRTC doesn't connect within 25s, switch to MQTT relay mode.
+          // This handles the case where TURN also fails (rare, but possible on very
+          // restrictive networks) — game still works, just with higher latency.
+          if (webrtcFallbackTimer) clearTimeout(webrtcFallbackTimer);
+          webrtcFallbackTimer = setTimeout(() => {
+            if (!connected && !relayMode) {
+              console.warn('[MP] Host: WebRTC did not connect in 25s — falling back to relay.');
+              activateRelayMode();
+            }
+          }, 25000);
+
           // Update room state with p2 joined
           broadcastFullState();
           return;
         }
-        // Handle other messages normally
-        if (msg.topic.indexOf('/signal/') >= 0 && sp) {
+        // Subsequent signal messages (trickle ICE candidates, answer)
+        if (msg.topic.indexOf('/signal/') >= 0 && sp && !relayMode) {
           try { sp.signal(JSON.parse(msg.payloadString)); } catch(e) {}
           return;
         }
@@ -1221,10 +1351,20 @@ const MP = (() => {
 
       return new Promise((resolve, reject) => {
         let resolved = false;
+        let offerReceived = false;
         const timeout = setTimeout(() => {
           if (!resolved) {
             resolved = true;
-            reject(new Error('Room not found'));
+            // Distinguish "no host" from "host exists but WebRTC failed"
+            if (!offerReceived) {
+              reject(new Error('Room not found'));
+            } else {
+              // Offer was received but connection never established — fall back to relay.
+              console.warn('[MP] Guest: WebRTC never completed — activating relay mode.');
+              activateRelayMode();
+              // Resolve as joined (relay mode is still a valid connection)
+              resolve({ ok: true, code: code, player: 'p2', relay: true });
+            }
           }
         }, 30000);
 
@@ -1234,35 +1374,59 @@ const MP = (() => {
           if (resolved) return;
 
           if (msg.topic === offerTopic) {
-            // Got the host's offer — create simple-peer and respond
-            console.log('[MP] Guest received offer from host');
-            const signalData = JSON.parse(msg.payloadString);
+            if (!offerReceived) {
+              offerReceived = true;
+              // Got the host's first signal (offer) — create simple-peer and respond.
+              console.log('[MP] Guest received offer from host');
+            }
 
-            sp = new SimplePeer({
-              initiator: false,
-              trickle: false,
-              config: {
-                iceServers: [
-                  { urls: 'stun:stun.l.google.com:19302' },
-                  { urls: 'stun:stun1.l.google.com:19302' },
-                  { urls: 'stun:stun2.l.google.com:19302' }
-                ]
-              }
-            });
+            // If we haven't created the peer yet, create it now.
+            if (!sp && !relayMode) {
+              sp = new SimplePeer({
+                initiator: false,
+                trickle: true,
+                config: {
+                  iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    { urls: 'turn:openrelay.metered.ca:80',   username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443',  username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                  ],
+                  iceTransportPolicy: 'all'
+                }
+              });
 
-            sp.on('signal', (answerData) => {
-              // Publish answer to MQTT
-              const answerTopic = mqttTopic(code, 'signal/guest');
-              mqttPub(answerTopic, JSON.stringify(answerData));
-              console.log('[MP] Guest answer published');
-            });
+              sp.on('signal', (answerData) => {
+                const answerTopic = mqttTopic(code, 'signal/guest');
+                mqttPub(answerTopic, JSON.stringify(answerData));
+              });
 
-            setupPeerHandlers();
+              setupPeerHandlers();
 
-            // Signal the offer to simple-peer
-            sp.signal(signalData);
+              // Safety net: if WebRTC doesn't connect within 25s, switch to MQTT relay.
+              if (webrtcFallbackTimer) clearTimeout(webrtcFallbackTimer);
+              webrtcFallbackTimer = setTimeout(() => {
+                if (!connected && !relayMode) {
+                  console.warn('[MP] Guest: WebRTC did not connect in 25s — falling back to relay.');
+                  activateRelayMode();
+                  if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve({ ok: true, code: code, player: 'p2', relay: true });
+                  }
+                }
+              }, 25000);
+            }
 
-            // Also send join message
+            // Feed the signal into the peer (handles both initial offer and trickle candidates)
+            try {
+              if (sp && !relayMode) sp.signal(JSON.parse(msg.payloadString));
+            } catch(e) { console.warn('[MP] Guest signal parse error:', e); }
+
+            // Send join message (also serves as relay-mode announcement)
             mqttPub(mqttTopic(code, 'join'), JSON.stringify({ name: myName }));
 
             // Wait for room:state to confirm connection
@@ -1274,14 +1438,14 @@ const MP = (() => {
                 const idx = stateCallbacks.indexOf(stateHandler);
                 if (idx >= 0) stateCallbacks.splice(idx, 1);
                 p1Name = (state.players && state.players.p1 && state.players.p1.name) || '';
-                resolve({ ok: true, code: code, player: 'p2' });
+                resolve({ ok: true, code: code, player: 'p2', relay: relayMode });
               }
             };
             stateCallbacks.push(stateHandler);
 
-            // Restore normal handler
+            // Replace this handler so subsequent signal messages go straight to sp.signal
             mqttClient.onMessageArrived = (m) => {
-              if (m.topic.indexOf('/signal/') >= 0 && sp) {
+              if (m.topic.indexOf('/signal/') >= 0 && sp && !relayMode) {
                 try { sp.signal(JSON.parse(m.payloadString)); } catch(e) {}
                 return;
               }
@@ -1384,14 +1548,17 @@ const MP = (() => {
     didOpponentRequestPlayAgain() {
       return _playAgainRequest && _playAgainRequest.from !== myPlayer;
     },
+    isRelayMode() { return relayMode; },
 
     leaveRoom() {
+      if (webrtcFallbackTimer) { clearTimeout(webrtcFallbackTimer); webrtcFallbackTimer = null; }
       if (sp) { try { sp.destroy(); } catch(e) {} sp = null; }
       if (mqttClient) {
         try { mqttClient.disconnect(); } catch(e) {}
         mqttClient = null;
       }
       connected = false;
+      relayMode = false;
       roomCode = null; myPlayer = null; roomState = null;
       chatHistory = []; _hostGS = null; isHost = false;
       p1Name = ''; p2Name = '';
@@ -1432,7 +1599,23 @@ async function mpCreateRoom() {
     statusEl.textContent = '';
     showMpLobby(r.code);
   } catch (e) {
-    statusEl.textContent = t('mpCreateFailed') + ' (' + e.message + ')';
+    console.error('[MP] createRoom failed:', e);
+    // Provide a more accurate error message — the original translation says "Is the server running?"
+    // which is misleading because there is no server. The real cause is almost always:
+    //   (1) no internet, or
+    //   (2) all public MQTT brokers are blocked on this network.
+    let hint = '';
+    const m = (e.message || '').toLowerCase();
+    if (m.indexOf('mqtt') >= 0 || m.indexOf('broker') >= 0) {
+      hint = lang === 'ar' ? ' — تعذّر الاتصال بخوادم الإشارة. تحقق من الإنترنت ثم أعد المحاولة.'
+            : lang === 'fr' ? " — impossible de joindre les serveurs de signalisation. Vérifiez votre connexion."
+            : ' — could not reach the signaling servers. Check your internet connection.';
+    } else if (m.indexOf('simple-peer') >= 0 || m.indexOf('load') >= 0) {
+      hint = lang === 'ar' ? ' — تعذّر تحميل مكتبات اللعب. تحقق من الإنترنت.'
+            : lang === 'fr' ? " — impossible de charger les bibliothèques de jeu."
+            : ' — could not load game libraries. Check your internet.';
+    }
+    statusEl.textContent = t('mpCreateFailed') + hint;
     statusEl.className = 'mp-status waiting';
   }
 }
@@ -1451,10 +1634,15 @@ async function mpJoinRoom() {
     // Joining player goes straight into game (host starts). Show lobby view.
     showMpLobby(r.code, /*isGuest=*/true);
   } catch (e) {
+    console.error('[MP] joinRoom failed:', e);
     let msg = e.message;
     if (msg.indexOf('Room not found') >= 0) msg = t('mpRoomNotFound');
     else if (msg.indexOf('Room is full') >= 0) msg = t('mpRoomFull');
-    else msg = t('mpJoinFailed') + ': ' + msg;
+    else if (msg.toLowerCase().indexOf('mqtt') >= 0 || msg.toLowerCase().indexOf('broker') >= 0) {
+      msg = lang === 'ar' ? 'تعذّر الاتصال بخوادم الإشارة. تحقق من الإنترنت.'
+          : lang === 'fr' ? "Impossible de joindre les serveurs de signalisation."
+          : 'Could not reach the signaling servers. Check your internet.';
+    } else msg = t('mpJoinFailed') + ': ' + msg;
     statusEl.textContent = msg;
     statusEl.className = 'mp-status waiting';
   }
@@ -1475,14 +1663,30 @@ function showMpLobby(code, isGuest) {
   // Set up connection listener if not already
   if (!window._mpConnListener) {
     window._mpConnListener = true;
-    MP.onConnection(({ connected, reconnected, error }) => {
+    MP.onConnection(({ connected, reconnected, error, relay }) => {
       const el = document.getElementById('mpLobbyStatus');
+      const modeEl = document.getElementById('mpConnMode');
       if (!el) return;
       if (!connected) {
         el.textContent = t('mpDisconnected');
         el.className = 'mp-status waiting';
+        if (modeEl) modeEl.textContent = '';
       } else if (reconnected) {
         el.textContent = t('mpReconnected');
+      }
+      // Show connection mode (P2P direct vs relay)
+      if (modeEl && connected) {
+        if (relay === true) {
+          modeEl.textContent = lang === 'ar' ? '📡 وضع الترحيل (الاتصال المباشر غير متاح)'
+                              : lang === 'fr' ? '📡 Mode relai (P2P non disponible)'
+                              : '📡 Relay mode (direct P2P unavailable)';
+          modeEl.style.color = '#f59e0b';
+        } else if (relay === false) {
+          modeEl.textContent = lang === 'ar' ? '⚡ اتصال مباشر (P2P)'
+                              : lang === 'fr' ? '⚡ Connexion directe (P2P)'
+                              : '⚡ Direct P2P connection';
+          modeEl.style.color = '#4ade80';
+        }
       }
     });
     MP.onState((state) => {
