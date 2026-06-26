@@ -1630,8 +1630,11 @@ function mpRenderGameState(state) {
   const clbl = document.getElementById('clbl');
   if (plbl) plbl.textContent = myName || t('you');
   if (clbl) clbl.textContent = oppName || t('computer');
-  document.getElementById('pscore').textContent = gs.myTotal + (gs.phase === 'play' ? gs.myRoundScore : 0);
-  document.getElementById('cscore').textContent = gs.oppTotal + (gs.phase === 'play' ? gs.oppRoundScore : 0);
+  // Calculate live score from captured cards (like single-player does with calcSc)
+  const myLiveScore = gs.phase === 'play' ? calcSc(gs.myCaptures) : gs.myRoundScore;
+  const oppLiveScore = gs.phase === 'play' ? calcSc(gs.oppCaptures) : gs.oppRoundScore;
+  document.getElementById('pscore').textContent = gs.myTotal + myLiveScore;
+  document.getElementById('cscore').textContent = gs.oppTotal + oppLiveScore;
   // Capture info / cards left
   if (state.mode === 'hazz2') {
     document.getElementById('pcapI').textContent = t('mpCardsLeft', { n: gs.myHand.length });
