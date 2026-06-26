@@ -468,6 +468,9 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
 
 /* ===== MULTIPLAYER INDICATOR IN HEADER ===== */
 .mp-mode-badge{display:inline-block;padding:2px 8px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;font-size:.65rem;font-weight:900;margin-right:6px;letter-spacing:.5px}
+/* MP Leave button in header */
+.hbtn.leave.mp-active{background:rgba(239,68,68,0.3);color:#fca5a5;border-color:rgba(239,68,68,0.6);animation:pulse-red 2s infinite}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 12px 2px rgba(239,68,68,0.3)}}
 </style>
 </head>
 <body>
@@ -586,12 +589,12 @@ body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xm
     <div class="chand" id="chand"></div>
     <div class="sbar" id="sbar">
       <div class="sitem">
-        <div class="sitem-top"><span class="slbl" data-t="you">أنت</span> <span class="sval" id="pscore">0</span></div>
+        <div class="sitem-top"><span class="slbl" id="plbl" data-t="you">أنت</span> <span class="sval" id="pscore">0</span></div>
         <div class="capinfo" id="pcapI"></div>
       </div>
       <div class="rbadge" id="rbadge">1/1</div>
       <div class="sitem">
-        <div class="sitem-top"><span class="slbl" data-t="computer">الحاسوب</span> <span class="sval" id="cscore">0</span></div>
+        <div class="sitem-top"><span class="slbl" id="clbl" data-t="computer">الحاسوب</span> <span class="sval" id="cscore">0</span></div>
         <div class="capinfo" id="ccapI"></div>
       </div>
     </div>
@@ -670,6 +673,8 @@ const MP = (() => {
   let stateCallbacks = [];
   let chatCallbacks = [];
   let pendingReqs = {};
+  let _playAgainRequest = null;  // { from: 'p1'|'p2', timestamp }
+  let _playAgainAccepted = false;
   let _reqId = 0;
   let _hostGS = null;       // Host's internal game state (G)
 
@@ -685,23 +690,24 @@ const MP = (() => {
     });
   }
 
-  // PeerJS signaling servers (tried in order)
-  const SIGNAL_SERVERS = [
-    { host: '0.peerjs.com', port: 443, path: '/myapp' },
-    { host: 'peerjs-server.herokuapp.com', port: 443, path: '/' },
-  ];
-  let _serverIdx = 0;
-
   function getPeerConfig() {
     return {
       debug: 0,
+      secure: true,
       config: {
         iceServers: [
+          // STUN servers (discover public IP)
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
           { urls: 'stun:stun2.l.google.com:19302' },
-          { urls: 'stun:stun3.l.google.com:19302' },
-          { urls: 'stun:stun4.l.google.com:19302' }
+          // Free TURN servers (relay traffic through NAT/firewall)
+          { urls: 'stun:openrelay.metered.ca:80' },
+          { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'stun:openrelay.metered.ca:443' },
+          { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+          // Additional free TURN
+          { urls: 'stun:global.stun.twilio.com:3478' }
         ]
       }
     };
@@ -952,6 +958,26 @@ const MP = (() => {
         return;
       }
 
+      // Play Again protocol (guest receives)
+      if (msg.type === 'game:play-again-request') {
+        _playAgainRequest = { from: (msg.data && msg.data.from) || 'p1', timestamp: Date.now() };
+        _playAgainAccepted = false;
+        stateCallbacks.forEach(cb => cb(roomState));
+        return;
+      }
+      if (msg.type === 'game:play-again-decline') {
+        _playAgainRequest = null;
+        _playAgainAccepted = false;
+        if (roomState) stateCallbacks.forEach(cb => cb(roomState));
+        return;
+      }
+      if (msg.type === 'game:play-again-accept' && _playAgainRequest && _playAgainRequest.from === myPlayer) {
+        _playAgainAccepted = true;
+        sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
+        // Host will restart and broadcast
+        return;
+      }
+
       // === Host-only message handlers ===
       if (!isHost) return;
 
@@ -983,6 +1009,26 @@ const MP = (() => {
       }
       else if (msg.type === 'game:restart') {
         hostRestart();
+      }
+      // Play Again protocol
+      else if (msg.type === 'game:play-again-request') {
+        _playAgainRequest = { from: (msg.data && msg.data.from) || 'p2', timestamp: Date.now() };
+        _playAgainAccepted = false;
+        // Broadcast updated state so UI shows the prompt
+        broadcastFullState();
+      }
+      else if (msg.type === 'game:play-again-accept') {
+        // Guest accepted our request — both agreed, restart
+        if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
+          _playAgainRequest = null;
+          _playAgainAccepted = false;
+          hostRestart();
+        }
+      }
+      else if (msg.type === 'game:play-again-decline') {
+        _playAgainRequest = null;
+        _playAgainAccepted = false;
+        broadcastFullState();
       }
     });
 
@@ -1023,6 +1069,10 @@ const MP = (() => {
             roomCode = genCode();
             const peerId = 'k15-' + roomCode;
             const cfg = getPeerConfig();
+            // Explicitly use PeerJS free cloud server for reliable signaling
+            cfg.host = '0.peerjs.com';
+            cfg.port = 443;
+            cfg.path = '/';
             peer = new Peer(peerId, cfg);
 
             const timer = setTimeout(() => {
@@ -1095,6 +1145,10 @@ const MP = (() => {
       return new Promise((resolve, reject) => {
         roomCode = code;
         const cfg = getPeerConfig();
+        // Explicitly use PeerJS free cloud server for reliable signaling
+        cfg.host = '0.peerjs.com';
+        cfg.port = 443;
+        cfg.path = '/';
         peer = new Peer(undefined, cfg);
 
         let resolved = false;
@@ -1229,6 +1283,39 @@ const MP = (() => {
       chatHistory = []; _hostGS = null; isHost = false;
       p1Name = ''; p2Name = '';
       pendingReqs = {};
+      _playAgainRequest = null;
+      _playAgainAccepted = false;
+    },
+
+    // ---- Play Again (both players must agree) ----
+    requestPlayAgain() {
+      _playAgainRequest = { from: myPlayer, timestamp: Date.now() };
+      _playAgainAccepted = false;
+      sendMsg({ type: 'game:play-again-request', data: { from: myPlayer } });
+    },
+    acceptPlayAgain() {
+      _playAgainAccepted = true;
+      sendMsg({ type: 'game:play-again-accept', data: { from: myPlayer } });
+      // If we also sent a request, and both accepted, restart
+      if (_playAgainRequest && _playAgainRequest.from === myPlayer) {
+        // Both agreed — host restarts
+        if (isHost) {
+          _playAgainRequest = null;
+          _playAgainAccepted = false;
+          hostRestart();
+        }
+      }
+    },
+    declinePlayAgain() {
+      _playAgainRequest = null;
+      _playAgainAccepted = false;
+      sendMsg({ type: 'game:play-again-decline', data: {} });
+    },
+    getPlayAgainRequest() { return _playAgainRequest; },
+    isPlayAgainPending() { return !!_playAgainRequest && !_playAgainAccepted; },
+    // Check if OTHER player requested play again (not us)
+    didOpponentRequestPlayAgain() {
+      return _playAgainRequest && _playAgainRequest.from !== myPlayer;
     }
   };
 })();
@@ -1388,10 +1475,16 @@ function mpLeaveLobby() {
   document.getElementById('chatBody').innerHTML = '';
   document.getElementById('chatToggle').style.display = 'none';
   window._mpInGame = false;
+  window._mpConnListener = false;
   // Reset local game state
   G = null; busy = false; rHist = [];
   document.getElementById('app').style.display = 'none';
   document.body.classList.remove('hazz2-mode');
+  // Restore player labels to defaults
+  const plbl = document.getElementById('plbl');
+  const clbl = document.getElementById('clbl');
+  if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
+  if (clbl) { clbl.textContent = t('computer'); clbl.setAttribute('data-t', 'computer'); }
 }
 
 function mpCopyCode() {
@@ -1443,7 +1536,15 @@ function mpRenderGameState(state) {
   // Hide Hazz 2 draw button if not hazz2
   document.getElementById('drawBtnWrap').style.display = 'none';
 
-  // Score bar
+  // Score bar — update names for multiplayer
+  const myName = MP.getMyName();
+  const state2 = MP.getRoomState();
+  const oppKey = MP.getMyPlayer() === 'p1' ? 'p2' : 'p1';
+  const oppName = (state2 && state2.players && state2.players[oppKey]) ? state2.players[oppKey].name : '';
+  const plbl = document.getElementById('plbl');
+  const clbl = document.getElementById('clbl');
+  if (plbl) plbl.textContent = myName || t('you');
+  if (clbl) clbl.textContent = oppName || t('computer');
   document.getElementById('pscore').textContent = gs.myTotal + (gs.phase === 'play' ? gs.myRoundScore : 0);
   document.getElementById('cscore').textContent = gs.oppTotal + (gs.phase === 'play' ? gs.oppRoundScore : 0);
   // Capture info / cards left
@@ -1669,45 +1770,133 @@ function mpShowEndModal(gs, state) {
   const myP = MP.getMyPlayer();
   const endC = document.getElementById('endC');
   const endM = document.getElementById('endM');
+  const state2 = MP.getRoomState();
+  const oppKey = myP === 'p1' ? 'p2' : 'p1';
+  const myName = MP.getMyName();
+  const oppName = (state2 && state2.players && state2.players[oppKey]) ? state2.players[oppKey].name : t('computer');
   let h = '';
-  if (gs.phase === 'end') {
-    // Hazz 2 — winner is set
-    const won = gs.winner === myP;
-    if (won) { sWin(); confetti(); } else sLose();
-    h = '<h2>' + (won ? t('mpYouWin') : t('mpYouLose')) + '</h2><div class="rsec">';
-    h += '<div class="wtxt ' + (won ? 'pw' : 'cw') + '">' + (won ? t('hazz2Win') : t('hazz2Lose')) + '</div>';
+  if (gs.phase === 'end' || gs.phase === 'match') {
+    // Final game end (hazz2 end OR kanza/ronda match end)
+    const isHazz2 = gs.phase === 'end';
+    let won, myTotal, oppTotal;
+    if (isHazz2) {
+      won = gs.winner === myP;
+      myTotal = myP === 'p1' ? gs.oppHandCount : gs.myHand.length; // cards left for opponent
+      oppTotal = myP === 'p1' ? gs.myHand.length : gs.oppHandCount;
+    } else {
+      myTotal = gs.myTotal;
+      oppTotal = gs.oppTotal;
+      won = myTotal > oppTotal;
+      const draw = myTotal === oppTotal;
+      if (won) { sWin(); confetti(); } else { sLose(); }
+    }
+    if (isHazz2) { if (won) { sWin(); confetti(); } else { sLose(); } }
+
+    h = '<h2>' + (isHazz2 ? (won ? t('mpYouWin') : t('mpYouLose')) : t('matchEnd')) + '</h2><div class="rsec">';
+    if (!isHazz2) {
+      const draw = myTotal === oppTotal;
+      if (won) h += '<div class="wtxt pw">' + t('mpYouWin') + '</div>';
+      else if (draw) h += '<div class="wtxt dw">' + t('mpDraw') + '</div>';
+      else h += '<div class="wtxt cw">' + t('mpYouLose') + '</div>';
+    } else {
+      h += '<div class="wtxt ' + (won ? 'pw' : 'cw') + '">' + (won ? t('hazz2Win') : t('hazz2Lose')) + '</div>';
+    }
     h += '<h3>' + t('mpFinalScore') + '</h3><div class="rscores">';
-    h += '<div class="rpl' + (won ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + (myP === 'p1' ? gs.myHand.length : gs.oppHandCount) + '</div></div>';
-    h += '<div class="rpl' + (!won ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + (myP === 'p1' ? gs.oppHandCount : gs.myHand.length) + '</div></div></div>';
-    h += '</div><button class="mbtn" onclick="MP.restart()">' + t('mpPlayAgain') + '</button>';
-  } else if (gs.phase === 'match') {
-    const myTotal = gs.myTotal;
-    const oppTotal = gs.oppTotal;
-    const won = myTotal > oppTotal;
-    const draw = myTotal === oppTotal;
-    if (won) { sWin(); confetti(); } else sLose();
-    h = '<h2>' + t('matchEnd') + '</h2><div class="rsec">';
-    if (won) h += '<div class="wtxt pw">' + t('mpYouWin') + '</div>';
-    else if (draw) h += '<div class="wtxt dw">' + t('mpDraw') + '</div>';
-    else h += '<div class="wtxt cw">' + t('mpYouLose') + '</div>';
-    h += '<h3>' + t('mpFinalScore') + '</h3><div class="rscores">';
-    h += '<div class="rpl' + (won ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + myTotal + '</div></div>';
-    h += '<div class="rpl' + (!won && !draw ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + oppTotal + '</div></div></div>';
-    h += '</div><button class="mbtn" onclick="MP.restart()">' + t('mpPlayAgain') + '</button>';
+    h += '<div class="rpl' + (won ? ' win' : '') + '"><div class="nm">' + myName + '</div><div class="sc">' + myTotal + '</div></div>';
+    h += '<div class="rpl' + (!won ? ' win' : '') + '"><div class="nm">' + oppName + '</div><div class="sc">' + oppTotal + '</div></div></div>';
+    h += '</div>';
+
+    // Play Again section — with both-players agreement
+    h += '<div id="mpPlayAgainArea" style="margin-top:14px;text-align:center">';
+    h += '<button class="mbtn" id="mpPlayAgainBtn" onclick="mpRequestPlayAgain()" style="background:linear-gradient(135deg,#4ade80,#22c55e)">' + t('mpPlayAgain') + '</button>';
+    h += '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:8px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
+    h += '</div>';
+
   } else if (gs.phase === 'roundEnd') {
     h = '<h2>' + t('mpRoundResult', { n: gs.round }) + '</h2><div class="rsec"><div class="rscores">';
-    h += '<div class="rpl' + (gs.myRoundScore > gs.oppRoundScore ? ' win' : '') + '"><div class="nm">' + t('yourScore') + '</div><div class="sc">' + gs.myRoundScore + '</div></div>';
-    h += '<div class="rpl' + (gs.oppRoundScore > gs.myRoundScore ? ' win' : '') + '"><div class="nm">' + t('computerScore') + '</div><div class="sc">' + gs.oppRoundScore + '</div></div></div>';
+    h += '<div class="rpl' + (gs.myRoundScore > gs.oppRoundScore ? ' win' : '') + '"><div class="nm">' + myName + '</div><div class="sc">' + gs.myRoundScore + '</div></div>';
+    h += '<div class="rpl' + (gs.oppRoundScore > gs.myRoundScore ? ' win' : '') + '"><div class="nm">' + oppName + '</div><div class="sc">' + gs.oppRoundScore + '</div></div></div>';
     h += '</div>';
     if (MP.getMyPlayer() === 'p1') {
       h += '<button class="mbtn" onclick="MP.nextRound()">' + t('mpNextRound') + '</button>';
     } else {
       h += '<p style="text-align:center;color:var(--text-d);font-size:.85rem;margin-top:10px">' + t('mpHostWaiting') + '</p>';
     }
+    // Leave button for roundEnd too
+    h += '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:10px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
   }
   endC.innerHTML = h;
   endM.classList.remove('hidden');
 }
+
+// ============================================================
+// PLAY AGAIN & LEAVE GAME (MP)
+// ============================================================
+function mpRequestPlayAgain() {
+  MP.requestPlayAgain();
+  // Update button to show waiting state
+  const btn = document.getElementById('mpPlayAgainBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+    btn.style.opacity = '0.6';
+  }
+}
+
+function mpLeaveGame() {
+  // Close end modal
+  const endM = document.getElementById('endM');
+  if (endM) endM.classList.add('hidden');
+  // Leave the room entirely and go back to welcome
+  MP.leaveRoom();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('welcome').classList.remove('hidden');
+  document.getElementById('chatToggle').style.display = 'none';
+  document.getElementById('chatPanel').classList.remove('open');
+  document.getElementById('chatBody').innerHTML = '';
+  window._mpInGame = false;
+  window._mpConnListener = false;
+  G = null; busy = false; rHist = [];
+  document.body.classList.remove('hazz2-mode');
+  // Restore player labels to defaults
+  const plbl = document.getElementById('plbl');
+  const clbl = document.getElementById('clbl');
+  if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
+  if (clbl) { clbl.textContent = t('computer'); clbl.setAttribute('data-t', 'computer'); }
+}
+
+// Handle play-again state changes in the state callback
+// We hook into mpHandleRoomState to detect when opponent requests play again
+(function() {
+  const origHandleState = mpHandleRoomState;
+  window.mpHandleRoomState = function(state) {
+    origHandleState(state);
+    // Check if opponent sent a play-again request
+    if (MP.didOpponentRequestPlayAgain()) {
+      const area = document.getElementById('mpPlayAgainArea');
+      if (area) {
+        area.innerHTML = '<p style="color:var(--gold);font-weight:700;margin-bottom:10px;font-size:.95rem">🤝 ' + (state.players[MP.getMyPlayer() === 'p1' ? 'p2' : 'p1'].name || '...') + ' ' + t('mpPlayAgain') + '</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center">' +
+          '<button class="mbtn" onclick="MP.acceptPlayAgain()" style="background:linear-gradient(135deg,#4ade80,#22c55e)">✅ ' + t('mpPlayAgain') + '</button>' +
+          '<button class="mbtn" onclick="MP.declinePlayAgain()" style="background:linear-gradient(135deg,#ef4444,#dc2626)">❌</button>' +
+          '</div>' +
+          '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:8px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
+      }
+    }
+    // If play-again request was cleared (declined), restore the normal button
+    if (!MP.isPlayAgainPending() && !MP.didOpponentRequestPlayAgain()) {
+      const area = document.getElementById('mpPlayAgainArea');
+      if (area && !area.querySelector('#mpPlayAgainBtn')) {
+        // Check if we're still showing end screen
+        const endM = document.getElementById('endM');
+        if (endM && !endM.classList.contains('hidden')) {
+          area.innerHTML = '<button class="mbtn" id="mpPlayAgainBtn" onclick="mpRequestPlayAgain()" style="background:linear-gradient(135deg,#4ade80,#22c55e)">' + t('mpPlayAgain') + '</button>' +
+            '<br><button class="mbtn" onclick="mpLeaveGame()" style="margin-top:8px;background:linear-gradient(135deg,#ef4444,#dc2626);font-size:.85rem;padding:8px 20px">' + t('leave') + '</button>';
+        }
+      }
+    }
+  };
+})();
 
 // ============================================================
 // CHAT UI HANDLERS
@@ -1808,6 +1997,11 @@ leaveGame = function () {
     document.getElementById('chatPanel').classList.remove('open');
     document.getElementById('chatBody').innerHTML = '';
   }
+  // Restore player labels to defaults
+  const plbl = document.getElementById('plbl');
+  const clbl = document.getElementById('clbl');
+  if (plbl) { plbl.textContent = t('you'); plbl.setAttribute('data-t', 'you'); }
+  if (clbl) { clbl.textContent = t('computer'); clbl.setAttribute('data-t', 'computer'); }
   return _origLeaveGame.apply(this, arguments);
 };
 
