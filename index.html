@@ -887,6 +887,11 @@ const MP = (() => {
     if (!_hostGS || _hostGS.phase !== 'play') return;
     if (isP ? _hostGS.turn !== 'p' : _hostGS.turn !== 'c') return;
     if (gameMode === 'hazz2') {
+      // Server-side validation: check the card is actually playable
+      const hand = isP ? _hostGS.pH : _hostGS.cH;
+      if (ci < 0 || ci >= hand.length) return;
+      const card = hand[ci];
+      if (!hazz2CanPlay(card, _hostGS)) return;
       const result = hazz2Play(_hostGS, ci, isP, newSuit);
       if (!result) return;
       _hostGS = result;
@@ -1378,6 +1383,8 @@ const MP = (() => {
       pendingReqs = {};
       _playAgainRequest = null;
       _playAgainAccepted = false;
+      if (typeof _mpBusy !== 'undefined') _mpBusy = false;
+      window._mpPenaltyPending = false;
     }
   };
 })();
@@ -1703,10 +1710,17 @@ function mpRenderGameState(state) {
       if (counterActive) {
         if (playableIdx.length === 0) {
           drawBtnWrap.style.display = 'none';
-          // Auto-apply penalty
-          if (!window._mpPenaltyPending) {
+          // Auto-apply penalty — only if it's our turn and not already pending
+          if (!window._mpPenaltyPending && !_mpBusy) {
             window._mpPenaltyPending = true;
-            setTimeout(() => { MP.applyPenalty(); window._mpPenaltyPending = false; }, 600);
+            _mpBusy = true;
+            setTimeout(() => {
+              // Re-check state is still valid before applying
+              if (mpGameState && mpGameState.isMyTurn && (mpGameState.skipCounter > 0 || mpGameState.drawCounter > 0)) {
+                MP.applyPenalty();
+              }
+              window._mpPenaltyPending = false;
+            }, 600);
           }
         } else {
           drawBtnWrap.style.display = 'none';
@@ -1762,9 +1776,15 @@ function mpRenderGameState(state) {
     setMsg(state.mode === 'hazz2' ? t('hazz2ComputerTurn').replace('الحاسوب', state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') : (state.players[myP === 'p1' ? 'p2' : 'p1'].name || '...') + '...', 'think');
   }
 
+  // Release action lock when new state arrives (play was processed)
+  if (typeof _mpBusy !== 'undefined') _mpBusy = false;
+
   // Run safety check
   if (typeof ensurePlayerHandVisible === 'function') ensurePlayerHandVisible();
 }
+
+// Action lock to prevent double-clicks in multiplayer
+let _mpBusy = false;
 
 // Hazz 2 client-side playability check (mirror of server logic)
 function mpHazz2CanPlay(card, gs) {
@@ -1776,14 +1796,16 @@ function mpHazz2CanPlay(card, gs) {
 
 async function onMpPlayCard(ci) {
   const gs = mpGameState;
-  if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
+  if (!gs || !gs.isMyTurn || gs.phase !== 'play' || _mpBusy) return;
   const card = gs.myHand[ci];
   if (!card) return;
+  _mpBusy = true; // Lock immediately to prevent double-click
   sCard();
   // Check if there are multiple capture options (Kanza 15)
   try {
     const options = await MP.requestCaptureOptions(ci);
     if (options.length > 1) {
+      _mpBusy = false; // Unlock — user needs to choose a capture option
       mpShowCaptureChoice(ci, options);
       return;
     }
@@ -1792,6 +1814,7 @@ async function onMpPlayCard(ci) {
     // Fallback: just play without chosen cap
     MP.playCard(ci, null);
   }
+  // Lock will be released when new state arrives (see mpRenderGameState)
 }
 
 function mpShowCaptureChoice(ci, options) {
@@ -1804,6 +1827,7 @@ function mpShowCaptureChoice(ci, options) {
     opt.innerHTML = h;
     opt.addEventListener('click', function () {
       m.classList.add('hidden');
+      _mpBusy = true; // Re-lock before sending
       MP.playCard(ci, cap);
     });
     o.appendChild(opt);
@@ -1813,9 +1837,10 @@ function mpShowCaptureChoice(ci, options) {
 
 async function onMpHazz2PlayCard(ci) {
   const gs = mpGameState;
-  if (!gs || !gs.isMyTurn || gs.phase !== 'play') return;
+  if (!gs || !gs.isMyTurn || gs.phase !== 'play' || _mpBusy) return;
   const card = gs.myHand[ci];
   if (!card || !mpHazz2CanPlay(card, gs)) return;
+  _mpBusy = true; // Lock immediately
   sCard();
   if (card.value === 7) {
     // Prompt for suit choice
@@ -1824,6 +1849,7 @@ async function onMpHazz2PlayCard(ci) {
     return;
   }
   MP.playCard(ci, null);
+  // Lock will be released when new state arrives
 }
 
 function showSuitChooserMp() {
@@ -1838,6 +1864,7 @@ function showSuitChooserMp() {
       m.classList.add('hidden');
       const ci = hazz2Choice.ci;
       hazz2Choice = null;
+      _mpBusy = true; // Re-lock before sending
       MP.playCard(ci, null, suit);
     });
     o.appendChild(opt);
@@ -1847,9 +1874,10 @@ function showSuitChooserMp() {
 
 // Override onDrawCard for multiplayer
 function onMpDrawCard() {
-  if (!mpGameState || !mpGameState.isMyTurn) return;
+  if (!mpGameState || !mpGameState.isMyTurn || _mpBusy) return;
   if (gameMode !== 'hazz2') return;
   if (mpGameState.skipCounter > 0 || mpGameState.drawCounter > 0) return;
+  _mpBusy = true;
   sCard();
   MP.drawCard();
 }
@@ -2391,6 +2419,8 @@ function hazz2Play(s,ci,isP,newSuit){
 
 // Player cannot/will not counter — apply skip penalty or draw penalty
 function hazz2ApplyPenalty(s,isP){
+  // Guard: do nothing if no penalty is active (prevent free turn skip)
+  if(s.skipCounter===0 && s.drawCounter===0) return {state:s,skipped:0,drawn:0};
   const ns=hazz2DeepClone(s);
   let drawnCards=[];
   if(s.skipCounter>0){
